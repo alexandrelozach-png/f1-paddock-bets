@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
 
+// --- VERSION DE L'APPLICATION ---
+const APP_VERSION = "ALPHA v2";
+
 // --- GRILLE PILOTES 2026 OFFICIELLE ---
 const DRIVERS_2026 = [
   { id: "leclerc", name: "Charles Leclerc", number: 16, team: "Ferrari", teamColor: "#E8002D" },
@@ -381,27 +384,37 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#0e0e14] text-white flex flex-col font-sans">
-      {/* HEADER SPORTIF */}
+      {/* HEADER SPORTIF RESPONSIVE AVEC BADGE VERSION */}
       <header className="bg-[#15151e] border-b border-[#2b2b3d] sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-[#e10600] text-white font-black italic tracking-tighter text-xl px-2.5 py-0.5 rounded shadow-lg shadow-red-900/40">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
+          {/* Logo, Titre & Badge Version */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="bg-[#e10600] text-white font-black italic tracking-tighter text-lg sm:text-xl px-2 sm:px-2.5 py-0.5 rounded shadow-lg shadow-red-900/40">
               F1
             </div>
             <div>
-              <div className="font-black text-sm tracking-widest text-zinc-200 uppercase flex items-center gap-2">
-                Paddock Bets
-                {isAdmin && (
-                  <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded font-mono flex items-center gap-1">
-                    <ShieldAlert className="w-3 h-3" /> SUPERVISEUR
-                  </span>
-                )}
+              <div className="flex items-center gap-2">
+                <span className="font-black text-xs sm:text-sm tracking-wider text-zinc-100 uppercase">
+                  Paddock Bets
+                </span>
+                {/* Badge Version Discret */}
+                <span className="text-[9px] font-mono tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded flex items-center gap-1 font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {APP_VERSION}
+                </span>
               </div>
+              {isAdmin && (
+                <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-1.5 py-0.2 rounded font-mono inline-flex items-center gap-1 mt-0.5">
+                  <ShieldAlert className="w-2.5 h-2.5" /> SUPERVISEUR
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <nav className="flex items-center bg-[#1e1e2d] border border-[#2b2b3d] p-1 rounded-xl text-xs">
+          {/* Navigation & Bouton Connexion */}
+          <div className="flex items-center gap-1.5 sm:gap-3">
+            {/* Version Grand Écran : Boutons d'onglets */}
+            <nav className="hidden md:flex items-center bg-[#1e1e2d] border border-[#2b2b3d] p-1 rounded-xl text-xs">
               <button
                 onClick={() => setActiveTab("bet")}
                 className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
@@ -438,20 +451,39 @@ export default function App() {
               )}
             </nav>
 
+            {/* Version Smartphone : Menu Déroulant Compact */}
+            <div className="md:hidden relative">
+              <select
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value)}
+                className="bg-[#1e1e2d] border border-[#2b2b3d] text-zinc-200 text-xs font-bold rounded-lg px-2.5 py-1.5 outline-none appearance-none pr-7"
+              >
+                <option value="bet">🏁 Paris</option>
+                <option value="standings">🏆 Classement</option>
+                <option value="history">📜 Historique</option>
+                {isAdmin && <option value="admin">🛡️ Superviseur</option>}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            {/* Bouton Connexion / Profil Ultra Visible sur Smartphone */}
             {user ? (
-              <div className="flex items-center gap-2 bg-[#1e1e2d] border border-[#2b2b3d] px-3 py-1.5 rounded-xl text-xs">
-                <User className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-zinc-200 font-semibold truncate max-w-[110px]">{userProfile?.username || user.email}</span>
-                <button onClick={() => supabase.auth.signOut()} className="text-zinc-500 hover:text-red-400" title="Déconnexion">
+              <div className="flex items-center gap-1.5 sm:gap-2 bg-[#1e1e2d] border border-emerald-500/40 px-2 sm:px-3 py-1.5 rounded-xl text-xs">
+                <User className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="text-zinc-100 font-semibold truncate max-w-[80px] sm:max-w-[120px]">
+                  {userProfile?.username || user.email?.split("@")[0]}
+                </span>
+                <button onClick={() => supabase.auth.signOut()} className="text-zinc-400 hover:text-red-400 p-0.5" title="Déconnexion">
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
               <button
                 onClick={() => { setAuthErrorMessage(""); setAuthSuccessMessage(""); setShowAuthModal(true); }}
-                className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition"
+                className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-md shadow-red-900/30 shrink-0"
               >
-                <LogIn className="w-3.5 h-3.5" /> Connexion
+                <LogIn className="w-3.5 h-3.5" />
+                <span>Connexion</span>
               </button>
             )}
           </div>
@@ -953,7 +985,7 @@ export default function App() {
       </main>
 
       <footer className="bg-[#15151e] border-t border-[#2b2b3d] py-4 text-center text-xs text-zinc-500">
-        F1 Paddock Bets 2026 • 24 Grands Prix Officiels • Déployé sur Vercel & Supabase RLS
+        F1 Paddock Bets 2026 • {APP_VERSION} • 24 Grands Prix Officiels • Déployé sur Vercel & Supabase RLS
       </footer>
     </div>
   );
