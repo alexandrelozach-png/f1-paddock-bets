@@ -164,7 +164,7 @@ export default function App() {
   const [adminResults, setAdminResults] = useState({ pole: "", pos1: "", pos2: "", pos3: "", dotd: "" });
   const [adminSaving, setAdminSaving] = useState(false);
 
-  const currentGP = CALENDAR_2026.find((gp) => gp.round === selectedRound) || CALENDAR_2026;
+  const currentGP = CALENDAR_2026.find((gp) => gp.round === selectedRound) || CALENDAR_2026[0];
   const isAdmin = userProfile?.role === "admin";
 
   // Traducteur des messages d'erreur Supabase en français
@@ -291,7 +291,6 @@ export default function App() {
         });
         if (error) throw error;
 
-        // Si l'utilisateur est retourné mais avec des identités vides, l'email existe déjà
         if (data?.user && data.user.identities && data.user.identities.length === 0) {
           throw new Error("user already registered");
         }
@@ -954,7 +953,7 @@ export default function App() {
       </main>
 
       <footer className="bg-[#15151e] border-t border-[#2b2b3d] py-4 text-center text-xs text-zinc-500">
-        F1 Paddock Bets 2026 • 24 Grands Prix Officiels • Authentification & Sécurité RLS Supabase
+        F1 Paddock Bets 2026 • 24 Grands Prix Officiels • Déployé sur Vercel & Supabase RLS
       </footer>
     </div>
   );
