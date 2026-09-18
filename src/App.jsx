@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.1 ---
+// --- VERSION: ALPHA v3.3 ---
 import React, { useState, useEffect } from "react";
 import { 
   Trophy, 
@@ -28,7 +28,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.1";
+const APP_VERSION = "ALPHA v3.3";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE ---
 const DRIVERS_2026 = [
@@ -144,10 +144,9 @@ export default function App() {
   const [isApiSyncing, setIsApiSyncing] = useState(false);
   const [apiStatus, setApiStatus] = useState({ synced: false, lastUpdate: null });
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showPractice, setShowPractice] = useState(true);
 
   // Sélecteur de saison pour test rigoureux
-  const [selectedSeason, setSelectedSeason] = useState("2026");
+  const [selectedSeason, setSelectedSeason] = useState("2024");
   const [seasonArchiveResults, setSeasonArchiveResults] = useState([]);
   const [loadingArchive, setLoadingArchive] = useState(false);
 
@@ -160,27 +159,19 @@ export default function App() {
   const [authUsername, setAuthUsername] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
-  const [authErrorMessage, setAuthErrorMessage] = useState("");
-  const [authSuccessMessage, setAuthSuccessMessage] = useState("");
 
   // Pronostics
   const [currentBet, setCurrentBet] = useState({ pole: "", pos1: "", pos2: "", pos3: "", dotd: "", isLocked: false });
-  const [formFeedback, setFormFeedback] = useState({ type: "", message: "" });
-  const [savingBet, setSavingBet] = useState(false);
-
-  // Superviseur
-  const [adminResults, setAdminResults] = useState({ pole: "", pos1: "", pos2: "", pos3: "", dotd: "" });
-  const [adminSaving, setAdminSaving] = useState(false);
 
   const currentGP = calendar.find((gp) => gp.round === selectedRound) || calendar[0];
   const isAdmin = userProfile?.role === "admin";
 
-  // Charger les résultats complets selon la saison sélectionnée
+  // Charger les 24 résultats complets selon la saison sélectionnée
   const loadSeasonArchive = async (year) => {
     setLoadingArchive(true);
     try {
       const data = await fetchFullSeasonResults(year);
-      if (data && data.length > 0) {
+      if (Array.isArray(data) && data.length > 0) {
         setSeasonArchiveResults(data);
       } else {
         setSeasonArchiveResults([]);
@@ -560,7 +551,7 @@ export default function App() {
             {loadingArchive ? (
               <div className="py-12 text-center text-zinc-400 text-xs flex flex-col items-center gap-2">
                 <RefreshCw className="w-6 h-6 animate-spin text-[#e10600]" />
-                <span>Chargement des données officielles depuis l'API Jolpica...</span>
+                <span>Chargement des 24 Grands Prix officiels depuis l'API Jolpica...</span>
               </div>
             ) : selectedSeason === "2026" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -580,26 +571,37 @@ export default function App() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {seasonArchiveResults.map((race) => (
-                  <div key={race.round} className="bg-[#15151e] border border-[#2b2b3d] p-4 rounded-xl text-xs space-y-2">
-                    <div className="flex justify-between items-center">
-                      <strong className="text-white">R{race.round} • {race.raceName}</strong>
-                      <span className="text-[10px] bg-blue-900/40 text-blue-300 border border-blue-700/40 px-2 py-0.5 rounded font-mono">
-                        {race.date}
-                      </span>
+              <div>
+                <div className="flex justify-between items-center mb-3 text-xs text-zinc-400">
+                  <span>Grands Prix officiels trouvés : <strong className="text-white">{seasonArchiveResults.length} / 24</strong></span>
+                  {seasonArchiveResults.length === 24 && (
+                    <span className="text-emerald-400 font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Saison 2024 intégrale synchronisée
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {seasonArchiveResults.map((race) => (
+                    <div key={race.round} className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl text-xs space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="font-black text-[#e10600]">R{race.round}</span>
+                        <span className="text-[10px] bg-blue-900/40 text-blue-300 border border-blue-700/40 px-2 py-0.5 rounded font-mono">
+                          {race.date}
+                        </span>
+                      </div>
+                      <strong className="text-white block truncate">{race.raceName}</strong>
+                      <div className="text-[11px] text-zinc-400 truncate">{race.circuitName} ({race.country})</div>
+                      <div className="pt-2 border-t border-[#2b2b3d] space-y-1">
+                        <div>🥇 1er: <strong className="text-amber-400">{race.p1 ? `${race.p1.name} (${race.p1.team})` : "N/A"}</strong></div>
+                        <div>🥈 2e: <strong className="text-zinc-300">{race.p2 ? `${race.p2.name} (${race.p2.team})` : "N/A"}</strong></div>
+                        <div>🥉 3e: <strong className="text-amber-600">{race.p3 ? `${race.p3.name} (${race.p3.team})` : "N/A"}</strong></div>
+                        {race.fastestLap && (
+                          <div className="text-zinc-500 pt-1">⚡ Meilleur tour: <span className="text-emerald-400">{race.fastestLap}</span></div>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-[11px] text-zinc-400">{race.circuitName} ({race.country})</div>
-                    <div className="pt-2 border-t border-[#2b2b3d] space-y-1">
-                      <div>🥇 1er: <strong className="text-amber-400">{race.p1 ? `${race.p1.name} (${race.p1.team})` : "N/A"}</strong></div>
-                      <div>🥈 2e: <strong className="text-zinc-300">{race.p2 ? `${race.p2.name} (${race.p2.team})` : "N/A"}</strong></div>
-                      <div>🥉 3e: <strong className="text-amber-600">{race.p3 ? `${race.p3.name} (${race.p3.team})` : "N/A"}</strong></div>
-                      {race.fastestLap && (
-                        <div className="text-zinc-500 pt-1">⚡ Meilleur tour: <span className="text-emerald-400">{race.fastestLap}</span></div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
