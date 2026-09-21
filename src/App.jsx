@@ -1,4 +1,97 @@
-// --- VERSION: ALPHA v3.7 ---
+// --- VERSION: ALPHA v3.8 ---
+// Service d'interrogation multi-saisons Jolpica & OpenF1
+const JOLPICA_BASE = "https://api.jolpi.ca/ergast/f1";
+const OPENF1_BASE = "https://api.openf1.org/v1";
+
+/**
+ * 1. Récupère le calendrier complet avec les horaires internationaux (UTC)
+ */
+export async function fetchOfficialCalendar(year = "2026") {
+  try {
+    const res = await fetch(`${JOLPICA_BASE}/${year}.json?limit=100`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const races = data?.MRData?.RaceTable?.Races || [];
+
+    return races.map((race) => {
+      const makeIso = (session) => {
+        if (!session || !session.date) return null;
+        return `${session.date}T${session.time || "12:00:00Z"}`;
+      };
+
+      const isSprint = Boolean(race.Sprint);
+      const qualiDate = makeIso(race.Qualifying) || `${race.date}T14:00:00Z`;
+
+      return {
+        season: parseInt(year, 10),
+        round: parseInt(race.round, 10),
+        name: race.raceName,
+        circuit_name: race.Circuit?.circuitName || "Circuit",
+        country: race.Circuit?.Location?.country || "",
+        city: race.Circuit?.Location?.locality || "",
+        is_sprint: isSprint,
+        fp1_time: makeIso(race.FirstPractice),
+        fp2_time: makeIso(race.SecondPractice),
+        fp3_time: makeIso(race.ThirdPractice),
+        sprint_quali_time: makeIso(race.SprintQualifying),
+        sprint_race_time: makeIso(race.Sprint),
+        quali_start_time: qualiDate,
+        race_start_time: `${race.date}T${race.time || "13:00:00Z"}`
+      };
+    });
+  } catch (error) {
+    console.warn(`Erreur calendrier Jolpica ${year}:`, error);
+    return null;
+  }
+}
+
+export const fetchOfficialCalendarWithSessions = fetchOfficialCalendar;
+
+/**
+ * 2. Récupère les archives officielles d'une saison terminée
+ */
+export async function fetchFullSeasonResults(year = "2024") {
+  try {
+    const res = await fetch(`${JOLPICA_BASE}/${year}/results.json?limit=1000`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const races = data?.MRData?.RaceTable?.Races || [];
+
+    return races.map((race) => {
+      const results = race.Results || [];
+      const formatDriver = (entry) => {
+        if (!entry || !entry.Driver) return null;
+        const d = entry.Driver;
+        const c = entry.Constructor;
+        return {
+          name: `${d.givenName || ""} ${d.familyName || ""}`.trim(),
+          team: c?.name || "Écurie"
+        };
+      };
+
+      return {
+        round: parseInt(race.round, 10),
+        raceName: race.raceName,
+        circuitName: race.Circuit?.circuitName || "Circuit",
+        country: race.Circuit?.Location?.country || "",
+        date: race.date,
+        p1: formatDriver(results[0]),
+        p2: formatDriver(results[1]),
+        p3: formatDriver(results[2]),
+        fastestLap: results.find((r) => r?.FastestLap?.rank === "1")?.Driver?.familyName || null,
+        dotd: results[0]?.Driver?.familyName || null
+      };
+    });
+  } catch (error) {
+    console.warn(`Erreur archive ${year}:`, error);
+    return [];
+  }
+}
+
+
+5. Composant Frontend Complet (src/App.jsx - ALPHA v3.8)
+
+// --- VERSION: ALPHA v3.8 ---
 import React, { useState, useEffect } from "react";
 import { 
   Trophy, 
@@ -25,13 +118,17 @@ import {
   Zap,
   Globe,
   Gauge,
-  XCircle
+  XCircle,
+  PlusCircle,
+  Share2,
+  Copy,
+  Crown
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.7";
+const APP_VERSION = "ALPHA v3.8";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE ---
 const DRIVERS_2026 = [
@@ -129,7 +226,7 @@ const CIRCUIT_SVGS = {
   )
 };
 
-// --- CALENDRIER OFFICIEL 2026 DE SECOURS (AVANT CHARGEMENT SUPABASE) ---
+// --- CALENDRIER 2026 CONSOLIDÉ ---
 const INITIAL_CALENDAR_2026 = [
   { round: 1, id: "melbourne", name: "Australian Grand Prix", circuit: "Albert Park Circuit", country: "Australie 🇦🇺", city: "Melbourne", status: "completed", isCancelled: false, qualiDeadline: "2026-03-07T05:00:00Z", isSprint: false, length: "5.278 km", laps: 58, lapRecord: "1:19.813 (Leclerc)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "sainz" }, practice: [] },
   { round: 2, id: "shanghai", name: "Chinese Grand Prix", circuit: "Shanghai International Circuit", country: "Chine 🇨🇳", city: "Shanghai", status: "completed", isCancelled: false, qualiDeadline: "2026-03-14T07:00:00Z", isSprint: true, length: "5.451 km", laps: 56, lapRecord: "1:32.238 (Schumacher)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "leclerc", dotd: "leclerc" }, practice: [] },
@@ -156,7 +253,7 @@ const INITIAL_CALENDAR_2026 = [
     city: "Bakou", 
     status: "active", 
     isCancelled: false,
-    qualiDeadline: "2026-09-25T14:00:00Z", // Qualifications : Vendredi 25 septembre 2026 à 14h00 UTC
+    qualiDeadline: "2026-09-25T14:00:00Z",
     isSprint: false, 
     length: "6.003 km", 
     laps: 51, 
@@ -181,6 +278,26 @@ export default function App() {
   const [selectedPracticeSession, setSelectedPracticeSession] = useState("FP3");
   const [currentTime, setCurrentTime] = useState(new Date());
 
+  // Gestion des Teams / Groupes
+  const [currentTeam, setCurrentTeam] = useState({
+    name: "Scuderia Bosch R&D",
+    inviteCode: "SB2026",
+    isPrincipal: true,
+    members: [
+      { id: "1", name: "Alexandre L. (Alex)", role: "Team Principal", points: 84, rank: 1, avatar: "🏎️" },
+      { id: "2", name: "Mélissa", role: "Pilote Titulaire", points: 79, rank: 2, avatar: "⚡" },
+      { id: "3", name: "Jacques", role: "Pilote Titulaire", points: 71, rank: 3, avatar: "🏁" },
+      { id: "4", name: "Léo", role: "Ingénieur Stratégie", points: 68, rank: 4, avatar: "📊" },
+      { id: "5", name: "Marion", role: "Pilote Essais", points: 64, rank: 5, avatar: "🎯" },
+      { id: "6", name: "Clément", role: "Télémétrie", points: 59, rank: 6, avatar: "🛠️" }
+    ]
+  });
+
+  const [showTeamModal, setShowTeamModal] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [newTeamName, setNewTeamName] = useState("");
+  const [joinCodeInput, setJoinCodeInput] = useState("");
+
   // Sélecteur de saison & Archives
   const [selectedSeason, setSelectedSeason] = useState("2026");
   const [seasonArchiveResults, setSeasonArchiveResults] = useState([]);
@@ -188,8 +305,8 @@ export default function App() {
   const [loadingArchive, setLoadingArchive] = useState(false);
 
   // Utilisateur & Session
-  const [user, setUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
+  const [user, setUser] = useState({ email: "alex@entreprise.com" });
+  const [userProfile, setUserProfile] = useState({ username: "Alex (Alexandre L.)", role: "admin" });
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Pronostics
@@ -204,12 +321,18 @@ export default function App() {
     setActiveTab("bet");
   };
 
+  // Copie du code d'invitation
+  const copyInviteCode = () => {
+    navigator.clipboard.writeText(currentTeam.inviteCode);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2500);
+  };
+
   // Chargement intelligent des archives ou de la saison 2026 depuis Supabase
   const loadSeasonArchive = async (year) => {
     setLoadingArchive(true);
     try {
       if (year === "2026") {
-        // Lecture directe de grand_prix et official_results pour la saison en cours
         const { data: dbData, error: dbErr } = await supabase
           .from("grand_prix")
           .select("*, official_results(*)")
@@ -238,7 +361,6 @@ export default function App() {
           setSeason2026OfficialFromDB(formatted);
         }
       } else {
-        // Pour 2024 et 2025 (table season_archives)
         const { data: dbData, error: dbErr } = await supabase
           .from("season_archives")
           .select("*")
@@ -278,18 +400,16 @@ export default function App() {
     }
   }, [selectedSeason, activeTab]);
 
-  // Synchronisation du calendrier 2026 ET des séances d'essais libres depuis Supabase
+  // Synchronisation du calendrier 2026 et séances FP
   const load2026DataFromDB = async () => {
     try {
-      // 1. Grands Prix et résultats officiels
       const { data: gpData, error: gpErr } = await supabase
         .from("grand_prix")
         .select("*, official_results(*)")
         .eq("season", 2026)
         .order("round", { ascending: true });
 
-      // 2. Séances d'essais libres (FP1, FP2, FP3)
-      const { data: practiceData, error: practiceErr } = await supabase
+      const { data: practiceData } = await supabase
         .from("practice_results")
         .select("*, grand_prix(round)")
         .order("position", { ascending: true });
@@ -301,7 +421,6 @@ export default function App() {
             if (!dbMatch) return localGP;
             const res = dbMatch.official_results?.[0] || dbMatch.official_results;
 
-            // Associer les essais libres de ce Grand Prix
             const matchingPractice = practiceData
               ? practiceData
                   .filter((p) => p.grand_prix?.round === localGP.round || p.gp_id === dbMatch.id)
@@ -345,26 +464,6 @@ export default function App() {
 
   useEffect(() => {
     load2026DataFromDB();
-
-    async function fetchProfile(userId) {
-      try {
-        const { data } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
-        if (data) setUserProfile(data);
-      } catch (e) {}
-    }
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
-      else setUserProfile(null);
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -372,7 +471,6 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // Calcul du compte à rebours dynamique basé sur le fuseau local
   const calculateTimeRemaining = (deadline) => {
     const diff = new Date(deadline).getTime() - currentTime.getTime();
     if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
@@ -386,7 +484,6 @@ export default function App() {
   const timeRemaining = calculateTimeRemaining(currentGP.qualiDeadline);
   const isExpired = currentGP.status === "completed" || timeRemaining.expired;
 
-  // Formatage automatique dans le fuseau horaire de l'utilisateur
   const formatQualiDate = (isoString) => {
     if (!isoString) return "Date non définie";
     const dateObj = new Date(isoString);
@@ -413,12 +510,11 @@ export default function App() {
     }
   };
 
-  // Filtrer les essais libres par session active (FP1, FP2 ou FP3)
   const activePracticeList = currentGP.practice?.filter((p) => !p.session || p.session === selectedPracticeSession) || [];
 
   return (
     <div className="min-h-screen bg-[#0e0e14] text-white flex flex-col font-sans">
-      {/* HEADER SPORTIF RESPONSIVE */}
+      {/* HEADER SPORTIF RESPONSIVE AVEC BADGE DE TEAM */}
       <header className="bg-[#15151e] border-b border-[#2b2b3d] sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -441,6 +537,23 @@ export default function App() {
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* BADGE DE TEAM PRINCIPAL / GROUPE EN HAUT DE PAGE */}
+          <div className="hidden sm:flex items-center gap-2">
+            <button
+              onClick={() => setShowTeamModal(true)}
+              className="bg-[#1e1e2d] hover:bg-[#28283c] border border-amber-500/40 px-3 py-1 rounded-xl text-xs flex items-center gap-2 transition shadow-md shadow-amber-950/20"
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <div className="text-left">
+                <span className="block text-[9px] text-zinc-400 font-bold uppercase tracking-wider">Écurie Active</span>
+                <span className="font-extrabold text-white text-xs">{currentTeam.name}</span>
+              </div>
+              <span className="text-[10px] bg-amber-500/20 text-amber-300 font-mono px-1.5 py-0.5 rounded border border-amber-500/30 font-bold">
+                {currentTeam.inviteCode}
+              </span>
+            </button>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-3">
@@ -479,7 +592,7 @@ export default function App() {
                 className="bg-[#1e1e2d] border border-[#2b2b3d] text-zinc-200 text-xs font-bold rounded-lg px-2.5 py-1.5 outline-none appearance-none pr-7"
               >
                 <option value="bet">🏁 Paris</option>
-                <option value="standings">🏆 Classement</option>
+                <option value="standings">🏆 Classement Team</option>
                 <option value="history">📜 Résultats & Saisons</option>
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -585,7 +698,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* DATE & HEURE EXACTE DE LA SÉANCE QUALIFICATIONS (CALCULÉE SELON LE FUSEAU HORAIRE LOCAL) */}
                   {!currentGP.isCancelled && (
                     <div className="mt-2.5 pt-2 border-t border-[#2b2b3d] text-[11px] text-zinc-400 flex items-center justify-between gap-2">
                       <span className="text-zinc-500">Date limite :</span>
@@ -610,7 +722,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* SECTION ACCORDÉON : TENDANCES ESSAIS LIBRES (FP1 / FP2 / FP3) & PNEUS */}
+            {/* ESSAIS LIBRES */}
             {!currentGP.isCancelled && (
               <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl overflow-hidden shadow-2xl">
                 <button 
@@ -760,7 +872,7 @@ export default function App() {
           </>
         )}
 
-        {/* ONGLET HISTORIQUE & SÉLECTEUR DE SAISON (LIÉ À SUPABASE) */}
+        {/* ONGLET HISTORIQUE & SÉLECTEUR DE SAISON */}
         {activeTab === "history" && (
           <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2b2b3d] pb-4">
@@ -772,7 +884,6 @@ export default function App() {
                 <p className="text-xs text-zinc-400">Données officielles consolidées dans la base de données Supabase</p>
               </div>
 
-              {/* SÉLECTEUR DE SAISON */}
               <div className="flex items-center gap-2">
                 <span className="text-xs text-zinc-400 font-bold flex items-center gap-1">
                   <Globe className="w-3.5 h-3.5 text-emerald-400" /> Saison :
@@ -855,26 +966,67 @@ export default function App() {
           </div>
         )}
 
-        {/* ONGLET CLASSEMENT */}
+        {/* ONGLET CLASSEMENT : LIMITÉ AUX COLLÈGUES DE LA TEAM */}
         {activeTab === "standings" && (
-          <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl">
-            <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
-              <Trophy className="w-5 h-5 text-amber-400" />
-              Classement Général des Collègues
-            </h2>
+          <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2b2b3d] pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-amber-400" />
+                  <h2 className="text-lg font-black text-white">
+                    Classement de l'Écurie : <span className="text-amber-400">{currentTeam.name}</span>
+                  </h2>
+                </div>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  Points cumulés sur la saison 2026 entre les {currentTeam.members.length} membres de votre groupe
+                </p>
+              </div>
+
+              {/* ACTION DU TEAM PRINCIPAL */}
+              {currentTeam.isPrincipal && (
+                <button
+                  onClick={copyInviteCode}
+                  className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-lg shadow-red-900/30"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>{copiedCode ? "Code Copié !" : "Inviter un Collègue"}</span>
+                </button>
+              )}
+            </div>
+
             <div className="space-y-2">
-              {[
-                { rank: 1, name: "Thomas R.", points: 52, badge: "🥇 P1 Leader" },
-                { rank: 2, name: "Alexandre L.", points: 48, badge: "🥈 P2 Chaser" },
-                { rank: 3, name: "Sarah M.", points: 41, badge: "🥉 P3 Podium" },
-                { rank: 4, name: "Julien B.", points: 36, badge: "Top 5" }
-              ].map((p) => (
-                <div key={p.rank} className="flex items-center justify-between p-3 bg-[#15151e] border border-[#2b2b3d] rounded-xl text-xs">
+              {currentTeam.members.map((member) => (
+                <div 
+                  key={member.id} 
+                  className={`flex items-center justify-between p-3.5 rounded-xl text-xs border transition-all ${
+                    member.name.includes("Alex") 
+                      ? "bg-[#1f1a2e] border-amber-500/50 shadow-md shadow-amber-950/20" 
+                      : "bg-[#15151e] border-[#2b2b3d] hover:border-zinc-600"
+                  }`}
+                >
                   <div className="flex items-center gap-3">
-                    <span className="font-mono font-black text-zinc-400 w-6">#{p.rank}</span>
-                    <span className="font-bold text-white">{p.name}</span>
+                    <span className={`font-mono font-black text-sm w-6 text-center ${
+                      member.rank === 1 ? "text-amber-400" : member.rank === 2 ? "text-zinc-300" : member.rank === 3 ? "text-amber-600" : "text-zinc-500"
+                    }`}>
+                      #{member.rank}
+                    </span>
+                    <span className="text-base">{member.avatar}</span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <strong className="text-white text-sm">{member.name}</strong>
+                        {member.role === "Team Principal" && (
+                          <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.2 rounded font-black flex items-center gap-1">
+                            <Crown className="w-2.5 h-2.5" /> TEAM PRINCIPAL
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-zinc-400">{member.role}</span>
+                    </div>
                   </div>
-                  <span className="font-mono font-black text-[#e10600]">{p.points} pts</span>
+                  <div className="text-right">
+                    <span className="font-mono font-black text-sm text-[#e10600] block">{member.points} pts</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">16 GP disputés</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -882,8 +1034,66 @@ export default function App() {
         )}
       </main>
 
+      {/* MODAL GESTION DE TEAM & INVITATION */}
+      {showTeamModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div className="flex justify-between items-center border-b border-[#2b2b3d] pb-3">
+              <div className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-amber-400" />
+                <h3 className="text-base font-black text-white">Gestion de l'Écurie</h3>
+              </div>
+              <button onClick={() => setShowTeamModal(false)} className="text-zinc-400 hover:text-white">✕</button>
+            </div>
+
+            <div className="bg-[#15151e] p-4 rounded-xl border border-[#2b2b3d] space-y-2">
+              <div className="text-xs text-zinc-400">Écurie active :</div>
+              <div className="text-lg font-black text-white">{currentTeam.name}</div>
+              <div className="flex items-center justify-between pt-2 border-t border-[#2b2b3d]">
+                <span className="text-xs text-zinc-400">Code d'invitation collègue :</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-black text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30">
+                    {currentTeam.inviteCode}
+                  </span>
+                  <button 
+                    onClick={copyInviteCode}
+                    className="p-1 hover:text-white text-zinc-400 transition"
+                    title="Copier le code"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              {copiedCode && <div className="text-[11px] text-emerald-400 font-bold text-right">Code copié dans le presse-papier !</div>}
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">Rejoindre une autre Écurie</h4>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="Code Écurie (ex: F1TEAM)"
+                  value={joinCodeInput}
+                  onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
+                  className="bg-[#15151e] border border-[#2b2b3d] text-white px-3 py-2 rounded-xl text-xs flex-1 uppercase font-mono"
+                />
+                <button 
+                  onClick={() => {
+                    alert(`Écurie rejointe avec le code : ${joinCodeInput}`);
+                    setShowTeamModal(false);
+                  }}
+                  className="bg-[#e10600] hover:bg-[#c30500] text-white font-bold px-4 py-2 rounded-xl text-xs transition"
+                >
+                  Rejoindre
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer className="bg-[#15151e] border-t border-[#2b2b3d] py-4 text-center text-xs text-zinc-500">
-        F1 Paddock Bets 2026 • {APP_VERSION} • Supabase & Vercel
+        F1 Paddock Bets 2026 • {APP_VERSION} • Ligues d'Écuries Privées
       </footer>
     </div>
   );
