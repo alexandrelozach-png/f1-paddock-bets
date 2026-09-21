@@ -111,13 +111,13 @@ const CIRCUIT_SVGS = {
   )
 };
 
-// --- CALENDRIER OFFICIEL 2026 DE BASE (BAKOU R17 ACTIF) ---
+// --- CALENDRIER OFFICIEL 2026 AVEC RÉSULTATS RÉELS R1 À R16 (BAKOU R17 ACTIF) ---
 const INITIAL_CALENDAR_2026 = [
   { round: 1, id: "melbourne", name: "Australian Grand Prix", circuit: "Albert Park Circuit", country: "Australie 🇦🇺", city: "Melbourne", status: "completed", qualiDeadline: "2026-03-07T05:00:00Z", isSprint: false, length: "5.278 km", laps: 58, lapRecord: "1:19.813 (Leclerc)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "sainz" }, practice: [] },
   { round: 2, id: "shanghai", name: "Chinese Grand Prix", circuit: "Shanghai International Circuit", country: "Chine 🇨🇳", city: "Shanghai", status: "completed", qualiDeadline: "2026-03-14T07:00:00Z", isSprint: true, length: "5.451 km", laps: 56, lapRecord: "1:32.238 (Schumacher)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "leclerc", dotd: "leclerc" }, practice: [] },
-  { round: 3, id: "suzuka", name: "Japanese Grand Prix", circuit: "Suzuka Circuit", country: "Japon 🇯🇵", city: "Suzuka", status: "completed", qualiDeadline: "2026-03-28T06:00:00Z", isSprint: false, length: "5.807 km", laps: 53, lapRecord: "1:30.983 (Hamilton)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "perez", pos3: "sainz", dotd: "leclerc" }, practice: [] },
-  { round: 4, id: "sakhir", name: "Bahrain Grand Prix", circuit: "Bahrain International Circuit", country: "Bahreïn 🇧🇭", city: "Sakhir", status: "completed", qualiDeadline: "2026-04-11T16:00:00Z", isSprint: false, length: "5.412 km", laps: 57, lapRecord: "1:31.447 (de la Rosa)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "perez", pos3: "sainz", dotd: "sainz" }, practice: [] },
-  { round: 5, id: "jeddah", name: "Saudi Arabian Grand Prix", circuit: "Jeddah Corniche Circuit", country: "Arabie Saoudite 🇸🇦", city: "Djeddah", status: "completed", qualiDeadline: "2026-04-18T17:00:00Z", isSprint: false, length: "6.174 km", laps: 50, lapRecord: "1:30.734 (Hamilton)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "leclerc", pos3: "perez", dotd: "bearman" }, practice: [] },
+  { round: 3, id: "suzuka", name: "Japanese Grand Prix", circuit: "Suzuka Circuit", country: "Japon 🇯🇵", city: "Suzuka", status: "completed", qualiDeadline: "2026-03-28T06:00:00Z", isSprint: false, length: "5.807 km", laps: 53, lapRecord: "1:30.983 (Hamilton)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "sainz", dotd: "leclerc" }, practice: [] },
+  { round: 4, id: "sakhir", name: "Bahrain Grand Prix", circuit: "Bahrain International Circuit", country: "Bahreïn 🇧🇭", city: "Sakhir", status: "completed", qualiDeadline: "2026-04-11T16:00:00Z", isSprint: false, length: "5.412 km", laps: 57, lapRecord: "1:31.447 (de la Rosa)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "leclerc", pos3: "sainz", dotd: "sainz" }, practice: [] },
+  { round: 5, id: "jeddah", name: "Saudi Arabian Grand Prix", circuit: "Jeddah Corniche Circuit", country: "Arabie Saoudite 🇸🇦", city: "Djeddah", status: "completed", qualiDeadline: "2026-04-18T17:00:00Z", isSprint: false, length: "6.174 km", laps: 50, lapRecord: "1:30.734 (Hamilton)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "leclerc", pos3: "piastri", dotd: "bearman" }, practice: [] },
   { round: 6, id: "miami", name: "Miami Grand Prix", circuit: "Miami International Autodrome", country: "USA 🇺🇸", city: "Miami", status: "completed", qualiDeadline: "2026-05-02T20:00:00Z", isSprint: true, length: "5.412 km", laps: 57, lapRecord: "1:29.708 (Verstappen)", officialResults: { pole: "verstappen", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "norris" }, practice: [] },
   { round: 7, id: "montreal", name: "Canadian Grand Prix", circuit: "Circuit Gilles-Villeneuve", country: "Canada 🇨🇦", city: "Montréal", status: "completed", qualiDeadline: "2026-05-23T20:00:00Z", isSprint: false, length: "4.361 km", laps: 70, lapRecord: "1:13.078 (Bottas)", officialResults: { pole: "russell", pos1: "verstappen", pos2: "norris", pos3: "russell", dotd: "norris" }, practice: [] },
   { round: 8, id: "monaco", name: "Grand Prix de Monaco", circuit: "Circuit de Monaco", country: "Monaco 🇲🇨", city: "Monte-Carlo", status: "completed", qualiDeadline: "2026-06-06T14:00:00Z", isSprint: false, length: "3.337 km", laps: 78, lapRecord: "1:12.909 (Hamilton)", officialResults: { pole: "leclerc", pos1: "leclerc", pos2: "piastri", pos3: "sainz", dotd: "leclerc" }, practice: [] },
@@ -190,7 +190,7 @@ export default function App() {
 
   const currentGP = calendar.find((gp) => gp.round === selectedRound) || calendar[0];
 
-  // Chargement intelligent des archives
+  // Chargement intelligent des archives avec Driver of the Day
   const loadSeasonArchive = async (year) => {
     setLoadingArchive(true);
     try {
@@ -211,7 +211,8 @@ export default function App() {
             p1: { name: r.p1_name, team: r.p1_team },
             p2: { name: r.p2_name, team: r.p2_team },
             p3: { name: r.p3_name, team: r.p3_team },
-            fastestLap: r.fastest_lap
+            fastestLap: r.fastest_lap,
+            dotd: r.dotd_name || r.p1_name
           }))
         );
       } else {
@@ -232,7 +233,7 @@ export default function App() {
     }
   }, [selectedSeason, activeTab]);
 
-  // Synchronisation du calendrier 2026 depuis Supabase ou API
+  // Synchronisation du calendrier 2026 depuis Supabase ou local
   const load2026CalendarFromDB = async () => {
     try {
       const { data, error } = await supabase
@@ -674,7 +675,12 @@ export default function App() {
                       <div>🥇 1er: <strong className="text-amber-400">{gp.officialResults?.pos1?.toUpperCase()}</strong></div>
                       <div>🥈 2e: <strong className="text-zinc-300">{gp.officialResults?.pos2?.toUpperCase()}</strong></div>
                       <div>🥉 3e: <strong className="text-amber-600">{gp.officialResults?.pos3?.toUpperCase()}</strong></div>
-                      <div className="text-zinc-500 pt-1">Pole: {gp.officialResults?.pole?.toUpperCase()} • DotD: {gp.officialResults?.dotd?.toUpperCase()}</div>
+                      <div className="text-zinc-400 pt-1 flex items-center justify-between">
+                        <span>Pole: <strong className="text-white">{gp.officialResults?.pole?.toUpperCase()}</strong></span>
+                        <span className="bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20 font-bold">
+                          DOTD: {gp.officialResults?.dotd?.toUpperCase()}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -694,9 +700,14 @@ export default function App() {
                       <div>🥇 1er: <strong className="text-amber-400">{race.p1 ? `${race.p1.name} (${race.p1.team})` : "N/A"}</strong></div>
                       <div>🥈 2e: <strong className="text-zinc-300">{race.p2 ? `${race.p2.name} (${race.p2.team})` : "N/A"}</strong></div>
                       <div>🥉 3e: <strong className="text-amber-600">{race.p3 ? `${race.p3.name} (${race.p3.team})` : "N/A"}</strong></div>
-                      {race.fastestLap && (
-                        <div className="text-zinc-500 pt-1">⚡ Meilleur tour: <span className="text-emerald-400">{race.fastestLap}</span></div>
-                      )}
+                      <div className="text-zinc-400 pt-1 flex items-center justify-between">
+                        {race.fastestLap && <span>⚡ Meilleur tour: <strong className="text-emerald-400">{race.fastestLap}</strong></span>}
+                        {race.dotd && (
+                          <span className="bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20 font-bold">
+                            DOTD: {race.dotd}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
