@@ -133,12 +133,12 @@ const CIRCUIT_SVGS = {
   )
 };
 
-// --- CALENDRIER 2026 CONSOLIDÉ ---
+// --- CALENDRIER 2026 STRICTEMENT CHRONOLOGIQUE ---
 const INITIAL_CALENDAR_2026 = [
   { round: 1, id: "melbourne", name: "Australian Grand Prix", circuit: "Albert Park Circuit", country: "Australie 🇦🇺", city: "Melbourne", status: "completed", isCancelled: false, qualiDeadline: "2026-03-07T05:00:00Z", isSprint: false, length: "5.278 km", laps: 58, lapRecord: "1:19.813 (Leclerc)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "sainz" }, practice: [] },
   { round: 2, id: "shanghai", name: "Chinese Grand Prix", circuit: "Shanghai International Circuit", country: "Chine 🇨🇳", city: "Shanghai", status: "completed", isCancelled: false, qualiDeadline: "2026-03-14T07:00:00Z", isSprint: true, length: "5.451 km", laps: 56, lapRecord: "1:32.238 (Schumacher)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "leclerc", dotd: "leclerc" }, practice: [] },
   { round: 3, id: "suzuka", name: "Japanese Grand Prix", circuit: "Suzuka Circuit", country: "Japon 🇯🇵", city: "Suzuka", status: "completed", isCancelled: false, qualiDeadline: "2026-03-28T06:00:00Z", isSprint: false, length: "5.807 km", laps: 53, lapRecord: "1:30.983 (Hamilton)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "sainz", dotd: "leclerc" }, practice: [] },
-  { round: 4, id: "sepang", name: "Malaysian Grand Prix", circuit: "Petronas Sepang International Circuit", country: "Malaisie 🇲🇾", city: "Sepang", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-03T06:00:00Z", isSprint: false, length: "5.543 km", laps: 56, lapRecord: "1:34.080 (Vettel)", officialResults: null, practice: [] },
+  { round: 4, id: "sakhir", name: "Bahrain Grand Prix (Annulé)", circuit: "Bahrain International Circuit", country: "Bahreïn 🇧🇭", city: "Sakhir", status: "completed", isCancelled: true, qualiDeadline: "2026-04-11T16:00:00Z", isSprint: false, length: "5.412 km", laps: 57, lapRecord: "1:31.447 (de la Rosa)", officialResults: null, practice: [] },
   { round: 5, id: "jeddah", name: "Saudi Arabian Grand Prix (Annulé)", circuit: "Jeddah Corniche Circuit", country: "Arabie Saoudite 🇸🇦", city: "Djeddah", status: "completed", isCancelled: true, qualiDeadline: "2026-04-18T17:00:00Z", isSprint: false, length: "6.174 km", laps: 50, lapRecord: "1:30.734 (Hamilton)", officialResults: null, practice: [] },
   { round: 6, id: "miami", name: "Miami Grand Prix", circuit: "Miami International Autodrome", country: "USA 🇺🇸", city: "Miami", status: "completed", isCancelled: false, qualiDeadline: "2026-05-02T20:00:00Z", isSprint: true, length: "5.412 km", laps: 57, lapRecord: "1:29.708 (Verstappen)", officialResults: { pole: "verstappen", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "norris" }, practice: [] },
   { round: 7, id: "montreal", name: "Canadian Grand Prix", circuit: "Circuit Gilles-Villeneuve", country: "Canada 🇨🇦", city: "Montréal", status: "completed", isCancelled: false, qualiDeadline: "2026-05-23T20:00:00Z", isSprint: false, length: "4.361 km", laps: 70, lapRecord: "1:13.078 (Bottas)", officialResults: { pole: "russell", pos1: "verstappen", pos2: "norris", pos3: "russell", dotd: "norris" }, practice: [] },
@@ -166,15 +166,42 @@ const INITIAL_CALENDAR_2026 = [
     laps: 51, 
     lapRecord: "1:43.009 (Leclerc)", 
     officialResults: null, 
+    practice: [
+      { session: "FP1", pos: 1, driver: "Charles Leclerc", team: "Ferrari", time: "1:43.450", tire: "MEDIUM", laps: 22 },
+      { session: "FP1", pos: 2, driver: "Lando Norris", team: "McLaren", time: "1:43.512", tire: "MEDIUM", laps: 24 },
+      { session: "FP1", pos: 3, driver: "Max Verstappen", team: "Red Bull", time: "1:43.710", tire: "HARD", laps: 20 },
+      { session: "FP2", pos: 1, driver: "Lewis Hamilton", team: "Ferrari", time: "1:42.850", tire: "SOFT", laps: 26 },
+      { session: "FP2", pos: 2, driver: "Oscar Piastri", team: "McLaren", time: "1:42.920", tire: "SOFT", laps: 25 },
+      { session: "FP2", pos: 3, driver: "George Russell", team: "Mercedes", time: "1:43.080", tire: "MEDIUM", laps: 27 },
+      { session: "FP3", pos: 1, driver: "Charles Leclerc", team: "Ferrari", time: "1:42.120", tire: "SOFT", laps: 18 },
+      { session: "FP3", pos: 2, driver: "Lando Norris", team: "McLaren", time: "1:42.195", tire: "SOFT", laps: 19 },
+      { session: "FP3", pos: 3, driver: "Isack Hadjar", team: "Red Bull", time: "1:42.450", tire: "SOFT", laps: 17 }
+    ] 
+  },
+  { 
+    round: 18, 
+    id: "sepang", 
+    name: "Petronas Malaysian Grand Prix", 
+    circuit: "Petronas Sepang International Circuit", 
+    country: "Malaisie 🇲🇾", 
+    city: "Sepang", 
+    status: "upcoming", 
+    isCancelled: false, 
+    qualiDeadline: "2026-10-03T06:00:00Z", 
+    isSprint: false, 
+    length: "5.543 km", 
+    laps: 56, 
+    lapRecord: "1:34.080 (Vettel)", 
+    officialResults: null, 
     practice: [] 
   },
-  { round: 18, id: "singapore", name: "Singapore Grand Prix", circuit: "Marina Bay Street Circuit", country: "Singapour 🇸🇬", city: "Marina Bay", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-10T13:00:00Z", isSprint: false, length: "4.940 km", laps: 62, lapRecord: "1:34.486 (Ricciardo)", officialResults: null, practice: [] },
-  { round: 19, id: "austin", name: "United States Grand Prix", circuit: "Circuit of the Americas", country: "USA 🇺🇸", city: "Austin", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-24T22:00:00Z", isSprint: true, length: "5.513 km", laps: 56, lapRecord: "1:36.169 (Leclerc)", officialResults: null, practice: [] },
-  { round: 20, id: "mexico", name: "Gran Premio de México", circuit: "Autódromo Hermanos Rodríguez", country: "Mexique 🇲🇽", city: "Mexico", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-31T20:00:00Z", isSprint: false, length: "4.304 km", laps: 71, lapRecord: "1:17.774 (Bottas)", officialResults: null, practice: [] },
-  { round: 21, id: "saopaulo", name: "Grande Prêmio de São Paulo", circuit: "Autódromo de Interlagos", country: "Brésil 🇧🇷", city: "São Paulo", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-07T18:00:00Z", isSprint: true, length: "4.309 km", laps: 71, lapRecord: "1:10.540 (Bottas)", officialResults: null, practice: [] },
-  { round: 22, id: "lasvegas", name: "Las Vegas Grand Prix", circuit: "Las Vegas Strip Circuit", country: "USA 🇺🇸", city: "Las Vegas", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-21T06:00:00Z", isSprint: false, length: "6.201 km", laps: 50, lapRecord: "1:35.490 (Piastri)", officialResults: null, practice: [] },
-  { round: 23, id: "lusail", name: "Qatar Grand Prix", circuit: "Lusail International Circuit", country: "Qatar 🇶🇦", city: "Lusail", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-28T18:00:00Z", isSprint: true, length: "5.419 km", laps: 57, lapRecord: "1:24.319 (Verstappen)", officialResults: null, practice: [] },
-  { round: 24, id: "abudhabi", name: "Abu Dhabi Grand Prix (Finale)", circuit: "Yas Marina Circuit", country: "Émirats Arabes Unis 🇦🇪", city: "Yas Island", status: "upcoming", isCancelled: false, qualiDeadline: "2026-12-05T14:00:00Z", isSprint: false, length: "5.281 km", laps: 58, lapRecord: "1:26.103 (Verstappen)", officialResults: null, practice: [] }
+  { round: 19, id: "singapore", name: "Singapore Grand Prix", circuit: "Marina Bay Street Circuit", country: "Singapour 🇸🇬", city: "Marina Bay", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-10T13:00:00Z", isSprint: false, length: "4.940 km", laps: 62, lapRecord: "1:34.486 (Ricciardo)", officialResults: null, practice: [] },
+  { round: 20, id: "austin", name: "United States Grand Prix", circuit: "Circuit of the Americas", country: "USA 🇺🇸", city: "Austin", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-24T22:00:00Z", isSprint: true, length: "5.513 km", laps: 56, lapRecord: "1:36.169 (Leclerc)", officialResults: null, practice: [] },
+  { round: 21, id: "mexico", name: "Gran Premio de México", circuit: "Autódromo Hermanos Rodríguez", country: "Mexique 🇲🇽", city: "Mexico", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-31T20:00:00Z", isSprint: false, length: "4.304 km", laps: 71, lapRecord: "1:17.774 (Bottas)", officialResults: null, practice: [] },
+  { round: 22, id: "saopaulo", name: "Grande Prêmio de São Paulo", circuit: "Autódromo de Interlagos", country: "Brésil 🇧🇷", city: "São Paulo", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-07T18:00:00Z", isSprint: true, length: "4.309 km", laps: 71, lapRecord: "1:10.540 (Bottas)", officialResults: null, practice: [] },
+  { round: 23, id: "lasvegas", name: "Las Vegas Grand Prix", circuit: "Las Vegas Strip Circuit", country: "USA 🇺🇸", city: "Las Vegas", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-21T06:00:00Z", isSprint: false, length: "6.201 km", laps: 50, lapRecord: "1:35.490 (Piastri)", officialResults: null, practice: [] },
+  { round: 24, id: "lusail", name: "Qatar Grand Prix", circuit: "Lusail International Circuit", country: "Qatar 🇶🇦", city: "Lusail", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-28T18:00:00Z", isSprint: true, length: "5.419 km", laps: 57, lapRecord: "1:24.319 (Verstappen)", officialResults: null, practice: [] },
+  { round: 25, id: "abudhabi", name: "Abu Dhabi Grand Prix (Finale)", circuit: "Yas Marina Circuit", country: "Émirats Arabes Unis 🇦🇪", city: "Yas Island", status: "upcoming", isCancelled: false, qualiDeadline: "2026-12-05T14:00:00Z", isSprint: false, length: "5.281 km", laps: 58, lapRecord: "1:26.103 (Verstappen)", officialResults: null, practice: [] }
 ];
 
 export default function App() {
@@ -183,7 +210,7 @@ export default function App() {
   const [calendar, setCalendar] = useState(INITIAL_CALENDAR_2026);
   const [showPractice, setShowPractice] = useState(true);
   const [selectedPracticeSession, setSelectedPracticeSession] = useState("FP3");
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   // Gestion des Teams / Groupes
   const [currentTeam, setCurrentTeam] = useState({
@@ -202,7 +229,6 @@ export default function App() {
 
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
-  const [newTeamName, setNewTeamName] = useState("");
   const [joinCodeInput, setJoinCodeInput] = useState("");
 
   // Sélecteur de saison & Archives
@@ -307,7 +333,7 @@ export default function App() {
     }
   }, [selectedSeason, activeTab]);
 
-  // Synchronisation du calendrier 2026 et séances FP
+  // Synchronisation du calendrier 2026 et séances FP depuis Supabase
   const load2026DataFromDB = async () => {
     try {
       const { data: gpData, error: gpErr } = await supabase
@@ -373,14 +399,22 @@ export default function App() {
     load2026DataFromDB();
   }, []);
 
+  // Horloge dynamique
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const calculateTimeRemaining = (deadline) => {
-    const diff = new Date(deadline).getTime() - currentTime.getTime();
-    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
+  // Compte à rebours universel adapté au fuseau horaire
+  const calculateTimeRemaining = (deadlineIso) => {
+    if (!deadlineIso) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
+    const deadlineTime = Date.parse(deadlineIso);
+    const diff = deadlineTime - currentTime;
+
+    if (isNaN(diff) || diff <= 0) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
+    }
+
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
     const minutes = Math.floor((diff / (1000 * 60)) % 60);
@@ -391,17 +425,22 @@ export default function App() {
   const timeRemaining = calculateTimeRemaining(currentGP.qualiDeadline);
   const isExpired = currentGP.status === "completed" || timeRemaining.expired;
 
+  // Formatage de date locale avec gestion automatique du fuseau (Heure de Paris)
   const formatQualiDate = (isoString) => {
     if (!isoString) return "Date non définie";
     const dateObj = new Date(isoString);
-    return dateObj.toLocaleDateString("fr-FR", {
+    const options = {
       weekday: "long",
       day: "numeric",
       month: "long",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit"
-    });
+    };
+
+    const isParisTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone.includes("Paris");
+    const formatted = dateObj.toLocaleDateString("fr-FR", options);
+    return isParisTimeZone ? `${formatted} (heure de Paris)` : formatted;
   };
 
   const getTireBadge = (compound) => {
@@ -528,7 +567,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* SÉLECTEUR 24 GP */}
+      {/* SÉLECTEUR 25 GP ORDONNÉ CHRONOLOGIQUEMENT */}
       <section className="bg-[#12121b] border-b border-[#2b2b3d] px-4 py-2.5 overflow-x-auto">
         <div className="max-w-6xl mx-auto flex items-center gap-2 min-w-max">
           <Calendar className="w-4 h-4 text-zinc-500 shrink-0 mr-1" />
@@ -629,7 +668,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* ESSAIS LIBRES */}
+            {/* VOLET ESSAIS LIBRES & PNEUMATIQUES DE TOUS LES GRANDS PRIX */}
             {!currentGP.isCancelled && (
               <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl overflow-hidden shadow-2xl">
                 <button 
@@ -971,36 +1010,51 @@ export default function App() {
                   </button>
                 </div>
               </div>
-              {copiedCode && <div className="text-[11px] text-emerald-400 font-bold text-right">Code copié dans le presse-papier !</div>}
+              {copiedCode && (
+                <div className="text-[11px] text-emerald-400 font-bold text-right">
+                  ✓ Code copié dans le presse-papier !
+                </div>
+              )}
             </div>
 
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-zinc-300 uppercase tracking-wider">Rejoindre une autre Écurie</h4>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-zinc-400">Rejoindre une autre écurie :</label>
               <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  placeholder="Code Écurie (ex: F1TEAM)"
+                <input
+                  type="text"
+                  placeholder="Ex: F1PARIS"
                   value={joinCodeInput}
                   onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
-                  className="bg-[#15151e] border border-[#2b2b3d] text-white px-3 py-2 rounded-xl text-xs flex-1 uppercase font-mono"
+                  className="bg-[#15151e] border border-[#2b2b3d] rounded-xl px-3 py-2 text-xs font-mono text-white flex-1 outline-none focus:border-[#e10600]"
                 />
-                <button 
+                <button
                   onClick={() => {
-                    alert(`Écurie rejointe avec le code : ${joinCodeInput}`);
-                    setShowTeamModal(false);
+                    if (joinCodeInput.trim()) {
+                      alert(`Demande d'adhésion pour le code ${joinCodeInput} envoyée !`);
+                      setJoinCodeInput("");
+                      setShowTeamModal(false);
+                    }
                   }}
-                  className="bg-[#e10600] hover:bg-[#c30500] text-white font-bold px-4 py-2 rounded-xl text-xs transition"
+                  className="bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-4 py-2 rounded-xl transition"
                 >
                   Rejoindre
                 </button>
               </div>
             </div>
+
+            <button
+              onClick={() => setShowTeamModal(false)}
+              className="w-full bg-[#15151e] hover:bg-[#252538] text-zinc-300 text-xs font-bold py-2.5 rounded-xl border border-[#2b2b3d] transition"
+            >
+              Fermer
+            </button>
           </div>
         </div>
       )}
 
-      <footer className="bg-[#15151e] border-t border-[#2b2b3d] py-4 text-center text-xs text-zinc-500">
-        F1 Paddock Bets 2026 • {APP_VERSION} • Ligues d'Écuries Privées
+      {/* FOOTER */}
+      <footer className="bg-[#15151e] border-t border-[#2b2b3d] py-4 text-center text-xs text-zinc-500 mt-auto">
+        F1 Paddock Bets 2026 • {APP_VERSION} • Propulsé par Supabase & Vercel
       </footer>
     </div>
   );
