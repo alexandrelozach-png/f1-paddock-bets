@@ -7,7 +7,7 @@ const OPENF1_BASE = "https://api.openf1.org/v1";
  * 1. Récupère le calendrier complet avec les horaires internationaux (UTC)
  * Extrait les créneaux FP1, FP2, FP3, Sprint, Qualifs et Course
  */
-export async function fetchOfficialCalendarWithSessions(year = "2026") {
+export async function fetchOfficialCalendar(year = "2026") {
   try {
     const res = await fetch(`${JOLPICA_BASE}/${year}.json?limit=100`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -45,6 +45,9 @@ export async function fetchOfficialCalendarWithSessions(year = "2026") {
     return null;
   }
 }
+
+// Alias pour compatibilité
+export const fetchOfficialCalendarWithSessions = fetchOfficialCalendar;
 
 /**
  * 2. Récupère les archives officielles d'une saison terminée
