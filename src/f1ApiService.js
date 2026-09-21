@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.5 ---
+// --- VERSION: ALPHA v3.7 ---
 // Service d'interrogation multi-saisons Jolpica & OpenF1
 const JOLPICA_BASE = "https://api.jolpi.ca/ergast/f1";
 const OPENF1_BASE = "https://api.openf1.org/v1";
@@ -78,7 +78,8 @@ export async function fetchFullSeasonResults(year = "2024") {
         p1: formatDriver(results[0]),
         p2: formatDriver(results[1]),
         p3: formatDriver(results[2]),
-        fastestLap: results.find((r) => r?.FastestLap?.rank === "1")?.Driver?.familyName || null
+        fastestLap: results.find((r) => r?.FastestLap?.rank === "1")?.Driver?.familyName || null,
+        dotd: results[0]?.Driver?.familyName || null
       };
     });
   } catch (error) {

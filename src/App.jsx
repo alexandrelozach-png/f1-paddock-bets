@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.6 ---
+// --- VERSION: ALPHA v3.7 ---
 import React, { useState, useEffect } from "react";
 import { 
   Trophy, 
@@ -24,13 +24,14 @@ import {
   RefreshCw,
   Zap,
   Globe,
-  Gauge
+  Gauge,
+  XCircle
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.6";
+const APP_VERSION = "ALPHA v3.7";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE ---
 const DRIVERS_2026 = [
@@ -75,6 +76,23 @@ const CIRCUIT_SVGS = {
       <text x="165" y="165" fill="#ffffff" fontSize="9" fontFamily="monospace">BAKU CITY (2.2 KM LIGNE DROITE)</text>
     </svg>
   ),
+  sepang: (
+    <svg viewBox="0 0 400 180" className="w-full h-36 stroke-current">
+      <defs>
+        <linearGradient id="sepangGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#10b981" />
+          <stop offset="50%" stopColor="#f59e0b" />
+          <stop offset="100%" stopColor="#3b82f6" />
+        </linearGradient>
+      </defs>
+      <path d="M 50 140 L 330 140 C 360 140 360 110 330 90 L 230 90 C 200 90 200 50 240 50 L 310 50 C 330 50 330 25 300 25 L 120 25 C 90 25 80 50 100 70 L 130 90 C 150 110 130 130 100 130 L 50 140 Z" 
+        fill="none" stroke="#2b2b3d" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M 50 140 L 330 140 C 360 140 360 110 330 90 L 230 90 C 200 90 200 50 240 50 L 310 50 C 330 50 330 25 300 25 L 120 25 C 90 25 80 50 100 70 L 130 90 C 150 110 130 130 100 130 L 50 140 Z" 
+        fill="none" stroke="url(#sepangGrad)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <line x1="180" y1="132" x2="180" y2="148" stroke="#ffffff" strokeWidth="3" />
+      <text x="185" y="162" fill="#ffffff" fontSize="9" fontFamily="monospace">SEPANG INTERNATIONAL (5.543 KM)</text>
+    </svg>
+  ),
   barcelona: (
     <svg viewBox="0 0 400 180" className="w-full h-36 stroke-current">
       <defs>
@@ -111,24 +129,24 @@ const CIRCUIT_SVGS = {
   )
 };
 
-// --- CALENDRIER OFFICIEL 2026 AVEC RÉSULTATS RÉELS R1 À R16 (BAKOU R17 ACTIF) ---
+// --- CALENDRIER OFFICIEL 2026 AJUSTÉ (SEPANG REMPLACE BAHREÏN, BAKOU QUALIF LE VENDREDI 25 À 14H) ---
 const INITIAL_CALENDAR_2026 = [
-  { round: 1, id: "melbourne", name: "Australian Grand Prix", circuit: "Albert Park Circuit", country: "Australie 🇦🇺", city: "Melbourne", status: "completed", qualiDeadline: "2026-03-07T05:00:00Z", isSprint: false, length: "5.278 km", laps: 58, lapRecord: "1:19.813 (Leclerc)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "sainz" }, practice: [] },
-  { round: 2, id: "shanghai", name: "Chinese Grand Prix", circuit: "Shanghai International Circuit", country: "Chine 🇨🇳", city: "Shanghai", status: "completed", qualiDeadline: "2026-03-14T07:00:00Z", isSprint: true, length: "5.451 km", laps: 56, lapRecord: "1:32.238 (Schumacher)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "leclerc", dotd: "leclerc" }, practice: [] },
-  { round: 3, id: "suzuka", name: "Japanese Grand Prix", circuit: "Suzuka Circuit", country: "Japon 🇯🇵", city: "Suzuka", status: "completed", qualiDeadline: "2026-03-28T06:00:00Z", isSprint: false, length: "5.807 km", laps: 53, lapRecord: "1:30.983 (Hamilton)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "sainz", dotd: "leclerc" }, practice: [] },
-  { round: 4, id: "sakhir", name: "Bahrain Grand Prix", circuit: "Bahrain International Circuit", country: "Bahreïn 🇧🇭", city: "Sakhir", status: "completed", qualiDeadline: "2026-04-11T16:00:00Z", isSprint: false, length: "5.412 km", laps: 57, lapRecord: "1:31.447 (de la Rosa)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "leclerc", pos3: "sainz", dotd: "sainz" }, practice: [] },
-  { round: 5, id: "jeddah", name: "Saudi Arabian Grand Prix", circuit: "Jeddah Corniche Circuit", country: "Arabie Saoudite 🇸🇦", city: "Djeddah", status: "completed", qualiDeadline: "2026-04-18T17:00:00Z", isSprint: false, length: "6.174 km", laps: 50, lapRecord: "1:30.734 (Hamilton)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "leclerc", pos3: "piastri", dotd: "bearman" }, practice: [] },
-  { round: 6, id: "miami", name: "Miami Grand Prix", circuit: "Miami International Autodrome", country: "USA 🇺🇸", city: "Miami", status: "completed", qualiDeadline: "2026-05-02T20:00:00Z", isSprint: true, length: "5.412 km", laps: 57, lapRecord: "1:29.708 (Verstappen)", officialResults: { pole: "verstappen", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "norris" }, practice: [] },
-  { round: 7, id: "montreal", name: "Canadian Grand Prix", circuit: "Circuit Gilles-Villeneuve", country: "Canada 🇨🇦", city: "Montréal", status: "completed", qualiDeadline: "2026-05-23T20:00:00Z", isSprint: false, length: "4.361 km", laps: 70, lapRecord: "1:13.078 (Bottas)", officialResults: { pole: "russell", pos1: "verstappen", pos2: "norris", pos3: "russell", dotd: "norris" }, practice: [] },
-  { round: 8, id: "monaco", name: "Grand Prix de Monaco", circuit: "Circuit de Monaco", country: "Monaco 🇲🇨", city: "Monte-Carlo", status: "completed", qualiDeadline: "2026-06-06T14:00:00Z", isSprint: false, length: "3.337 km", laps: 78, lapRecord: "1:12.909 (Hamilton)", officialResults: { pole: "leclerc", pos1: "leclerc", pos2: "piastri", pos3: "sainz", dotd: "leclerc" }, practice: [] },
-  { round: 9, id: "barcelona", name: "Gran Premio de España (Barcelone)", circuit: "Circuit de Barcelona-Catalunya", country: "Espagne 🇪🇸", city: "Barcelone", status: "completed", qualiDeadline: "2026-06-13T14:00:00Z", isSprint: false, length: "4.657 km", laps: 66, lapRecord: "1:16.330 (Verstappen)", officialResults: { pole: "norris", pos1: "verstappen", pos2: "norris", pos3: "hamilton", dotd: "norris" }, practice: [] },
-  { round: 10, id: "spielberg", name: "Austrian Grand Prix", circuit: "Red Bull Ring", country: "Autriche 🇦🇹", city: "Spielberg", status: "completed", qualiDeadline: "2026-06-27T14:00:00Z", isSprint: true, length: "4.318 km", laps: 71, lapRecord: "1:05.619 (Sainz)", officialResults: { pole: "verstappen", pos1: "russell", pos2: "piastri", pos3: "sainz", dotd: "norris" }, practice: [] },
-  { round: 11, id: "silverstone", name: "British Grand Prix", circuit: "Silverstone Circuit", country: "Royaume-Uni 🇬🇧", city: "Silverstone", status: "completed", qualiDeadline: "2026-07-04T14:00:00Z", isSprint: false, length: "5.891 km", laps: 52, lapRecord: "1:27.097 (Verstappen)", officialResults: { pole: "russell", pos1: "hamilton", pos2: "verstappen", pos3: "norris", dotd: "hamilton" }, practice: [] },
-  { round: 12, id: "spa", name: "Belgian Grand Prix", circuit: "Circuit de Spa-Francorchamps", country: "Belgique 🇧🇪", city: "Spa", status: "completed", qualiDeadline: "2026-07-18T14:00:00Z", isSprint: true, length: "7.004 km", laps: 44, lapRecord: "1:44.701 (Perez)", officialResults: { pole: "leclerc", pos1: "hamilton", pos2: "piastri", pos3: "leclerc", dotd: "hamilton" }, practice: [] },
-  { round: 13, id: "hungaroring", name: "Hungarian Grand Prix", circuit: "Hungaroring", country: "Hongrie 🇭🇺", city: "Budapest", status: "completed", qualiDeadline: "2026-07-25T14:00:00Z", isSprint: false, length: "4.381 km", laps: 70, lapRecord: "1:16.627 (Hamilton)", officialResults: { pole: "norris", pos1: "piastri", pos2: "norris", pos3: "hamilton", dotd: "piastri" }, practice: [] },
-  { round: 14, id: "zandvoort", name: "Dutch Grand Prix", circuit: "Circuit Zandvoort", country: "Pays-Bas 🇳🇱", city: "Zandvoort", status: "completed", qualiDeadline: "2026-08-22T13:00:00Z", isSprint: false, length: "4.259 km", laps: 72, lapRecord: "1:11.097 (Hamilton)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "norris" }, practice: [] },
-  { round: 15, id: "monza", name: "Gran Premio d'Italia (Monza)", circuit: "Autodromo Nazionale Monza", country: "Italie 🇮🇹", city: "Monza", status: "completed", qualiDeadline: "2026-09-05T14:00:00Z", isSprint: false, length: "5.793 km", laps: 53, lapRecord: "1:21.046 (Barrichello)", officialResults: { pole: "norris", pos1: "leclerc", pos2: "piastri", pos3: "norris", dotd: "leclerc" }, practice: [] },
-  { round: 16, id: "madrid", name: "Gran Premio de Madrid (Madring)", circuit: "Madring IFEMA Circuit", country: "Espagne 🇪🇸", city: "Madrid", status: "completed", qualiDeadline: "2026-09-12T14:00:00Z", isSprint: false, length: "5.474 km", laps: 55, lapRecord: "1:18.200 (Sainz)", officialResults: { pole: "sainz", pos1: "sainz", pos2: "leclerc", pos3: "alonso", dotd: "alonso" }, practice: [] },
+  { round: 1, id: "melbourne", name: "Australian Grand Prix", circuit: "Albert Park Circuit", country: "Australie 🇦🇺", city: "Melbourne", status: "completed", isCancelled: false, qualiDeadline: "2026-03-07T05:00:00Z", isSprint: false, length: "5.278 km", laps: 58, lapRecord: "1:19.813 (Leclerc)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "sainz" }, practice: [] },
+  { round: 2, id: "shanghai", name: "Chinese Grand Prix", circuit: "Shanghai International Circuit", country: "Chine 🇨🇳", city: "Shanghai", status: "completed", isCancelled: false, qualiDeadline: "2026-03-14T07:00:00Z", isSprint: true, length: "5.451 km", laps: 56, lapRecord: "1:32.238 (Schumacher)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "leclerc", dotd: "leclerc" }, practice: [] },
+  { round: 3, id: "suzuka", name: "Japanese Grand Prix", circuit: "Suzuka Circuit", country: "Japon 🇯🇵", city: "Suzuka", status: "completed", isCancelled: false, qualiDeadline: "2026-03-28T06:00:00Z", isSprint: false, length: "5.807 km", laps: 53, lapRecord: "1:30.983 (Hamilton)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "sainz", dotd: "leclerc" }, practice: [] },
+  { round: 4, id: "sepang", name: "Malaysian Grand Prix", circuit: "Petronas Sepang Circuit", country: "Malaisie 🇲🇾", city: "Sepang", status: "completed", isCancelled: false, qualiDeadline: "2026-04-11T08:00:00Z", isSprint: false, length: "5.543 km", laps: 56, lapRecord: "1:34.080 (Vettel)", officialResults: { pole: "leclerc", pos1: "leclerc", pos2: "piastri", pos3: "verstappen", dotd: "leclerc" }, practice: [] },
+  { round: 5, id: "jeddah", name: "Saudi Arabian Grand Prix", circuit: "Jeddah Corniche Circuit", country: "Arabie Saoudite 🇸🇦", city: "Djeddah", status: "completed", isCancelled: true, qualiDeadline: "2026-04-18T17:00:00Z", isSprint: false, length: "6.174 km", laps: 50, lapRecord: "1:30.734 (Hamilton)", officialResults: null, practice: [] },
+  { round: 6, id: "miami", name: "Miami Grand Prix", circuit: "Miami International Autodrome", country: "USA 🇺🇸", city: "Miami", status: "completed", isCancelled: false, qualiDeadline: "2026-05-02T20:00:00Z", isSprint: true, length: "5.412 km", laps: 57, lapRecord: "1:29.708 (Verstappen)", officialResults: { pole: "verstappen", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "norris" }, practice: [] },
+  { round: 7, id: "montreal", name: "Canadian Grand Prix", circuit: "Circuit Gilles-Villeneuve", country: "Canada 🇨🇦", city: "Montréal", status: "completed", isCancelled: false, qualiDeadline: "2026-05-23T20:00:00Z", isSprint: false, length: "4.361 km", laps: 70, lapRecord: "1:13.078 (Bottas)", officialResults: { pole: "russell", pos1: "verstappen", pos2: "norris", pos3: "russell", dotd: "norris" }, practice: [] },
+  { round: 8, id: "monaco", name: "Grand Prix de Monaco", circuit: "Circuit de Monaco", country: "Monaco 🇲🇨", city: "Monte-Carlo", status: "completed", isCancelled: false, qualiDeadline: "2026-06-06T14:00:00Z", isSprint: false, length: "3.337 km", laps: 78, lapRecord: "1:12.909 (Hamilton)", officialResults: { pole: "leclerc", pos1: "leclerc", pos2: "piastri", pos3: "sainz", dotd: "leclerc" }, practice: [] },
+  { round: 9, id: "barcelona", name: "Gran Premio de España (Barcelone)", circuit: "Circuit de Barcelona-Catalunya", country: "Espagne 🇪🇸", city: "Barcelone", status: "completed", isCancelled: false, qualiDeadline: "2026-06-13T14:00:00Z", isSprint: false, length: "4.657 km", laps: 66, lapRecord: "1:16.330 (Verstappen)", officialResults: { pole: "norris", pos1: "verstappen", pos2: "norris", pos3: "hamilton", dotd: "norris" }, practice: [] },
+  { round: 10, id: "spielberg", name: "Austrian Grand Prix", circuit: "Red Bull Ring", country: "Autriche 🇦🇹", city: "Spielberg", status: "completed", isCancelled: false, qualiDeadline: "2026-06-27T14:00:00Z", isSprint: true, length: "4.318 km", laps: 71, lapRecord: "1:05.619 (Sainz)", officialResults: { pole: "verstappen", pos1: "russell", pos2: "piastri", pos3: "sainz", dotd: "norris" }, practice: [] },
+  { round: 11, id: "silverstone", name: "British Grand Prix", circuit: "Silverstone Circuit", country: "Royaume-Uni 🇬🇧", city: "Silverstone", status: "completed", isCancelled: false, qualiDeadline: "2026-07-04T14:00:00Z", isSprint: false, length: "5.891 km", laps: 52, lapRecord: "1:27.097 (Verstappen)", officialResults: { pole: "russell", pos1: "hamilton", pos2: "verstappen", pos3: "norris", dotd: "hamilton" }, practice: [] },
+  { round: 12, id: "spa", name: "Belgian Grand Prix", circuit: "Circuit de Spa-Francorchamps", country: "Belgique 🇧🇪", city: "Spa", status: "completed", isCancelled: false, qualiDeadline: "2026-07-18T14:00:00Z", isSprint: true, length: "7.004 km", laps: 44, lapRecord: "1:44.701 (Perez)", officialResults: { pole: "leclerc", pos1: "hamilton", pos2: "piastri", pos3: "leclerc", dotd: "hamilton" }, practice: [] },
+  { round: 13, id: "hungaroring", name: "Hungarian Grand Prix", circuit: "Hungaroring", country: "Hongrie 🇭🇺", city: "Budapest", status: "completed", isCancelled: false, qualiDeadline: "2026-07-25T14:00:00Z", isSprint: false, length: "4.381 km", laps: 70, lapRecord: "1:16.627 (Hamilton)", officialResults: { pole: "norris", pos1: "piastri", pos2: "norris", pos3: "hamilton", dotd: "piastri" }, practice: [] },
+  { round: 14, id: "zandvoort", name: "Dutch Grand Prix", circuit: "Circuit Zandvoort", country: "Pays-Bas 🇳🇱", city: "Zandvoort", status: "completed", isCancelled: false, qualiDeadline: "2026-08-22T13:00:00Z", isSprint: false, length: "4.259 km", laps: 72, lapRecord: "1:11.097 (Hamilton)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "norris" }, practice: [] },
+  { round: 15, id: "monza", name: "Gran Premio d'Italia (Monza)", circuit: "Autodromo Nazionale Monza", country: "Italie 🇮🇹", city: "Monza", status: "completed", isCancelled: false, qualiDeadline: "2026-09-05T14:00:00Z", isSprint: false, length: "5.793 km", laps: 53, lapRecord: "1:21.046 (Barrichello)", officialResults: { pole: "norris", pos1: "leclerc", pos2: "piastri", pos3: "norris", dotd: "leclerc" }, practice: [] },
+  { round: 16, id: "madrid", name: "Gran Premio de Madrid (Madring)", circuit: "Madring IFEMA Circuit", country: "Espagne 🇪🇸", city: "Madrid", status: "completed", isCancelled: false, qualiDeadline: "2026-09-12T14:00:00Z", isSprint: false, length: "5.474 km", laps: 55, lapRecord: "1:18.200 (Sainz)", officialResults: { pole: "sainz", pos1: "sainz", pos2: "leclerc", pos3: "alonso", dotd: "alonso" }, practice: [] },
   { 
     round: 17, 
     id: "baku", 
@@ -137,6 +155,7 @@ const INITIAL_CALENDAR_2026 = [
     country: "Azerbaïdjan 🇦🇿", 
     city: "Bakou", 
     status: "active", 
+    isCancelled: false,
     qualiDeadline: "2026-09-25T14:00:00Z", // Qualifications : Vendredi 25 septembre 2026 à 14h00 UTC
     isSprint: false, 
     length: "6.003 km", 
@@ -152,13 +171,13 @@ const INITIAL_CALENDAR_2026 = [
       { pos: 6, driver: "Isack Hadjar", team: "Red Bull Racing", time: "1:43.610", tire: "HARD", laps: 27 }
     ] 
   },
-  { round: 18, id: "singapore", name: "Singapore Grand Prix", circuit: "Marina Bay Street Circuit", country: "Singapour 🇸🇬", city: "Marina Bay", status: "upcoming", qualiDeadline: "2026-10-03T13:00:00Z", isSprint: false, length: "4.940 km", laps: 62, lapRecord: "1:34.486 (Ricciardo)", officialResults: null, practice: [] },
-  { round: 19, id: "austin", name: "United States Grand Prix", circuit: "Circuit of the Americas", country: "USA 🇺🇸", city: "Austin", status: "upcoming", qualiDeadline: "2026-10-17T22:00:00Z", isSprint: true, length: "5.513 km", laps: 56, lapRecord: "1:36.169 (Leclerc)", officialResults: null, practice: [] },
-  { round: 20, id: "mexico", name: "Gran Premio de la Ciudad de México", circuit: "Autódromo Hermanos Rodríguez", country: "Mexique 🇲🇽", city: "Mexico", status: "upcoming", qualiDeadline: "2026-10-24T21:00:00Z", isSprint: false, length: "4.304 km", laps: 71, lapRecord: "1:17.774 (Bottas)", officialResults: null, practice: [] },
-  { round: 21, id: "saopaulo", name: "Grande Prêmio de São Paulo", circuit: "Autódromo de Interlagos", country: "Brésil 🇧🇷", city: "São Paulo", status: "upcoming", qualiDeadline: "2026-11-07T18:00:00Z", isSprint: true, length: "4.309 km", laps: 71, lapRecord: "1:10.540 (Bottas)", officialResults: null, practice: [] },
-  { round: 22, id: "lasvegas", name: "Las Vegas Grand Prix", circuit: "Las Vegas Strip Circuit", country: "USA 🇺🇸", city: "Las Vegas", status: "upcoming", qualiDeadline: "2026-11-21T06:00:00Z", isSprint: false, length: "6.201 km", laps: 50, lapRecord: "1:35.490 (Piastri)", officialResults: null, practice: [] },
-  { round: 23, id: "lusail", name: "Qatar Grand Prix", circuit: "Lusail International Circuit", country: "Qatar 🇶🇦", city: "Lusail", status: "upcoming", qualiDeadline: "2026-11-28T18:00:00Z", isSprint: true, length: "5.419 km", laps: 57, lapRecord: "1:24.319 (Verstappen)", officialResults: null, practice: [] },
-  { round: 24, id: "abudhabi", name: "Abu Dhabi Grand Prix (Finale)", circuit: "Yas Marina Circuit", country: "Émirats Arabes Unis 🇦🇪", city: "Yas Island", status: "upcoming", qualiDeadline: "2026-12-05T14:00:00Z", isSprint: false, length: "5.281 km", laps: 58, lapRecord: "1:26.103 (Verstappen)", officialResults: null, practice: [] }
+  { round: 18, id: "singapore", name: "Singapore Grand Prix", circuit: "Marina Bay Street Circuit", country: "Singapour 🇸🇬", city: "Marina Bay", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-03T13:00:00Z", isSprint: false, length: "4.940 km", laps: 62, lapRecord: "1:34.486 (Ricciardo)", officialResults: null, practice: [] },
+  { round: 19, id: "austin", name: "United States Grand Prix", circuit: "Circuit of the Americas", country: "USA 🇺🇸", city: "Austin", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-17T22:00:00Z", isSprint: true, length: "5.513 km", laps: 56, lapRecord: "1:36.169 (Leclerc)", officialResults: null, practice: [] },
+  { round: 20, id: "mexico", name: "Gran Premio de la Ciudad de México", circuit: "Autódromo Hermanos Rodríguez", country: "Mexique 🇲🇽", city: "Mexico", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-24T21:00:00Z", isSprint: false, length: "4.304 km", laps: 71, lapRecord: "1:17.774 (Bottas)", officialResults: null, practice: [] },
+  { round: 21, id: "saopaulo", name: "Grande Prêmio de São Paulo", circuit: "Autódromo de Interlagos", country: "Brésil 🇧🇷", city: "São Paulo", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-07T18:00:00Z", isSprint: true, length: "4.309 km", laps: 71, lapRecord: "1:10.540 (Bottas)", officialResults: null, practice: [] },
+  { round: 22, id: "lasvegas", name: "Las Vegas Grand Prix", circuit: "Las Vegas Strip Circuit", country: "USA 🇺🇸", city: "Las Vegas", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-21T06:00:00Z", isSprint: false, length: "6.201 km", laps: 50, lapRecord: "1:35.490 (Piastri)", officialResults: null, practice: [] },
+  { round: 23, id: "lusail", name: "Qatar Grand Prix", circuit: "Lusail International Circuit", country: "Qatar 🇶🇦", city: "Lusail", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-28T18:00:00Z", isSprint: true, length: "5.419 km", laps: 57, lapRecord: "1:24.319 (Verstappen)", officialResults: null, practice: [] },
+  { round: 24, id: "abudhabi", name: "Abu Dhabi Grand Prix (Finale)", circuit: "Yas Marina Circuit", country: "Émirats Arabes Unis 🇦🇪", city: "Yas Island", status: "upcoming", isCancelled: false, qualiDeadline: "2026-12-05T14:00:00Z", isSprint: false, length: "5.281 km", laps: 58, lapRecord: "1:26.103 (Verstappen)", officialResults: null, practice: [] }
 ];
 
 export default function App() {
@@ -240,12 +259,12 @@ export default function App() {
     }
   }, [selectedSeason, activeTab]);
 
-  // Synchronisation du calendrier 2026 depuis Supabase ou local
+  // Synchronisation du calendrier 2026 depuis Supabase
   const load2026CalendarFromDB = async () => {
     try {
       const { data, error } = await supabase
         .from("grand_prix")
-        .select("*")
+        .select("*, official_results(*)")
         .eq("season", 2026)
         .order("round", { ascending: true });
 
@@ -254,11 +273,24 @@ export default function App() {
           prev.map((localGP) => {
             const dbMatch = data.find((d) => d.round === localGP.round);
             if (!dbMatch) return localGP;
+            const res = dbMatch.official_results?.[0] || dbMatch.official_results;
             return {
               ...localGP,
+              name: dbMatch.name || localGP.name,
+              circuit: dbMatch.circuit_name || localGP.circuit,
+              country: dbMatch.country || localGP.country,
+              city: dbMatch.city || localGP.city,
               qualiDeadline: dbMatch.quali_start_time || localGP.qualiDeadline,
               isSprint: dbMatch.is_sprint ?? localGP.isSprint,
-              status: dbMatch.completed ? "completed" : dbMatch.round === 17 ? "active" : "upcoming"
+              isCancelled: dbMatch.is_cancelled ?? localGP.isCancelled,
+              status: dbMatch.completed ? "completed" : dbMatch.round === 17 ? "active" : "upcoming",
+              officialResults: res ? {
+                pole: res.pole_id,
+                pos1: res.pos1_id,
+                pos2: res.pos2_id,
+                pos3: res.pos3_id,
+                dotd: res.dotd_id
+              } : localGP.officialResults
             };
           })
         );
@@ -440,6 +472,8 @@ export default function App() {
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 border ${
                 selectedRound === gp.round
                   ? "bg-[#e10600] border-[#e10600] text-white shadow-lg shadow-red-900/30"
+                  : gp.isCancelled
+                  ? "bg-[#181824] border-red-900/30 text-zinc-500 line-through"
                   : gp.status === "completed"
                   ? "bg-[#181824] border-[#2b2b3d] text-zinc-400 hover:text-white"
                   : "bg-[#181824] border-[#2b2b3d] text-zinc-300 hover:border-zinc-500"
@@ -447,7 +481,8 @@ export default function App() {
             >
               <span>R{gp.round}</span>
               <span>{gp.city}</span>
-              {gp.isSprint && <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1 py-0.2 rounded font-mono">SPRINT</span>}
+              {gp.isCancelled && <span className="text-[9px] bg-red-900/40 text-red-400 px-1 py-0.2 rounded font-mono">ANNULÉ</span>}
+              {gp.isSprint && !gp.isCancelled && <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1 py-0.2 rounded font-mono">SPRINT</span>}
               {gp.status === "active" && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
             </button>
           ))}
@@ -466,7 +501,12 @@ export default function App() {
                     <span className="text-xs font-bold text-[#e10600] uppercase tracking-wider">
                       Round {currentGP.round} • {currentGP.country}
                     </span>
-                    {currentGP.isSprint && (
+                    {currentGP.isCancelled && (
+                      <span className="text-[10px] bg-red-500/20 border border-red-500/40 text-red-400 px-2 py-0.5 rounded font-bold flex items-center gap-1">
+                        <XCircle className="w-3 h-3" /> Grand Prix Annulé
+                      </span>
+                    )}
+                    {currentGP.isSprint && !currentGP.isCancelled && (
                       <span className="text-[10px] bg-amber-500/20 border border-amber-500/40 text-amber-400 px-2 py-0.5 rounded font-bold flex items-center gap-1">
                         <Zap className="w-3 h-3" /> Week-end Sprint
                       </span>
@@ -486,7 +526,9 @@ export default function App() {
                       <div className="text-[10px] uppercase font-bold text-zinc-400">
                         Compte à rebours Qualifications
                       </div>
-                      {isExpired ? (
+                      {currentGP.isCancelled ? (
+                        <div className="text-xs font-bold text-red-400">ÉVÉNEMENT ANNULÉ</div>
+                      ) : isExpired ? (
                         <div className="text-xs font-bold text-red-400">PRONOSTICS FERMÉS</div>
                       ) : (
                         <div className="text-lg font-black font-mono text-white">
@@ -497,19 +539,21 @@ export default function App() {
                   </div>
 
                   {/* DATE & HEURE EXACTE DE LA SÉANCE QUALIFICATIONS */}
-                  <div className="mt-2.5 pt-2 border-t border-[#2b2b3d] text-[11px] text-zinc-400 flex items-center justify-between gap-2">
-                    <span className="text-zinc-500">Date limite :</span>
-                    <strong className="text-amber-400 capitalize">
-                      {formatQualiDate(currentGP.qualiDeadline)}
-                    </strong>
-                  </div>
+                  {!currentGP.isCancelled && (
+                    <div className="mt-2.5 pt-2 border-t border-[#2b2b3d] text-[11px] text-zinc-400 flex items-center justify-between gap-2">
+                      <span className="text-zinc-500">Date limite :</span>
+                      <strong className="text-amber-400 capitalize">
+                        {formatQualiDate(currentGP.qualiDeadline)}
+                      </strong>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* TRACÉ DU CIRCUIT */}
               <div className="mt-4 pt-4 border-t border-[#2b2b3d] flex flex-col md:flex-row items-center gap-4">
                 <div className="w-full md:w-2/3 bg-[#0e0e14] rounded-lg p-2 border border-[#2b2b3d]">
-                  {currentGP.id === "baku" ? CIRCUIT_SVGS.baku : currentGP.id === "barcelona" ? CIRCUIT_SVGS.barcelona : CIRCUIT_SVGS.default}
+                  {currentGP.id === "baku" ? CIRCUIT_SVGS.baku : currentGP.id === "sepang" ? CIRCUIT_SVGS.sepang : currentGP.id === "barcelona" ? CIRCUIT_SVGS.barcelona : CIRCUIT_SVGS.default}
                 </div>
                 <div className="w-full md:w-1/3 text-xs space-y-2 bg-[#15151e] p-3 rounded-lg border border-[#2b2b3d]">
                   <div className="flex justify-between"><span className="text-zinc-500">Longueur:</span> <strong>{currentGP.length}</strong></div>
@@ -520,148 +564,152 @@ export default function App() {
             </div>
 
             {/* SECTION ACCORDÉON : TENDANCES ESSAIS LIBRES (FP1 / FP2 / FP3) & PNEUS */}
-            <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl overflow-hidden shadow-2xl">
-              <button 
-                onClick={() => setShowPractice(!showPractice)}
-                className="w-full p-4 flex items-center justify-between text-left hover:bg-[#252538] transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <Gauge className="w-5 h-5 text-emerald-400" />
-                  <div>
-                    <h3 className="text-sm font-black text-white">Forces en Présence • Essais Libres & Pneumatiques</h3>
-                    <p className="text-[11px] text-zinc-400">Temps au tour et gommes utilisées pour guider vos choix de pronostics</p>
-                  </div>
-                </div>
-                {showPractice ? <ChevronUp className="w-4 h-4 text-zinc-400" /> : <ChevronDown className="w-4 h-4 text-zinc-400" />}
-              </button>
-
-              {showPractice && (
-                <div className="p-4 pt-0 border-t border-[#2b2b3d] bg-[#15151e]/60">
-                  <div className="flex items-center justify-between py-3">
-                    <span className="text-xs font-bold text-zinc-400">Séance active :</span>
-                    <div className="flex gap-1.5">
-                      {["FP1", "FP2", "FP3"].map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => setSelectedPracticeSession(s)}
-                          className={`px-2.5 py-1 rounded text-xs font-bold font-mono transition ${
-                            selectedPracticeSession === s ? "bg-[#e10600] text-white" : "bg-[#1e1e2d] text-zinc-400 hover:text-white"
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
+            {!currentGP.isCancelled && (
+              <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl overflow-hidden shadow-2xl">
+                <button 
+                  onClick={() => setShowPractice(!showPractice)}
+                  className="w-full p-4 flex items-center justify-between text-left hover:bg-[#252538] transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <Gauge className="w-5 h-5 text-emerald-400" />
+                    <div>
+                      <h3 className="text-sm font-black text-white">Forces en Présence • Essais Libres & Pneumatiques</h3>
+                      <p className="text-[11px] text-zinc-400">Temps au tour et gommes utilisées pour guider vos choix de pronostics</p>
                     </div>
                   </div>
+                  {showPractice ? <ChevronUp className="w-4 h-4 text-zinc-400" /> : <ChevronDown className="w-4 h-4 text-zinc-400" />}
+                </button>
 
-                  {currentGP.practice && currentGP.practice.length > 0 ? (
-                    <div className="divide-y divide-[#2b2b3d] border border-[#2b2b3d] rounded-xl overflow-hidden bg-[#12121b]">
-                      {currentGP.practice.map((item) => (
-                        <div key={item.pos} className="p-2.5 px-3 flex items-center justify-between text-xs hover:bg-[#181826]">
-                          <div className="flex items-center gap-3">
-                            <span className="font-mono font-bold text-zinc-500 w-4">#{item.pos}</span>
-                            <div>
-                              <strong className="text-zinc-100">{item.driver}</strong>
-                              <span className="text-[10px] text-zinc-400 ml-1.5 font-mono">({item.team})</span>
+                {showPractice && (
+                  <div className="p-4 pt-0 border-t border-[#2b2b3d] bg-[#15151e]/60">
+                    <div className="flex items-center justify-between py-3">
+                      <span className="text-xs font-bold text-zinc-400">Séance active :</span>
+                      <div className="flex gap-1.5">
+                        {["FP1", "FP2", "FP3"].map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => setSelectedPracticeSession(s)}
+                            className={`px-2.5 py-1 rounded text-xs font-bold font-mono transition ${
+                              selectedPracticeSession === s ? "bg-[#e10600] text-white" : "bg-[#1e1e2d] text-zinc-400 hover:text-white"
+                            }`}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {currentGP.practice && currentGP.practice.length > 0 ? (
+                      <div className="divide-y divide-[#2b2b3d] border border-[#2b2b3d] rounded-xl overflow-hidden bg-[#12121b]">
+                        {currentGP.practice.map((item) => (
+                          <div key={item.pos} className="p-2.5 px-3 flex items-center justify-between text-xs hover:bg-[#181826]">
+                            <div className="flex items-center gap-3">
+                              <span className="font-mono font-bold text-zinc-500 w-4">#{item.pos}</span>
+                              <div>
+                                <strong className="text-zinc-100">{item.driver}</strong>
+                                <span className="text-[10px] text-zinc-400 ml-1.5 font-mono">({item.team})</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="font-mono font-black text-emerald-400">{item.time}</span>
+                              {getTireBadge(item.tire)}
+                              <span className="text-[10px] text-zinc-500 font-mono hidden sm:inline">{item.laps} tours</span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="font-mono font-black text-emerald-400">{item.time}</span>
-                            {getTireBadge(item.tire)}
-                            <span className="text-[10px] text-zinc-500 font-mono hidden sm:inline">{item.laps} tours</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center text-xs text-zinc-500 italic">
-                      Aucune donnée de télémétrie enregistrée pour les séances de ce Grand Prix.
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-xs text-zinc-500 italic">
+                        Aucune donnée de télémétrie enregistrée pour les séances de ce Grand Prix.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* FORMULAIRE DES PARIS */}
-            <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
-                <Flame className="w-5 h-5 text-[#e10600]" />
-                Vos 5 Pronostics pour {currentGP.name}
-              </h2>
+            {!currentGP.isCancelled && (
+              <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
+                  <Flame className="w-5 h-5 text-[#e10600]" />
+                  Vos 5 Pronostics pour {currentGP.name}
+                </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl">
-                  <label className="text-xs font-bold text-zinc-300 block mb-1">Pole Position (+1 pt)</label>
-                  <select
-                    value={currentBet.pole}
-                    onChange={(e) => setCurrentBet({ ...currentBet, pole: e.target.value })}
-                    className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
-                  >
-                    <option value="">Choisir un pilote...</option>
-                    {DRIVERS_2026.map((d) => <option key={d.id} value={d.id}>#{d.number} {d.name} ({d.team})</option>)}
-                  </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl">
+                    <label className="text-xs font-bold text-zinc-300 block mb-1">Pole Position (+1 pt)</label>
+                    <select
+                      value={currentBet.pole}
+                      onChange={(e) => setCurrentBet({ ...currentBet, pole: e.target.value })}
+                      className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
+                    >
+                      <option value="">Choisir un pilote...</option>
+                      {DRIVERS_2026.map((d) => <option key={d.id} value={d.id}>#{d.number} {d.name} ({d.team})</option>)}
+                    </select>
+                  </div>
+
+                  <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl">
+                    <label className="text-xs font-bold text-zinc-300 block mb-1">Driver of the Day (+1 pt)</label>
+                    <select
+                      value={currentBet.dotd}
+                      onChange={(e) => setCurrentBet({ ...currentBet, dotd: e.target.value })}
+                      className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
+                    >
+                      <option value="">Choisir un pilote...</option>
+                      {DRIVERS_2026.map((d) => <option key={d.id} value={d.id}>#{d.number} {d.name} ({d.team})</option>)}
+                    </select>
+                  </div>
                 </div>
 
-                <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl">
-                  <label className="text-xs font-bold text-zinc-300 block mb-1">Driver of the Day (+1 pt)</label>
-                  <select
-                    value={currentBet.dotd}
-                    onChange={(e) => setCurrentBet({ ...currentBet, dotd: e.target.value })}
-                    className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
-                  >
-                    <option value="">Choisir un pilote...</option>
-                    {DRIVERS_2026.map((d) => <option key={d.id} value={d.id}>#{d.number} {d.name} ({d.team})</option>)}
-                  </select>
+                <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl mt-4">
+                  <label className="text-xs font-bold text-zinc-300 block mb-2">Podium (1er, 2e, 3e - Anti-Doublon)</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <span className="text-[11px] text-amber-400 font-bold block mb-1">1er 🥇</span>
+                      <select
+                        value={currentBet.pos1}
+                        onChange={(e) => setCurrentBet({ ...currentBet, pos1: e.target.value })}
+                        className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
+                      >
+                        <option value="">Choisir...</option>
+                        {DRIVERS_2026.map((d) => (
+                          <option key={d.id} value={d.id} disabled={currentBet.pos2 === d.id || currentBet.pos3 === d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] text-zinc-300 font-bold block mb-1">2e 🥈</span>
+                      <select
+                        value={currentBet.pos2}
+                        onChange={(e) => setCurrentBet({ ...currentBet, pos2: e.target.value })}
+                        className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
+                      >
+                        <option value="">Choisir...</option>
+                        {DRIVERS_2026.map((d) => (
+                          <option key={d.id} value={d.id} disabled={currentBet.pos1 === d.id || currentBet.pos3 === d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] text-amber-600 font-bold block mb-1">3e 🥉</span>
+                      <select
+                        value={currentBet.pos3}
+                        onChange={(e) => setCurrentBet({ ...currentBet, pos3: e.target.value })}
+                        className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
+                      >
+                        <option value="">Choisir...</option>
+                        {DRIVERS_2026.map((d) => (
+                          <option key={d.id} value={d.id} disabled={currentBet.pos1 === d.id || currentBet.pos2 === d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl mt-4">
-                <label className="text-xs font-bold text-zinc-300 block mb-2">Podium (1er, 2e, 3e - Anti-Doublon)</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <span className="text-[11px] text-amber-400 font-bold block mb-1">1er 🥇</span>
-                    <select
-                      value={currentBet.pos1}
-                      onChange={(e) => setCurrentBet({ ...currentBet, pos1: e.target.value })}
-                      className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
-                    >
-                      <option value="">Choisir...</option>
-                      {DRIVERS_2026.map((d) => (
-                        <option key={d.id} value={d.id} disabled={currentBet.pos2 === d.id || currentBet.pos3 === d.id}>{d.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <span className="text-[11px] text-zinc-300 font-bold block mb-1">2e 🥈</span>
-                    <select
-                      value={currentBet.pos2}
-                      onChange={(e) => setCurrentBet({ ...currentBet, pos2: e.target.value })}
-                      className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
-                    >
-                      <option value="">Choisir...</option>
-                      {DRIVERS_2026.map((d) => (
-                        <option key={d.id} value={d.id} disabled={currentBet.pos1 === d.id || currentBet.pos3 === d.id}>{d.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <span className="text-[11px] text-amber-600 font-bold block mb-1">3e 🥉</span>
-                    <select
-                      value={currentBet.pos3}
-                      onChange={(e) => setCurrentBet({ ...currentBet, pos3: e.target.value })}
-                      className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
-                    >
-                      <option value="">Choisir...</option>
-                      {DRIVERS_2026.map((d) => (
-                        <option key={d.id} value={d.id} disabled={currentBet.pos1 === d.id || currentBet.pos2 === d.id}>{d.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </>
         )}
 
@@ -705,19 +753,25 @@ export default function App() {
                   <div key={gp.round} className="bg-[#15151e] border border-[#2b2b3d] p-4 rounded-xl text-xs space-y-2">
                     <div className="flex justify-between items-center">
                       <strong className="text-white">Round {gp.round} • {gp.name}</strong>
-                      <span className="text-[10px] bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded">Terminé</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded ${gp.isCancelled ? "bg-red-900/40 text-red-300 border border-red-700/40" : "bg-zinc-800 text-zinc-400"}`}>
+                        {gp.isCancelled ? "Annulé" : "Terminé"}
+                      </span>
                     </div>
-                    <div className="pt-2 border-t border-[#2b2b3d] space-y-1">
-                      <div>🥇 1er: <strong className="text-amber-400">{gp.officialResults?.pos1?.toUpperCase()}</strong></div>
-                      <div>🥈 2e: <strong className="text-zinc-300">{gp.officialResults?.pos2?.toUpperCase()}</strong></div>
-                      <div>🥉 3e: <strong className="text-amber-600">{gp.officialResults?.pos3?.toUpperCase()}</strong></div>
-                      <div className="text-zinc-400 pt-1 flex items-center justify-between">
-                        <span>Pole: <strong className="text-white">{gp.officialResults?.pole?.toUpperCase()}</strong></span>
-                        <span className="bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20 font-bold">
-                          DOTD: {gp.officialResults?.dotd?.toUpperCase()}
-                        </span>
+                    {gp.isCancelled ? (
+                      <div className="text-zinc-500 italic pt-1">Grand Prix officiellement déprogrammé du calendrier mondial.</div>
+                    ) : (
+                      <div className="pt-2 border-t border-[#2b2b3d] space-y-1">
+                        <div>🥇 1er: <strong className="text-amber-400">{gp.officialResults?.pos1?.toUpperCase()}</strong></div>
+                        <div>🥈 2e: <strong className="text-zinc-300">{gp.officialResults?.pos2?.toUpperCase()}</strong></div>
+                        <div>🥉 3e: <strong className="text-amber-600">{gp.officialResults?.pos3?.toUpperCase()}</strong></div>
+                        <div className="text-zinc-400 pt-1 flex items-center justify-between">
+                          <span>Pole: <strong className="text-white">{gp.officialResults?.pole?.toUpperCase()}</strong></span>
+                          <span className="bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20 font-bold">
+                            DOTD: {gp.officialResults?.dotd?.toUpperCase()}
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -780,7 +834,7 @@ export default function App() {
       </main>
 
       <footer className="bg-[#15151e] border-t border-[#2b2b3d] py-4 text-center text-xs text-zinc-500">
-        F1 Paddock Bets 2026 • {APP_VERSION} • API Jolpica & Supabase
+        F1 Paddock Bets 2026 • {APP_VERSION} • Supabase & Vercel
       </footer>
     </div>
   );
