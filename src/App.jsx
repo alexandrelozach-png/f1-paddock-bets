@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.4 ---
+// --- VERSION: ALPHA v3.5 ---
 import React, { useState, useEffect } from "react";
 import { 
   Trophy, 
@@ -18,17 +18,19 @@ import {
   User,
   ShieldAlert,
   ChevronDown,
+  ChevronUp,
   Sparkles,
   Lock,
   RefreshCw,
   Zap,
-  Globe
+  Globe,
+  Gauge
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.4";
+const APP_VERSION = "ALPHA v3.5";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE ---
 const DRIVERS_2026 = [
@@ -109,7 +111,7 @@ const CIRCUIT_SVGS = {
   )
 };
 
-// --- CALENDRIER OFFICIEL 2026 DE BASE ---
+// --- CALENDRIER OFFICIEL 2026 DE BASE (BAKOU R17 ACTIF) ---
 const INITIAL_CALENDAR_2026 = [
   { round: 1, id: "melbourne", name: "Australian Grand Prix", circuit: "Albert Park Circuit", country: "Australie 🇦🇺", city: "Melbourne", status: "completed", qualiDeadline: "2026-03-07T05:00:00Z", isSprint: false, length: "5.278 km", laps: 58, lapRecord: "1:19.813 (Leclerc)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "sainz" }, practice: [] },
   { round: 2, id: "shanghai", name: "Chinese Grand Prix", circuit: "Shanghai International Circuit", country: "Chine 🇨🇳", city: "Shanghai", status: "completed", qualiDeadline: "2026-03-14T07:00:00Z", isSprint: true, length: "5.451 km", laps: 56, lapRecord: "1:32.238 (Schumacher)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "leclerc", dotd: "leclerc" }, practice: [] },
@@ -127,22 +129,44 @@ const INITIAL_CALENDAR_2026 = [
   { round: 14, id: "zandvoort", name: "Dutch Grand Prix", circuit: "Circuit Zandvoort", country: "Pays-Bas 🇳🇱", city: "Zandvoort", status: "completed", qualiDeadline: "2026-08-22T13:00:00Z", isSprint: false, length: "4.259 km", laps: 72, lapRecord: "1:11.097 (Hamilton)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "norris" }, practice: [] },
   { round: 15, id: "monza", name: "Gran Premio d'Italia (Monza)", circuit: "Autodromo Nazionale Monza", country: "Italie 🇮🇹", city: "Monza", status: "completed", qualiDeadline: "2026-09-05T14:00:00Z", isSprint: false, length: "5.793 km", laps: 53, lapRecord: "1:21.046 (Barrichello)", officialResults: { pole: "norris", pos1: "leclerc", pos2: "piastri", pos3: "norris", dotd: "leclerc" }, practice: [] },
   { round: 16, id: "madrid", name: "Gran Premio de Madrid (Madring)", circuit: "Madring IFEMA Circuit", country: "Espagne 🇪🇸", city: "Madrid", status: "completed", qualiDeadline: "2026-09-12T14:00:00Z", isSprint: false, length: "5.474 km", laps: 55, lapRecord: "1:18.200 (Sainz)", officialResults: { pole: "sainz", pos1: "sainz", pos2: "leclerc", pos3: "alonso", dotd: "alonso" }, practice: [] },
-  { round: 17, id: "baku", name: "Azerbaijan Grand Prix (Bakou)", circuit: "Baku City Circuit", country: "Azerbaïdjan 🇦🇿", city: "Bakou", status: "active", qualiDeadline: new Date(Date.now() + (9 * 24 * 60 * 60 * 1000)).toISOString(), isSprint: false, length: "6.003 km", laps: 51, lapRecord: "1:43.009 (Leclerc)", officialResults: null, practice: [{ pos: 1, driver: "Leclerc", team: "Ferrari", time: "1:42.980", tire: "SOFT", laps: 17 }, { pos: 2, driver: "Piastri", team: "McLaren", time: "1:43.112", tire: "SOFT", laps: 19 }, { pos: 3, driver: "Hadjar", team: "Red Bull", time: "1:43.405", tire: "HARD", laps: 28 }] },
-  { round: 18, id: "singapore", name: "Singapore Grand Prix", circuit: "Marina Bay Street Circuit", country: "Singapour 🇸🇬", city: "Marina Bay", status: "upcoming", qualiDeadline: new Date(Date.now() + 16 * 24 * 60 * 60 * 1000).toISOString(), isSprint: false, length: "4.940 km", laps: 62, lapRecord: "1:34.486 (Ricciardo)", officialResults: null, practice: [] },
-  { round: 19, id: "austin", name: "United States Grand Prix", circuit: "Circuit of the Americas", country: "USA 🇺🇸", city: "Austin", status: "upcoming", qualiDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), isSprint: true, length: "5.513 km", laps: 56, lapRecord: "1:36.169 (Leclerc)", officialResults: null, practice: [] },
-  { round: 20, id: "mexico", name: "Gran Premio de la Ciudad de México", circuit: "Autódromo Hermanos Rodríguez", country: "Mexique 🇲🇽", city: "Mexico", status: "upcoming", qualiDeadline: new Date(Date.now() + 37 * 24 * 60 * 60 * 1000).toISOString(), isSprint: false, length: "4.304 km", laps: 71, lapRecord: "1:17.774 (Bottas)", officialResults: null, practice: [] },
-  { round: 21, id: "saopaulo", name: "Grande Prêmio de São Paulo", circuit: "Autódromo de Interlagos", country: "Brésil 🇧🇷", city: "São Paulo", status: "upcoming", qualiDeadline: new Date(Date.now() + 44 * 24 * 60 * 60 * 1000).toISOString(), isSprint: true, length: "4.309 km", laps: 71, lapRecord: "1:10.540 (Bottas)", officialResults: null, practice: [] },
-  { round: 22, id: "lasvegas", name: "Las Vegas Grand Prix", circuit: "Las Vegas Strip Circuit", country: "USA 🇺🇸", city: "Las Vegas", status: "upcoming", qualiDeadline: new Date(Date.now() + 57 * 24 * 60 * 60 * 1000).toISOString(), isSprint: false, length: "6.201 km", laps: 50, lapRecord: "1:35.490 (Piastri)", officialResults: null, practice: [] },
-  { round: 23, id: "lusail", name: "Qatar Grand Prix", circuit: "Lusail International Circuit", country: "Qatar 🇶🇦", city: "Lusail", status: "upcoming", qualiDeadline: new Date(Date.now() + 65 * 24 * 60 * 60 * 1000).toISOString(), isSprint: true, length: "5.419 km", laps: 57, lapRecord: "1:24.319 (Verstappen)", officialResults: null, practice: [] },
-  { round: 24, id: "abudhabi", name: "Abu Dhabi Grand Prix (Finale)", circuit: "Yas Marina Circuit", country: "Émirats Arabes Unis 🇦🇪", city: "Yas Island", status: "upcoming", qualiDeadline: new Date(Date.now() + 72 * 24 * 60 * 60 * 1000).toISOString(), isSprint: false, length: "5.281 km", laps: 58, lapRecord: "1:26.103 (Verstappen)", officialResults: null, practice: [] }
+  { 
+    round: 17, 
+    id: "baku", 
+    name: "Azerbaijan Grand Prix (Bakou)", 
+    circuit: "Baku City Circuit", 
+    country: "Azerbaïdjan 🇦🇿", 
+    city: "Bakou", 
+    status: "active", 
+    qualiDeadline: "2026-09-26T14:00:00Z", 
+    isSprint: false, 
+    length: "6.003 km", 
+    laps: 51, 
+    lapRecord: "1:43.009 (Leclerc)", 
+    officialResults: null, 
+    practice: [
+      { pos: 1, driver: "Charles Leclerc", team: "Ferrari", time: "1:42.980", tire: "SOFT", laps: 17 },
+      { pos: 2, driver: "Oscar Piastri", team: "McLaren", time: "1:43.112", tire: "SOFT", laps: 19 },
+      { pos: 3, driver: "Max Verstappen", team: "Red Bull Racing", time: "1:43.240", tire: "MEDIUM", laps: 22 },
+      { pos: 4, driver: "Lando Norris", team: "McLaren", time: "1:43.295", tire: "MEDIUM", laps: 20 },
+      { pos: 5, driver: "Lewis Hamilton", team: "Ferrari", time: "1:43.340", tire: "SOFT", laps: 18 },
+      { pos: 6, driver: "Isack Hadjar", team: "Red Bull Racing", time: "1:43.610", tire: "HARD", laps: 27 }
+    ] 
+  },
+  { round: 18, id: "singapore", name: "Singapore Grand Prix", circuit: "Marina Bay Street Circuit", country: "Singapour 🇸🇬", city: "Marina Bay", status: "upcoming", qualiDeadline: "2026-10-03T13:00:00Z", isSprint: false, length: "4.940 km", laps: 62, lapRecord: "1:34.486 (Ricciardo)", officialResults: null, practice: [] },
+  { round: 19, id: "austin", name: "United States Grand Prix", circuit: "Circuit of the Americas", country: "USA 🇺🇸", city: "Austin", status: "upcoming", qualiDeadline: "2026-10-17T22:00:00Z", isSprint: true, length: "5.513 km", laps: 56, lapRecord: "1:36.169 (Leclerc)", officialResults: null, practice: [] },
+  { round: 20, id: "mexico", name: "Gran Premio de la Ciudad de México", circuit: "Autódromo Hermanos Rodríguez", country: "Mexique 🇲🇽", city: "Mexico", status: "upcoming", qualiDeadline: "2026-10-24T21:00:00Z", isSprint: false, length: "4.304 km", laps: 71, lapRecord: "1:17.774 (Bottas)", officialResults: null, practice: [] },
+  { round: 21, id: "saopaulo", name: "Grande Prêmio de São Paulo", circuit: "Autódromo de Interlagos", country: "Brésil 🇧🇷", city: "São Paulo", status: "upcoming", qualiDeadline: "2026-11-07T18:00:00Z", isSprint: true, length: "4.309 km", laps: 71, lapRecord: "1:10.540 (Bottas)", officialResults: null, practice: [] },
+  { round: 22, id: "lasvegas", name: "Las Vegas Grand Prix", circuit: "Las Vegas Strip Circuit", country: "USA 🇺🇸", city: "Las Vegas", status: "upcoming", qualiDeadline: "2026-11-21T06:00:00Z", isSprint: false, length: "6.201 km", laps: 50, lapRecord: "1:35.490 (Piastri)", officialResults: null, practice: [] },
+  { round: 23, id: "lusail", name: "Qatar Grand Prix", circuit: "Lusail International Circuit", country: "Qatar 🇶🇦", city: "Lusail", status: "upcoming", qualiDeadline: "2026-11-28T18:00:00Z", isSprint: true, length: "5.419 km", laps: 57, lapRecord: "1:24.319 (Verstappen)", officialResults: null, practice: [] },
+  { round: 24, id: "abudhabi", name: "Abu Dhabi Grand Prix (Finale)", circuit: "Yas Marina Circuit", country: "Émirats Arabes Unis 🇦🇪", city: "Yas Island", status: "upcoming", qualiDeadline: "2026-12-05T14:00:00Z", isSprint: false, length: "5.281 km", laps: 58, lapRecord: "1:26.103 (Verstappen)", officialResults: null, practice: [] }
 ];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("bet");
   const [selectedRound, setSelectedRound] = useState(17);
   const [calendar, setCalendar] = useState(INITIAL_CALENDAR_2026);
-  const [isApiSyncing, setIsApiSyncing] = useState(false);
-  const [apiStatus, setApiStatus] = useState({ synced: false, lastUpdate: null });
+  const [showPractice, setShowPractice] = useState(true);
+  const [selectedPracticeSession, setSelectedPracticeSession] = useState("FP3");
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Sélecteur de saison & Archives
@@ -160,21 +184,16 @@ export default function App() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authErrorMessage, setAuthErrorMessage] = useState("");
-  const [authSuccessMessage, setAuthSuccessMessage] = useState("");
 
   // Pronostics
   const [currentBet, setCurrentBet] = useState({ pole: "", pos1: "", pos2: "", pos3: "", dotd: "", isLocked: false });
-  const [formFeedback, setFormFeedback] = useState({ type: "", message: "" });
-  const [savingBet, setSavingBet] = useState(false);
 
   const currentGP = calendar.find((gp) => gp.round === selectedRound) || calendar[0];
-  const isAdmin = userProfile?.role === "admin";
 
-  // Chargement intelligent des archives (Supabase d'abord, sinon API)
+  // Chargement intelligent des archives
   const loadSeasonArchive = async (year) => {
     setLoadingArchive(true);
     try {
-      // 1. Tenter la lecture dans la table Supabase de LEWIS
       const { data: dbData, error: dbErr } = await supabase
         .from("season_archives")
         .select("*")
@@ -196,7 +215,6 @@ export default function App() {
           }))
         );
       } else {
-        // 2. Repli direct vers l'API Jolpica si la base locale n'a pas été peuplée
         const data = await fetchFullSeasonResults(year);
         setSeasonArchiveResults(data || []);
       }
@@ -214,34 +232,36 @@ export default function App() {
     }
   }, [selectedSeason, activeTab]);
 
-  // Synchronisation du calendrier 2026 avec l'API
-  const syncWithF1Api = async () => {
-    setIsApiSyncing(true);
+  // Synchronisation du calendrier 2026 depuis Supabase ou API
+  const load2026CalendarFromDB = async () => {
     try {
-      const apiRaces = await fetchOfficialCalendar("2026");
-      if (apiRaces && apiRaces.length > 0) {
+      const { data, error } = await supabase
+        .from("grand_prix")
+        .select("*")
+        .eq("season", 2026)
+        .order("round", { ascending: true });
+
+      if (!error && data && data.length > 0) {
         setCalendar((prev) =>
           prev.map((localGP) => {
-            const apiMatch = apiRaces.find((r) => r.round === localGP.round);
-            if (!apiMatch) return localGP;
+            const dbMatch = data.find((d) => d.round === localGP.round);
+            if (!dbMatch) return localGP;
             return {
               ...localGP,
-              qualiDeadline: apiMatch.quali_start_time || localGP.qualiDeadline,
-              isSprint: apiMatch.is_sprint ?? localGP.isSprint
+              qualiDeadline: dbMatch.quali_start_time || localGP.qualiDeadline,
+              isSprint: dbMatch.is_sprint ?? localGP.isSprint,
+              status: dbMatch.completed ? "completed" : dbMatch.round === 17 ? "active" : "upcoming"
             };
           })
         );
-        setApiStatus({ synced: true, lastUpdate: new Date().toLocaleTimeString() });
       }
     } catch (err) {
-      console.warn("Échec synchronisation calendrier API:", err);
-    } finally {
-      setIsApiSyncing(false);
+      console.warn("Échec chargement DB:", err);
     }
   };
 
   useEffect(() => {
-    syncWithF1Api();
+    load2026CalendarFromDB();
 
     async function fetchProfile(userId) {
       try {
@@ -281,6 +301,19 @@ export default function App() {
 
   const timeRemaining = calculateTimeRemaining(currentGP.qualiDeadline);
   const isExpired = currentGP.status === "completed" || timeRemaining.expired;
+
+  const getTireBadge = (compound) => {
+    switch (compound) {
+      case "SOFT":
+        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-red-500/20 text-red-400 border border-red-500/30">🔴 SOFT</span>;
+      case "MEDIUM":
+        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">🟡 MEDIUM</span>;
+      case "HARD":
+        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-slate-200/20 text-white border border-white/30">⚪ HARD</span>;
+      default:
+        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-zinc-800 text-zinc-400">{compound}</span>;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0e0e14] text-white flex flex-col font-sans">
@@ -449,6 +482,69 @@ export default function App() {
               </div>
             </div>
 
+            {/* SECTION ACCORDÉON : TENDANCES ESSAIS LIBRES (FP1 / FP2 / FP3) & PNEUS */}
+            <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl overflow-hidden shadow-2xl">
+              <button 
+                onClick={() => setShowPractice(!showPractice)}
+                className="w-full p-4 flex items-center justify-between text-left hover:bg-[#252538] transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Gauge className="w-5 h-5 text-emerald-400" />
+                  <div>
+                    <h3 className="text-sm font-black text-white">Forces en Présence • Essais Libres & Pneumatiques</h3>
+                    <p className="text-[11px] text-zinc-400">Temps au tour et gommes utilisées pour guider vos choix de pronostics</p>
+                  </div>
+                </div>
+                {showPractice ? <ChevronUp className="w-4 h-4 text-zinc-400" /> : <ChevronDown className="w-4 h-4 text-zinc-400" />}
+              </button>
+
+              {showPractice && (
+                <div className="p-4 pt-0 border-t border-[#2b2b3d] bg-[#15151e]/60">
+                  <div className="flex items-center justify-between py-3">
+                    <span className="text-xs font-bold text-zinc-400">Séance active :</span>
+                    <div className="flex gap-1.5">
+                      {["FP1", "FP2", "FP3"].map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => setSelectedPracticeSession(s)}
+                          className={`px-2.5 py-1 rounded text-xs font-bold font-mono transition ${
+                            selectedPracticeSession === s ? "bg-[#e10600] text-white" : "bg-[#1e1e2d] text-zinc-400 hover:text-white"
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {currentGP.practice && currentGP.practice.length > 0 ? (
+                    <div className="divide-y divide-[#2b2b3d] border border-[#2b2b3d] rounded-xl overflow-hidden bg-[#12121b]">
+                      {currentGP.practice.map((item) => (
+                        <div key={item.pos} className="p-2.5 px-3 flex items-center justify-between text-xs hover:bg-[#181826]">
+                          <div className="flex items-center gap-3">
+                            <span className="font-mono font-bold text-zinc-500 w-4">#{item.pos}</span>
+                            <div>
+                              <strong className="text-zinc-100">{item.driver}</strong>
+                              <span className="text-[10px] text-zinc-400 ml-1.5 font-mono">({item.team})</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="font-mono font-black text-emerald-400">{item.time}</span>
+                            {getTireBadge(item.tire)}
+                            <span className="text-[10px] text-zinc-500 font-mono hidden sm:inline">{item.laps} tours</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-6 text-center text-xs text-zinc-500 italic">
+                      Aucune donnée de télémétrie enregistrée pour les séances de ce Grand Prix.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* FORMULAIRE DES PARIS */}
             <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl">
               <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
@@ -555,8 +651,8 @@ export default function App() {
                   className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rounded-lg px-3 py-1.5 outline-none"
                 >
                   <option value="2026">2026 (En cours)</option>
-                  <option value="2025">2025</option>
-                  <option value="2024">2024 (Saison complète terminée)</option>
+                  <option value="2025">2025 (Terminée)</option>
+                  <option value="2024">2024 (Terminée)</option>
                 </select>
               </div>
             </div>

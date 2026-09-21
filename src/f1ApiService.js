@@ -1,11 +1,10 @@
-// --- VERSION: ALPHA v3.4 ---
+// --- VERSION: ALPHA v3.5 ---
 // Service d'interrogation multi-saisons Jolpica & OpenF1
 const JOLPICA_BASE = "https://api.jolpi.ca/ergast/f1";
 const OPENF1_BASE = "https://api.openf1.org/v1";
 
 /**
  * 1. Récupère le calendrier complet avec les horaires internationaux (UTC)
- * Extrait les créneaux FP1, FP2, FP3, Sprint, Qualifs et Course
  */
 export async function fetchOfficialCalendar(year = "2026") {
   try {
@@ -36,7 +35,7 @@ export async function fetchOfficialCalendar(year = "2026") {
         fp3_time: makeIso(race.ThirdPractice),
         sprint_quali_time: makeIso(race.SprintQualifying),
         sprint_race_time: makeIso(race.Sprint),
-        quali_start_time: qualiDate, // Date limite des pronostics
+        quali_start_time: qualiDate,
         race_start_time: `${race.date}T${race.time || "13:00:00Z"}`
       };
     });
@@ -46,7 +45,6 @@ export async function fetchOfficialCalendar(year = "2026") {
   }
 }
 
-// Alias pour compatibilité
 export const fetchOfficialCalendarWithSessions = fetchOfficialCalendar;
 
 /**
