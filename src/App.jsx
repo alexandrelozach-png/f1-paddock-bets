@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.5 ---
+// --- VERSION: ALPHA v3.6 ---
 import React, { useState, useEffect } from "react";
 import { 
   Trophy, 
@@ -30,7 +30,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.5";
+const APP_VERSION = "ALPHA v3.6";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE ---
 const DRIVERS_2026 = [
@@ -137,7 +137,7 @@ const INITIAL_CALENDAR_2026 = [
     country: "Azerbaïdjan 🇦🇿", 
     city: "Bakou", 
     status: "active", 
-    qualiDeadline: "2026-09-26T14:00:00Z", 
+    qualiDeadline: "2026-09-25T14:00:00Z", // Qualifications : Vendredi 25 septembre 2026 à 14h00 UTC
     isSprint: false, 
     length: "6.003 km", 
     laps: 51, 
@@ -189,6 +189,13 @@ export default function App() {
   const [currentBet, setCurrentBet] = useState({ pole: "", pos1: "", pos2: "", pos3: "", dotd: "", isLocked: false });
 
   const currentGP = calendar.find((gp) => gp.round === selectedRound) || calendar[0];
+
+  // Raccourci vers le Grand Prix actif (Bouton F1)
+  const goToActiveGrandPrix = () => {
+    const activeGP = calendar.find((gp) => gp.status === "active") || calendar[16];
+    setSelectedRound(activeGP.round);
+    setActiveTab("bet");
+  };
 
   // Chargement intelligent des archives avec Driver of the Day
   const loadSeasonArchive = async (year) => {
@@ -303,6 +310,20 @@ export default function App() {
   const timeRemaining = calculateTimeRemaining(currentGP.qualiDeadline);
   const isExpired = currentGP.status === "completed" || timeRemaining.expired;
 
+  // Formatage lisible de la date/heure de qualification
+  const formatQualiDate = (isoString) => {
+    if (!isoString) return "Date non définie";
+    const dateObj = new Date(isoString);
+    return dateObj.toLocaleDateString("fr-FR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
+
   const getTireBadge = (compound) => {
     switch (compound) {
       case "SOFT":
@@ -322,9 +343,14 @@ export default function App() {
       <header className="bg-[#15151e] border-b border-[#2b2b3d] sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div className="bg-[#e10600] text-white font-black italic tracking-tighter text-lg sm:text-xl px-2 sm:px-2.5 py-0.5 rounded shadow-lg shadow-red-900/40">
+            {/* BOUTON F1 CLIQUABLE : RETOUR AU GRAND PRIX ACTIF */}
+            <button
+              onClick={goToActiveGrandPrix}
+              title="Retourner au Grand Prix actif"
+              className="bg-[#e10600] hover:bg-[#c30500] text-white font-black italic tracking-tighter text-lg sm:text-xl px-2.5 py-0.5 rounded shadow-lg shadow-red-900/40 cursor-pointer transition-transform hover:scale-105 active:scale-95"
+            >
               F1
-            </div>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-black text-xs sm:text-sm tracking-wider text-zinc-100 uppercase">
@@ -453,19 +479,29 @@ export default function App() {
                   </p>
                 </div>
 
-                <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl flex items-center gap-4 shrink-0">
-                  <Clock className="w-6 h-6 text-[#e10600] animate-pulse" />
-                  <div>
-                    <div className="text-[10px] uppercase font-bold text-zinc-400">
-                      Compte à rebours Qualifications
-                    </div>
-                    {isExpired ? (
-                      <div className="text-xs font-bold text-red-400">PRONOSTICS FERMÉS</div>
-                    ) : (
-                      <div className="text-lg font-black font-mono text-white">
-                        {timeRemaining.days}j {timeRemaining.hours}h {timeRemaining.minutes}m {timeRemaining.seconds}s
+                <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl flex flex-col justify-center shrink-0">
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-6 h-6 text-[#e10600] animate-pulse shrink-0" />
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-zinc-400">
+                        Compte à rebours Qualifications
                       </div>
-                    )}
+                      {isExpired ? (
+                        <div className="text-xs font-bold text-red-400">PRONOSTICS FERMÉS</div>
+                      ) : (
+                        <div className="text-lg font-black font-mono text-white">
+                          {timeRemaining.days}j {timeRemaining.hours}h {timeRemaining.minutes}m {timeRemaining.seconds}s
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* DATE & HEURE EXACTE DE LA SÉANCE QUALIFICATIONS */}
+                  <div className="mt-2.5 pt-2 border-t border-[#2b2b3d] text-[11px] text-zinc-400 flex items-center justify-between gap-2">
+                    <span className="text-zinc-500">Date limite :</span>
+                    <strong className="text-amber-400 capitalize">
+                      {formatQualiDate(currentGP.qualiDeadline)}
+                    </strong>
                   </div>
                 </div>
               </div>
