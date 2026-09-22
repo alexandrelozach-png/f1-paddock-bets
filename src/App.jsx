@@ -134,38 +134,12 @@ const DRIVERS_2026 = [
 
 const CIRCUIT_SVGS = {
 
-baku: (
-
-<svg viewBox="0 0 400 180" className="w-full h-36 stroke-current">
-
-<defs>
-
-<linearGradient id="bakuGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-
-<stop offset="0%" stopColor="#10b981" />
-
-<stop offset="50%" stopColor="#f59e0b" />
-
-<stop offset="100%" stopColor="#3b82f6" />
-
-</linearGradient>
-
-</defs>
-
-<path d="M 40 145 L 360 145 L 360 100 L 260 100 L 260 40 L 200 40 L 180 65 L 140 65 L 130 35 L 80 35 L 40 70 Z" 
-
-fill="none" stroke="#2b2b3d" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-
-<path d="M 40 145 L 360 145 L 360 100 L 260 100 L 260 40 L 200 40 L 180 65 L 140 65 L 130 35 L 80 35 L 40 70 Z" 
-
-fill="none" stroke="url(#bakuGrad)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-
-<line x1="160" y1="137" x2="160" y2="153" stroke="#ffffff" strokeWidth="3" />
-
-<text x="165" y="165" fill="#ffffff" fontSize="9" fontFamily="monospace">BAKU CITY (2.2 KM LIGNE DROITE)</text>
-
-</svg>
-
+  baku: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackbakudetailed.webp" 
+      alt="Baku City Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
   ),
 
 sepang: (
