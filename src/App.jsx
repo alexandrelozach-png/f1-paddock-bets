@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.8 fix5 ---
+// --- VERSION: ALPHA v3.9 ---
 
 import React, { useState, useEffect } from "react";
 
@@ -68,13 +68,13 @@ Check
 
 import { supabase } from "./supabaseClient";
 
-import { fetchOfficialCalendar, fetchFullSeasonResults } from "./f1ApiService";
+import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 
 
 // --- VERSION DE L'APPLICATION ---
 
-const APP_VERSION = "ALPHA v3.8 fix5";
+const APP_VERSION = "ALPHA v3.9";
 
 
 
@@ -340,27 +340,7 @@ lapRecord: "1:43.009 (Leclerc)",
 
 officialResults: null, 
 
-practice: [
-
-      { session: "FP1", pos: 1, driver: "Charles Leclerc", team: "Ferrari", time: "1:43.450", tire: "MEDIUM", laps: 22 },
-
-      { session: "FP1", pos: 2, driver: "Lando Norris", team: "McLaren", time: "1:43.512", tire: "MEDIUM", laps: 24 },
-
-      { session: "FP1", pos: 3, driver: "Max Verstappen", team: "Red Bull", time: "1:43.710", tire: "HARD", laps: 20 },
-
-      { session: "FP2", pos: 1, driver: "Lewis Hamilton", team: "Ferrari", time: "1:42.850", tire: "SOFT", laps: 26 },
-
-      { session: "FP2", pos: 2, driver: "Oscar Piastri", team: "McLaren", time: "1:42.920", tire: "SOFT", laps: 25 },
-
-      { session: "FP2", pos: 3, driver: "George Russell", team: "Mercedes", time: "1:43.080", tire: "MEDIUM", laps: 27 },
-
-      { session: "FP3", pos: 1, driver: "Charles Leclerc", team: "Ferrari", time: "1:42.120", tire: "SOFT", laps: 18 },
-
-      { session: "FP3", pos: 2, driver: "Lando Norris", team: "McLaren", time: "1:42.195", tire: "SOFT", laps: 19 },
-
-      { session: "FP3", pos: 3, driver: "Isack Hadjar", team: "Red Bull", time: "1:42.450", tire: "SOFT", laps: 17 }
-
-    ] 
+practice: [] 
 
   },
 
@@ -429,6 +409,8 @@ const [showPractice, setShowPractice] = useState(true);
 const [selectedPracticeSession, setSelectedPracticeSession] = useState("FP3");
 
 const [currentTime, setCurrentTime] = useState(Date.now());
+
+const [syncEngineLogs, setSyncEngineLogs] = useState([]);
 
 
 
@@ -502,13 +484,13 @@ const [saveFeedback, setSaveFeedback] = useState({ visible: false, message: "" }
 
 const currentGP = calendar.find((gp) => gp.round === selectedRound) || calendar[0];
 
+const activeGP = calendar.find((gp) => gp.status === "active") || calendar[16];
+
 
 
 // Raccourci vers le Grand Prix actif (Bouton F1)
 
 const goToActiveGrandPrix = () => {
-
-const activeGP = calendar.find((gp) => gp.status === "active") || calendar[16];
 
 setSelectedRound(activeGP.round);
 
@@ -750,6 +732,8 @@ return {
 
 ...localGP,
 
+id: dbMatch.id || localGP.id,
+
 name: dbMatch.name || localGP.name,
 
 circuit: dbMatch.circuit_name || localGP.circuit,
@@ -759,6 +743,8 @@ country: dbMatch.country || localGP.country,
 city: dbMatch.city || localGP.city,
 
 qualiDeadline: dbMatch.quali_start_time || localGP.qualiDeadline,
+
+raceDate: dbMatch.race_start_time || localGP.raceDate,
 
 isSprint: dbMatch.is_sprint ?? localGP.isSprint,
 
@@ -808,15 +794,47 @@ load2026DataFromDB();
 
 
 
-// Horloge dynamique
+// Horloge dynamique et exécution du Moteur d'Automatisation Temporelle (ALPHA v3.9)
 
 useEffect(() => {
 
-const timer = setInterval(() => setCurrentTime(Date.now()), 1000);
+const timer = setInterval(() => {
+
+const now = Date.now();
+
+setCurrentTime(now);
+
+
+
+// Exécution du pipeline automatique en arrière-plan
+
+if (activeGP) {
+
+runAutoSyncPipeline(activeGP, supabase).then((res) => {
+
+if (res?.status === "advanced" && res.nextRound) {
+
+setSelectedRound(res.nextRound);
+
+load2026DataFromDB();
+
+          }
+
+if (res?.logs && res.logs.length > 0) {
+
+setSyncEngineLogs((prev) => [...res.logs, ...prev].slice(0, 5));
+
+          }
+
+        });
+
+      }
+
+    }, 1000);
 
 return () => clearInterval(timer);
 
-  }, []);
+  }, [activeGP]);
 
 
 
@@ -944,7 +962,7 @@ return (
 
 <div className="min-h-screen bg-[#0e0e14] text-white flex flex-col font-sans">
 
-{/* HEADER SPORTIF RESPONSIVE AVEC BADGE DE TEAM */}
+{/* HEADER SPORTIF RESPONSIVE AVEC BADGE DE TEAM ET STATUT MOTEUR */}
 
 <header className="bg-[#15151e] border-b border-[#2b2b3d] sticky top-0 z-50">
 
@@ -983,6 +1001,12 @@ className="bg-[#e10600] hover:bg-[#c30500] text-white font-black italic tracking
 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
 
 {APP_VERSION}
+
+</span>
+
+<span className="hidden lg:inline text-[9px] font-mono text-zinc-400 border border-zinc-700 px-1.5 py-0.5 rounded">
+
+                  AutoSync : Actif
 
 </span>
 
@@ -1382,7 +1406,7 @@ className="w-full p-4 flex items-center justify-between text-left hover:bg-[#252
 
 <h3 className="text-sm font-black text-white">Forces en Présence • Essais Libres & Pneumatiques</h3>
 
-<p className="text-[11px] text-zinc-400">Télémétries réelles FP1, FP2 et FP3 enregistrées dans la base de données</p>
+<p className="text-[11px] text-zinc-400">Télémétries réelles FP1, FP2 et FP3 synchronisées automatiquement à T-2h</p>
 
 </div>
 
@@ -1474,7 +1498,7 @@ selectedPracticeSession === s ? "bg-[#e10600] text-white" : "bg-[#1e1e2d] text-z
 
 <div className="p-6 text-center text-xs text-zinc-500 italic">
 
-                        Aucun chrono enregistré dans Supabase pour la séance {selectedPracticeSession} de ce Grand Prix.
+                        Aucun chrono enregistré dans Supabase pour la séance {selectedPracticeSession} de ce Grand Prix. Synchronisation automatique à T-2h des qualifications.
 
 </div>
 
