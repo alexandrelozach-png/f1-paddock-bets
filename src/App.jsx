@@ -134,6 +134,14 @@ const DRIVERS_2026 = [
 
 const CIRCUIT_SVGS = {
 
+  madrid: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmadringdetailed.webp" 
+      alt="Madrid City Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
   baku: (
     <img 
       src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackbakudetailed.webp" 
@@ -1330,14 +1338,11 @@ selectedRound === gp.round
 
 </div>
 
-
-
-{/* TRACÉ DU CIRCUIT */}
-
 {/* TRACÉ DU CIRCUIT */}
 <div className="mt-4 pt-4 border-t border-[#2b2b3d] flex flex-col md:flex-row items-center gap-4">
   <div className="w-full md:w-2/3 bg-[#0e0e14] rounded-lg p-2 border border-[#2b2b3d]">
-    {currentGP.round === 17 || currentGP.id === "baku" ? CIRCUIT_SVGS.baku : 
+    {currentGP.round === 16 || currentGP.id === "madrid" ? CIRCUIT_SVGS.madrid :
+     currentGP.round === 17 || currentGP.id === "baku" ? CIRCUIT_SVGS.baku : 
      currentGP.round === 18 || currentGP.id === "sepang" ? CIRCUIT_SVGS.sepang : 
      currentGP.round === 9 || currentGP.id === "barcelona" ? CIRCUIT_SVGS.barcelona : 
      CIRCUIT_SVGS.default}
