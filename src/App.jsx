@@ -1334,13 +1334,15 @@ selectedRound === gp.round
 
 {/* TRACÉ DU CIRCUIT */}
 
+{/* TRACÉ DU CIRCUIT */}
 <div className="mt-4 pt-4 border-t border-[#2b2b3d] flex flex-col md:flex-row items-center gap-4">
+  <div className="w-full md:w-2/3 bg-[#0e0e14] rounded-lg p-2 border border-[#2b2b3d]">
+    {currentGP.round === 17 || currentGP.id === "baku" ? CIRCUIT_SVGS.baku : 
+     currentGP.round === 18 || currentGP.id === "sepang" ? CIRCUIT_SVGS.sepang : 
+     currentGP.round === 9 || currentGP.id === "barcelona" ? CIRCUIT_SVGS.barcelona : 
+     CIRCUIT_SVGS.default}
+  </div>
 
-<div className="w-full md:w-2/3 bg-[#0e0e14] rounded-lg p-2 border border-[#2b2b3d]">
-
-{currentGP.id === "baku" ? CIRCUIT_SVGS.baku : currentGP.id === "sepang" ? CIRCUIT_SVGS.sepang : currentGP.id === "barcelona" ? CIRCUIT_SVGS.barcelona : CIRCUIT_SVGS.default}
-
-</div>
 
 <div className="w-full md:w-1/3 text-xs space-y-2 bg-[#15151e] p-3 rounded-lg border border-[#2b2b3d]">
 
