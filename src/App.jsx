@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.10 - fix1 ---
+// --- VERSION: ALPHA v3.10 - fix2 ---
 import React, { useState, useEffect } from "react";
 import { 
 Trophy, 
@@ -36,7 +36,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.10 - fix1";
+const APP_VERSION = "ALPHA v3.10 - fix2";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -932,6 +932,19 @@ const handleAuthSubmit = async (e) => {
 
   try {
     if (authMode === "signup") {
+      // Vérification préalable : le nom d'utilisateur est-il déjà pris ?
+      const { data: existingUser } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", authUsername)
+        .maybeSingle();
+
+      if (existingUser) {
+        setAuthError("Ce nom d'utilisateur est déjà pris. Merci d'en choisir un autre.");
+        setAuthLoadingAction(false);
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email: authEmail,
         password: authPassword,
@@ -957,7 +970,14 @@ const handleAuthSubmit = async (e) => {
     setAuthPassword("");
     setAuthUsername("");
   } catch (err) {
-    setAuthError(err.message || "Une erreur est survenue.");
+    // Traduction des messages d'erreur techniques en français compréhensible
+    if (err.message?.includes("Database error saving new user") || err.message?.includes("duplicate")) {
+      setAuthError("Ce nom d'utilisateur est déjà pris. Merci d'en choisir un autre.");
+    } else if (err.message?.includes("already registered")) {
+      setAuthError("Cette adresse email est déjà associée à un compte.");
+    } else {
+      setAuthError(err.message || "Une erreur est survenue.");
+    }
   } finally {
     setAuthLoadingAction(false);
   }
