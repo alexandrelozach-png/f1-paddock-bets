@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.10 ---
+// --- VERSION: ALPHA v3.10 - fix1 ---
 import React, { useState, useEffect } from "react";
 import { 
 Trophy, 
@@ -36,7 +36,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.10";
+const APP_VERSION = "ALPHA v3.10 - fix1";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -925,46 +925,45 @@ const activePracticeList = currentGP.practice?.filter((p) => !p.session || p.ses
 
 // Action de validation / sauvegarde des pronostics
 
-const handleSaveBet = () => {
+const handleAuthSubmit = async (e) => {
+  e.preventDefault();
+  setAuthError("");
+  setAuthLoadingAction(true);
 
-  const handleAuthSubmit = async (e) => {
-    e.preventDefault();
-    setAuthError("");
-    setAuthLoadingAction(true);
-  
-    try {
-      if (authMode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
-          email: authEmail,
-          password: authPassword,
-          options: {
-            data: { username: authUsername } // récupérable par le trigger si besoin
-          }
-        });
-        if (error) throw error;
-  
-        // Si le trigger ne gère pas le username, on le met à jour manuellement ici
-        if (data?.user) {
-          await supabase.from("profiles").update({ username: authUsername }).eq("id", data.user.id);
+  try {
+    if (authMode === "signup") {
+      const { data, error } = await supabase.auth.signUp({
+        email: authEmail,
+        password: authPassword,
+        options: {
+          data: { username: authUsername }
         }
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: authEmail,
-          password: authPassword
-        });
-        if (error) throw error;
+      });
+      if (error) throw error;
+
+      if (data?.user) {
+        await supabase.from("profiles").update({ username: authUsername }).eq("id", data.user.id);
       }
-  
-      setShowAuthModal(false);
-      setAuthEmail("");
-      setAuthPassword("");
-      setAuthUsername("");
-    } catch (err) {
-      setAuthError(err.message || "Une erreur est survenue.");
-    } finally {
-      setAuthLoadingAction(false);
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: authEmail,
+        password: authPassword
+      });
+      if (error) throw error;
     }
-  };
+
+    setShowAuthModal(false);
+    setAuthEmail("");
+    setAuthPassword("");
+    setAuthUsername("");
+  } catch (err) {
+    setAuthError(err.message || "Une erreur est survenue.");
+  } finally {
+    setAuthLoadingAction(false);
+  }
+};
+
+const handleSaveBet = () => {
 
 if (isExpired) return;
 
