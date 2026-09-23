@@ -1,85 +1,44 @@
-// --- VERSION: ALPHA v3.9 ---
-
+// --- VERSION: ALPHA v3.10 ---
 import React, { useState, useEffect } from "react";
-
 import { 
-
 Trophy, 
-
 Clock, 
-
 Flag, 
-
 Calendar, 
-
 ChevronRight, 
-
 Flame, 
-
 BarChart3, 
-
 History, 
-
 AlertCircle, 
-
 CheckCircle2, 
-
 Users, 
-
 MapPin,
-
 LogIn,
-
 LogOut,
-
 User,
-
 ShieldAlert,
-
 ChevronDown,
-
 ChevronUp,
-
 Sparkles,
-
 Lock,
-
 RefreshCw,
-
 Zap,
-
 Globe,
-
 Gauge,
-
 XCircle,
-
 PlusCircle,
-
 Share2,
-
 Copy,
-
 Crown,
-
 Check
-
 } from "lucide-react";
-
 import { supabase } from "./supabaseClient";
-
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
-
-
 // --- VERSION DE L'APPLICATION ---
-
-const APP_VERSION = "ALPHA v3.9";
-
-
+const APP_VERSION = "ALPHA v3.10";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
-
 const DRIVERS_2026 = [
 
   { id: "leclerc", name: "Charles Leclerc", number: 16, team: "Ferrari", teamColor: "#E8002D" },
@@ -448,12 +407,17 @@ const [loadingArchive, setLoadingArchive] = useState(false);
 
 // Utilisateur & Session
 
-const [user, setUser] = useState({ email: "alex@entreprise.com" });
-
-const [userProfile, setUserProfile] = useState({ username: "Alex (Alexandre L.)", role: "admin" });
+const [user, setUser] = useState(null);
+const [userProfile, setUserProfile] = useState(null);
+const [authLoading, setAuthLoading] = useState(true);
 
 const [showAuthModal, setShowAuthModal] = useState(false);
-
+const [authMode, setAuthMode] = useState("login"); // "login" ou "signup"
+const [authEmail, setAuthEmail] = useState("");
+const [authPassword, setAuthPassword] = useState("");
+const [authUsername, setAuthUsername] = useState("");
+const [authError, setAuthError] = useState("");
+const [authLoadingAction, setAuthLoadingAction] = useState(false);
 
 
 // Pronostics & Validation
@@ -786,7 +750,40 @@ const now = Date.now();
 
 setCurrentTime(now);
 
+useEffect(() => {
+  // 1. Vérifier si une session existe déjà au chargement de la page
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    setUser(session?.user ?? null);
+    setAuthLoading(false);
+  });
 
+  // 2. Écouter les changements (connexion / déconnexion en direct)
+  const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user ?? null);
+  });
+
+  return () => listener.subscription.unsubscribe();
+}, []);
+
+useEffect(() => {
+  const loadProfile = async () => {
+    if (!user?.id) {
+      setUserProfile(null);
+      return;
+    }
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (!error && data) {
+      setUserProfile(data);
+    }
+  };
+
+  loadProfile();
+}, [user]);
 
 // Exécution du pipeline automatique en arrière-plan
 
@@ -929,6 +926,45 @@ const activePracticeList = currentGP.practice?.filter((p) => !p.session || p.ses
 // Action de validation / sauvegarde des pronostics
 
 const handleSaveBet = () => {
+
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    setAuthLoadingAction(true);
+  
+    try {
+      if (authMode === "signup") {
+        const { data, error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+          options: {
+            data: { username: authUsername } // récupérable par le trigger si besoin
+          }
+        });
+        if (error) throw error;
+  
+        // Si le trigger ne gère pas le username, on le met à jour manuellement ici
+        if (data?.user) {
+          await supabase.from("profiles").update({ username: authUsername }).eq("id", data.user.id);
+        }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: authEmail,
+          password: authPassword
+        });
+        if (error) throw error;
+      }
+  
+      setShowAuthModal(false);
+      setAuthEmail("");
+      setAuthPassword("");
+      setAuthUsername("");
+    } catch (err) {
+      setAuthError(err.message || "Une erreur est survenue.");
+    } finally {
+      setAuthLoadingAction(false);
+    }
+  };
 
 if (isExpired) return;
 
@@ -2079,7 +2115,80 @@ member.rank === 1 ? "text-amber-400" : member.rank === 2 ? "text-zinc-300" : mem
 
 </main>
 
+{showAuthModal && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+      <div className="flex justify-between items-center border-b border-[#2b2b3d] pb-3">
+        <h3 className="text-base font-black text-white">
+          {authMode === "login" ? "Connexion" : "Créer un compte"}
+        </h3>
+        <button onClick={() => setShowAuthModal(false)} className="text-zinc-400 hover:text-white">✕</button>
+      </div>
 
+      <form onSubmit={handleAuthSubmit} className="space-y-3">
+        {authMode === "signup" && (
+          <div>
+            <label className="text-xs font-bold text-zinc-400 block mb-1">Nom d'utilisateur</label>
+            <input
+              type="text"
+              required
+              value={authUsername}
+              onChange={(e) => setAuthUsername(e.target.value)}
+              className="w-full bg-[#15151e] border border-[#2b2b3d] rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-[#e10600]"
+              placeholder="Ex: Alex L."
+            />
+          </div>
+        )}
+
+        <div>
+          <label className="text-xs font-bold text-zinc-400 block mb-1">Email</label>
+          <input
+            type="email"
+            required
+            value={authEmail}
+            onChange={(e) => setAuthEmail(e.target.value)}
+            className="w-full bg-[#15151e] border border-[#2b2b3d] rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-[#e10600]"
+            placeholder="prenom@entreprise.com"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-bold text-zinc-400 block mb-1">Mot de passe</label>
+          <input
+            type="password"
+            required
+            minLength={6}
+            value={authPassword}
+            onChange={(e) => setAuthPassword(e.target.value)}
+            className="w-full bg-[#15151e] border border-[#2b2b3d] rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-[#e10600]"
+            placeholder="••••••••"
+          />
+        </div>
+
+        {authError && (
+          <div className="text-[11px] text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+            {authError}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={authLoadingAction}
+          className="w-full bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold py-2.5 rounded-xl transition disabled:opacity-50"
+        >
+          {authLoadingAction ? "Chargement..." : authMode === "login" ? "Se connecter" : "S'inscrire"}
+        </button>
+      </form>
+
+      <button
+        onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }}
+        className="w-full text-center text-[11px] text-zinc-400 hover:text-white"
+      >
+        {authMode === "login" ? "Pas encore de compte ? S'inscrire" : "Déjà un compte ? Se connecter"}
+      </button>
+    </div>
+  </div>
+)}
 
 {/* MODAL GESTION DE TEAM & INVITATION */}
 
