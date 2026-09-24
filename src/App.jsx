@@ -1139,6 +1139,35 @@ useEffect(() => {
   loadProfile();
 }, [user]);
 
+// Chargement des résultats officiels existants pour le Team Principal (édition possible)
+useEffect(() => {
+  const loadExistingOfficialResult = async () => {
+    if (typeof currentGP.id !== "number") {
+      setOfficialResultForm({ pole: "", pos1: "", pos2: "", pos3: "", dotd: "" });
+      return;
+    }
+    const { data, error } = await supabase
+      .from("official_results")
+      .select("*")
+      .eq("gp_id", currentGP.id)
+      .maybeSingle();
+
+    if (!error && data) {
+      setOfficialResultForm({
+        pole: data.pole_id,
+        pos1: data.pos1_id,
+        pos2: data.pos2_id,
+        pos3: data.pos3_id,
+        dotd: data.dotd_id
+      });
+    } else {
+      setOfficialResultForm({ pole: "", pos1: "", pos2: "", pos3: "", dotd: "" });
+    }
+  };
+
+  if (isTeamPrincipal) loadExistingOfficialResult();
+}, [selectedRound, currentGP.id, isTeamPrincipal]);
+
 // Compte à rebours universel adapté au fuseau horaire
 
 const calculateTimeRemaining = (deadlineIso) => {
@@ -1863,7 +1892,109 @@ selectedRound === gp.round
 
 </div>
 
+{/* PANNEAU ADMIN : SAISIE DES RÉSULTATS OFFICIELS (TEAM PRINCIPAL UNIQUEMENT) */}
+{isTeamPrincipal && !currentGP.isCancelled && (
+  <div className="bg-[#1e1e2d] border-2 border-amber-500/40 rounded-2xl p-5 shadow-2xl space-y-4">
+    <div className="flex items-center justify-between flex-wrap gap-2">
+      <h2 className="text-sm font-black text-amber-400 flex items-center gap-2">
+        <Crown className="w-4 h-4" />
+        Admin • Résultats Officiels du Grand Prix
+      </h2>
+      <button
+        onClick={handleAutoFetchResults}
+        disabled={fetchingResults}
+        className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+      >
+        <RefreshCw className={`w-3.5 h-3.5 ${fetchingResults ? "animate-spin" : ""}`} />
+        {fetchingResults ? "Récupération..." : "Récupérer via API"}
+      </button>
+    </div>
 
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="bg-[#15151e] border border-[#2b2b3d] p-3 rounded-xl">
+        <label className="text-xs font-bold text-zinc-300 block mb-1">Pole Position</label>
+        <select
+          value={officialResultForm.pole}
+          onChange={(e) => setOfficialResultForm({ ...officialResultForm, pole: e.target.value })}
+          className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
+        >
+          <option value="">Choisir...</option>
+          {DRIVERS_2026.map((d) => <option key={d.id} value={d.id}>#{d.number} {d.name}</option>)}
+        </select>
+      </div>
+
+      <div className="bg-[#15151e] border border-[#2b2b3d] p-3 rounded-xl">
+        <label className="text-xs font-bold text-zinc-300 block mb-1">Driver of the Day</label>
+        <select
+          value={officialResultForm.dotd}
+          onChange={(e) => setOfficialResultForm({ ...officialResultForm, dotd: e.target.value })}
+          className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
+        >
+          <option value="">Choisir...</option>
+          {DRIVERS_2026.map((d) => <option key={d.id} value={d.id}>#{d.number} {d.name}</option>)}
+        </select>
+      </div>
+    </div>
+
+    <div className="bg-[#15151e] border border-[#2b2b3d] p-3 rounded-xl">
+      <label className="text-xs font-bold text-zinc-300 block mb-2">Podium (Anti-doublon)</label>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <span className="text-[11px] text-amber-400 font-bold block mb-1">1er 🥇</span>
+          <select
+            value={officialResultForm.pos1}
+            onChange={(e) => setOfficialResultForm({ ...officialResultForm, pos1: e.target.value })}
+            className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
+          >
+            <option value="">Choisir...</option>
+            {DRIVERS_2026.map((d) => (
+              <option key={d.id} value={d.id} disabled={officialResultForm.pos2 === d.id || officialResultForm.pos3 === d.id}>{d.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <span className="text-[11px] text-zinc-300 font-bold block mb-1">2e 🥈</span>
+          <select
+            value={officialResultForm.pos2}
+            onChange={(e) => setOfficialResultForm({ ...officialResultForm, pos2: e.target.value })}
+            className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
+          >
+            <option value="">Choisir...</option>
+            {DRIVERS_2026.map((d) => (
+              <option key={d.id} value={d.id} disabled={officialResultForm.pos1 === d.id || officialResultForm.pos3 === d.id}>{d.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <span className="text-[11px] text-amber-600 font-bold block mb-1">3e 🥉</span>
+          <select
+            value={officialResultForm.pos3}
+            onChange={(e) => setOfficialResultForm({ ...officialResultForm, pos3: e.target.value })}
+            className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs"
+          >
+            <option value="">Choisir...</option>
+            {DRIVERS_2026.map((d) => (
+              <option key={d.id} value={d.id} disabled={officialResultForm.pos1 === d.id || officialResultForm.pos2 === d.id}>{d.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    {resultSaveFeedback.visible && (
+      <div className="p-3 bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-xl text-xs flex items-center gap-2">
+        <span>{resultSaveFeedback.message}</span>
+      </div>
+    )}
+
+    <button
+      onClick={handleSaveOfficialResults}
+      className="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-2.5 rounded-xl text-xs uppercase tracking-wide transition"
+    >
+      🏆 Enregistrer les Résultats Officiels
+    </button>
+  </div>
+)}
 
 {/* VOLET ESSAIS LIBRES & PNEUMATIQUES DE TOUS LES GRANDS PRIX */}
 
