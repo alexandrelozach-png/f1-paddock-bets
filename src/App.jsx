@@ -1201,36 +1201,23 @@ className="bg-[#e10600] hover:bg-[#c30500] text-white font-black italic tracking
 
 <div className="hidden sm:flex items-center gap-2">
 
-<button
-
-onClick={() => setShowTeamModal(true)}
-
-className="bg-[#1e1e2d] hover:bg-[#28283c] border border-amber-500/40 px-3 py-1 rounded-xl text-xs flex items-center gap-2 transition shadow-md shadow-amber-950/20"
-
->
-
-<Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-
-<div className="text-left">
-
-<span className="block text-[9px] text-zinc-400 font-bold uppercase tracking-wider">Écurie Active</span>
-
-<span className="font-extrabold text-white text-xs">{currentTeam.name}</span>
-
-</div>
-
-<span className="text-[10px] bg-amber-500/20 text-amber-300 font-mono px-1.5 py-0.5 rounded border border-amber-500/30 font-bold">
-
-{currentTeam.inviteCode}
-
-</span>
-
-</button>
+{userTeam && (
+  <button
+    onClick={() => setShowTeamModal(true)}
+    className="bg-[#1e1e2d] hover:bg-[#28283c] border border-amber-500/40 px-3 py-1 rounded-xl text-xs flex items-center gap-2 transition shadow-md shadow-amber-950/20"
+  >
+    <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+    <div className="text-left">
+      <span className="block text-[9px] text-zinc-400 font-bold uppercase tracking-wider">Écurie Active</span>
+      <span className="font-extrabold text-white text-xs">{userTeam.name}</span>
+    </div>
+    <span className="text-[10px] bg-amber-500/20 text-amber-300 font-mono px-1.5 py-0.5 rounded border border-amber-500/30 font-bold">
+      {userTeam.invite_code}
+    </span>
+  </button>
+)}
 
 </div>
-
-
-
 <div className="flex items-center gap-1.5 sm:gap-3">
 
 <nav className="hidden md:flex items-center bg-[#1e1e2d] border border-[#2b2b3d] p-1 rounded-xl text-xs">
