@@ -2262,100 +2262,74 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
 
 {/* ONGLET CLASSEMENT : LIMITÉ AUX COLLÈGUES DE LA TEAM */}
 
-{activeTab === "standings" && (
-<div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-5">
-<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2b2b3d] pb-4">
-<div>
-<div className="flex items-center gap-2">
-<Trophy className="w-5 h-5 text-amber-400" />
-<h2 className="text-lg font-black text-white">
-                    Classement de l'Écurie : <span className="text-amber-400">{currentTeam.name}</span>
-</h2>
-</div>
-<p className="text-xs text-zinc-400 mt-0.5">
-                  Points cumulés sur la saison 2026 entre les {currentTeam.members.length} membres de votre groupe
-</p>
-</div>
-{/* ACTION DU TEAM PRINCIPAL */}
-{currentTeam.isPrincipal && (
-<button
-onClick={copyInviteCode}
-className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-lg shadow-red-900/30"
->
-<Share2 className="w-3.5 h-3.5" />
-<span>{copiedCode ? "Code Copié !" : "Inviter un Collègue"}</span>
-</button>
-              )}
-</div>
-<div className="space-y-2">
-{currentTeam.members.map((member) => (
-<div 
-key={member.id} 
-className={`flex items-center justify-between p-3.5 rounded-xl text-xs border transition-all ${
-member.name.includes("Alex") 
-                      ? "bg-[#1f1a2e] border-amber-500/50 shadow-md shadow-amber-950/20" 
+{activeTab === "standings" && userTeam && (
+  <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-5">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2b2b3d] pb-4">
+      <div>
+        <div className="flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-amber-400" />
+          <h2 className="text-lg font-black text-white">
+            Classement de l'Écurie : <span className="text-amber-400">{userTeam.name}</span>
+          </h2>
+        </div>
+        <p className="text-xs text-zinc-400 mt-0.5">
+          Points cumulés sur la saison 2026 entre les {teamMembersList.length} membres de votre groupe
+        </p>
+      </div>
 
-                      : "bg-[#15151e] border-[#2b2b3d] hover:border-zinc-600"
+      <button
+        onClick={() => setShowTeamModal(true)}
+        className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-lg shadow-red-900/30"
+      >
+        <Share2 className="w-3.5 h-3.5" />
+        <span>Inviter un Collègue</span>
+      </button>
+    </div>
 
-}`}
-
->
-
-<div className="flex items-center gap-3">
-
-<span className={`font-mono font-black text-sm w-6 text-center ${
-
-member.rank === 1 ? "text-amber-400" : member.rank === 2 ? "text-zinc-300" : member.rank === 3 ? "text-amber-600" : "text-zinc-500"
-
-}`}>
-
-                      #{member.rank}
-
-</span>
-
-<span className="text-base">{member.avatar}</span>
-
-<div>
-
-<div className="flex items-center gap-2">
-
-<strong className="text-white text-sm">{member.name}</strong>
-
-{member.role === "Team Principal" && (
-
-<span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.2 rounded font-black flex items-center gap-1">
-
-<Crown className="w-2.5 h-2.5" /> TEAM PRINCIPAL
-
-</span>
-
-                        )}
-
-</div>
-
-<span className="text-[10px] text-zinc-400">{member.role}</span>
-
-</div>
-
-</div>
-
-<div className="text-right">
-
-<span className="font-mono font-black text-sm text-[#e10600] block">{member.points} pts</span>
-
-<span className="text-[10px] text-zinc-500 font-mono">16 GP disputés</span>
-
-</div>
-
-</div>
-
-              ))}
-
-</div>
-
-</div>
-
-        )}
+    <div className="space-y-2">
+      {teamMembersList.length === 0 ? (
+        <div className="text-center py-8 text-xs text-zinc-500 italic">
+          Chargement des membres de l'écurie...
+        </div>
+      ) : (
+        teamMembersList.map((member, index) => (
+          <div
+            key={member.id}
+            className={`flex items-center justify-between p-3.5 rounded-xl text-xs border transition-all ${
+              member.id === user?.id
+                ? "bg-[#1f1a2e] border-amber-500/50 shadow-md shadow-amber-950/20"
+                : "bg-[#15151e] border-[#2b2b3d] hover:border-zinc-600"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className={`font-mono font-black text-sm w-6 text-center ${
+                  index === 0 ? "text-amber-400" : index === 1 ? "text-zinc-300" : index === 2 ? "text-amber-600" : "text-zinc-500"
+                }`}
+              >
+                #{index + 1}
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <strong className="text-white text-sm">{member.name}</strong>
+                  {member.role === "Team Principal" && (
+                    <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.2 rounded font-black flex items-center gap-1">
+                      <Crown className="w-2.5 h-2.5" /> TEAM PRINCIPAL
+                    </span>
+                  )}
+                </div>
+                <span className="text-[10px] text-zinc-400">{member.role}</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="font-mono font-black text-sm text-[#e10600] block">{member.points} pts</span>
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  </div>
+)}
     </>
 )}
 </main>
