@@ -2296,7 +2296,7 @@ isExpired
         )}
 
 {/* PANNEAU ADMIN : SAISIE DES RÉSULTATS OFFICIELS (TEAM PRINCIPAL UNIQUEMENT) */}
-{isTeamPrincipal && !currentGP.isCancelled && (
+{isTeamPrincipal && !currentGP.isCancelled && activeTab === "bet" && (
   <div className="bg-[#1e1e2d] border-2 border-amber-500/40 rounded-2xl p-5 shadow-2xl space-y-4">
     <div className="flex items-center justify-between flex-wrap gap-2">
       <h2 className="text-sm font-black text-amber-400 flex items-center gap-2">
