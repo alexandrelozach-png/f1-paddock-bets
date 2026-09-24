@@ -801,17 +801,32 @@ const handleAutoFetchResults = async () => {
   setResultSaveFeedback({ visible: false, message: "" });
 
   try {
-    // Récupération de la pole position (résultats qualifs)
-    const qualiRes = await fetch(
-      `https://api.jolpi.ca/ergast/f1/2026/${currentGP.round}/qualifying.json`
-    );
+    // 1. Récupérer le calendrier complet pour trouver le VRAI round Jolpica
+    const calendarRes = await fetch(`https://api.jolpi.ca/ergast/f1/2026.json?limit=100`);
+    const calendarData = await calendarRes.json();
+    const races = calendarData?.MRData?.RaceTable?.Races || [];
+
+    const targetDate = currentGP.raceDate?.split("T")[0];
+    const matchingRace = races.find((r) => r.date === targetDate);
+
+    if (!matchingRace) {
+      setResultSaveFeedback({
+        visible: true,
+        message: "⚠️ Grand Prix introuvable dans le calendrier officiel de l'API (peut-être pas encore disputé)."
+      });
+      setFetchingResults(false);
+      return;
+    }
+
+    const apiRound = matchingRace.round;
+
+    // 2. Pole position avec le BON round
+    const qualiRes = await fetch(`https://api.jolpi.ca/ergast/f1/2026/${apiRound}/qualifying.json`);
     const qualiData = await qualiRes.json();
     const poleDriverFamily = qualiData?.MRData?.RaceTable?.Races?.[0]?.QualifyingResults?.[0]?.Driver?.familyName;
 
-    // Récupération du podium (résultats course)
-    const raceRes = await fetch(
-      `https://api.jolpi.ca/ergast/f1/2026/${currentGP.round}/results.json`
-    );
+    // 3. Podium avec le BON round
+    const raceRes = await fetch(`https://api.jolpi.ca/ergast/f1/2026/${apiRound}/results.json`);
     const raceData = await raceRes.json();
     const results = raceData?.MRData?.RaceTable?.Races?.[0]?.Results || [];
 
@@ -822,7 +837,7 @@ const handleAutoFetchResults = async () => {
     if (!poleDriverFamily && results.length === 0) {
       setResultSaveFeedback({
         visible: true,
-        message: "⚠️ Aucun résultat disponible pour l'instant sur l'API (course pas encore terminée ou données pas encore publiées)."
+        message: "⚠️ Ce Grand Prix n'a pas encore de résultats publiés (course pas encore disputée)."
       });
       setFetchingResults(false);
       return;
