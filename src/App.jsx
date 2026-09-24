@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.11 ---
+// --- VERSION: ALPHA v3.12 ---
 import React, { useState, useEffect } from "react";
 import { 
 Trophy, 
@@ -36,7 +36,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.11";
+const APP_VERSION = "ALPHA v3.12";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -395,7 +395,13 @@ const [newTeamName, setNewTeamName] = useState("");
 const [joinTeamCode, setJoinTeamCode] = useState("");
 const [teamActionError, setTeamActionError] = useState("");
 const [teamActionLoading, setTeamActionLoading] = useState(false);
+const isTeamPrincipal = userTeam?.team_principal_id === user?.id;
 
+const [officialResultForm, setOfficialResultForm] = useState({
+  pole: "", pos1: "", pos2: "", pos3: "", dotd: ""
+});
+const [fetchingResults, setFetchingResults] = useState(false);
+const [resultSaveFeedback, setResultSaveFeedback] = useState({ visible: false, message: "" });
 
 // Sélecteur de saison & Archives
 
@@ -436,7 +442,15 @@ const currentGP = calendar.find((gp) => gp.round === selectedRound) || calendar[
 
 const activeGP = calendar.find((gp) => gp.status === "active") || calendar[16];
 
+//correspondance des pilotes
 
+const findDriverIdByFamilyName = (familyName) => {
+  if (!familyName) return "";
+  const match = DRIVERS_2026.find((d) =>
+    d.name.toLowerCase().includes(familyName.toLowerCase())
+  );
+  return match?.id || "";
+};
 
 // Raccourci vers le Grand Prix actif (Bouton F1)
 
@@ -781,6 +795,107 @@ const handleJoinTeam = async () => {
     }
   } finally {
     setTeamActionLoading(false);
+  }
+};
+
+//Recupération auto via API
+
+const handleAutoFetchResults = async () => {
+  setFetchingResults(true);
+  setResultSaveFeedback({ visible: false, message: "" });
+
+  try {
+    // Récupération de la pole position (résultats qualifs)
+    const qualiRes = await fetch(
+      `https://api.jolpi.ca/ergast/f1/2026/${currentGP.round}/qualifying.json`
+    );
+    const qualiData = await qualiRes.json();
+    const poleDriverFamily = qualiData?.MRData?.RaceTable?.Races?.[0]?.QualifyingResults?.[0]?.Driver?.familyName;
+
+    // Récupération du podium (résultats course)
+    const raceRes = await fetch(
+      `https://api.jolpi.ca/ergast/f1/2026/${currentGP.round}/results.json`
+    );
+    const raceData = await raceRes.json();
+    const results = raceData?.MRData?.RaceTable?.Races?.[0]?.Results || [];
+
+    const pos1Family = results[0]?.Driver?.familyName;
+    const pos2Family = results[1]?.Driver?.familyName;
+    const pos3Family = results[2]?.Driver?.familyName;
+
+    if (!poleDriverFamily && results.length === 0) {
+      setResultSaveFeedback({
+        visible: true,
+        message: "⚠️ Aucun résultat disponible pour l'instant sur l'API (course pas encore terminée ou données pas encore publiées)."
+      });
+      setFetchingResults(false);
+      return;
+    }
+
+    setOfficialResultForm((prev) => ({
+      ...prev,
+      pole: findDriverIdByFamilyName(poleDriverFamily) || prev.pole,
+      pos1: findDriverIdByFamilyName(pos1Family) || prev.pos1,
+      pos2: findDriverIdByFamilyName(pos2Family) || prev.pos2,
+      pos3: findDriverIdByFamilyName(pos3Family) || prev.pos3
+    }));
+
+    setResultSaveFeedback({
+      visible: true,
+      message: "✅ Pole et podium récupérés automatiquement ! Vérifiez les pilotes puis sélectionnez le Driver of the Day."
+    });
+  } catch (err) {
+    console.error("Erreur récupération API:", err);
+    setResultSaveFeedback({
+      visible: true,
+      message: "❌ Erreur lors de la récupération automatique. Vous pouvez remplir manuellement."
+    });
+  } finally {
+    setFetchingResults(false);
+  }
+};
+
+// Sauvegarde des résultats officiels
+
+const handleSaveOfficialResults = async () => {
+  if (!officialResultForm.pole || !officialResultForm.pos1 || !officialResultForm.pos2 || !officialResultForm.pos3 || !officialResultForm.dotd) {
+    setResultSaveFeedback({ visible: true, message: "⚠️ Merci de compléter les 5 champs avant d'enregistrer." });
+    return;
+  }
+
+  if (typeof currentGP.id !== "number") {
+    setResultSaveFeedback({ visible: true, message: "❌ Ce Grand Prix n'est pas synchronisé avec la base de données." });
+    return;
+  }
+
+  try {
+    const { error } = await supabase
+      .from("official_results")
+      .upsert(
+        {
+          gp_id: currentGP.id,
+          pole_id: officialResultForm.pole,
+          pos1_id: officialResultForm.pos1,
+          pos2_id: officialResultForm.pos2,
+          pos3_id: officialResultForm.pos3,
+          dotd_id: officialResultForm.dotd
+        },
+        { onConflict: "gp_id" }
+      );
+
+    if (error) throw error;
+
+    setResultSaveFeedback({
+      visible: true,
+      message: "🏆 Résultats officiels enregistrés ! Les points de l'écurie ont été recalculés automatiquement."
+    });
+
+    // Recharge les données pour rafraîchir l'affichage
+    load2026DataFromDB();
+    if (userTeam?.id) loadTeamMembers(userTeam.id);
+  } catch (err) {
+    console.error("Erreur sauvegarde résultats:", err);
+    setResultSaveFeedback({ visible: true, message: "❌ Erreur lors de l'enregistrement." });
   }
 };
 
