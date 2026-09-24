@@ -1421,6 +1421,104 @@ selectedRound === gp.round
 
 <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6">
 
+{user && !checkingTeam && !userTeam ? (
+  <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-6 sm:p-10 shadow-2xl max-w-lg mx-auto space-y-6">
+    <div className="text-center space-y-2">
+      <Crown className="w-10 h-10 text-amber-400 mx-auto" />
+      <h2 className="text-xl font-black text-white">Bienvenue dans le Paddock !</h2>
+      <p className="text-xs text-zinc-400">
+        Avant de faire vos pronostics, vous devez rejoindre ou créer une écurie.
+      </p>
+    </div>
+
+    {teamOnboardingMode === "choice" && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+          onClick={() => { setTeamOnboardingMode("create"); setTeamActionError(""); }}
+          className="bg-[#e10600] hover:bg-[#c30500] text-white font-bold py-4 rounded-xl text-sm transition flex flex-col items-center gap-2"
+        >
+          <PlusCircle className="w-6 h-6" />
+          Créer une écurie
+        </button>
+        <button
+          onClick={() => { setTeamOnboardingMode("join"); setTeamActionError(""); }}
+          className="bg-[#1e1e2d] hover:bg-[#252538] border border-[#2b2b3d] text-white font-bold py-4 rounded-xl text-sm transition flex flex-col items-center gap-2"
+        >
+          <Share2 className="w-6 h-6" />
+          Rejoindre une écurie
+        </button>
+      </div>
+    )}
+
+    {teamOnboardingMode === "create" && (
+      <div className="space-y-3">
+        <label className="text-xs font-bold text-zinc-300 block">Nom de votre écurie</label>
+        <input
+          type="text"
+          value={newTeamName}
+          onChange={(e) => setNewTeamName(e.target.value)}
+          placeholder="Ex: Scuderia Bosch R&D"
+          className="w-full bg-[#15151e] border border-[#2b2b3d] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#e10600]"
+        />
+        {teamActionError && (
+          <div className="text-[11px] text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+            {teamActionError}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setTeamOnboardingMode("choice")}
+            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#15151e] border border-[#2b2b3d] text-zinc-300 hover:bg-[#252538]"
+          >
+            Retour
+          </button>
+          <button
+            onClick={handleCreateTeam}
+            disabled={teamActionLoading}
+            className="flex-1 bg-[#e10600] hover:bg-[#c30500] text-white font-bold py-2.5 rounded-xl text-xs transition disabled:opacity-50"
+          >
+            {teamActionLoading ? "Création..." : "Créer l'écurie"}
+          </button>
+        </div>
+      </div>
+    )}
+
+    {teamOnboardingMode === "join" && (
+      <div className="space-y-3">
+        <label className="text-xs font-bold text-zinc-300 block">Code d'invitation</label>
+        <input
+          type="text"
+          value={joinTeamCode}
+          onChange={(e) => setJoinTeamCode(e.target.value.toUpperCase())}
+          placeholder="Ex: SB2026"
+          className="w-full bg-[#15151e] border border-[#2b2b3d] rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-[#e10600] font-mono"
+        />
+        {teamActionError && (
+          <div className="text-[11px] text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+            {teamActionError}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setTeamOnboardingMode("choice")}
+            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#15151e] border border-[#2b2b3d] text-zinc-300 hover:bg-[#252538]"
+          >
+            Retour
+          </button>
+          <button
+            onClick={handleJoinTeam}
+            disabled={teamActionLoading}
+            className="flex-1 bg-[#e10600] hover:bg-[#c30500] text-white font-bold py-2.5 rounded-xl text-xs transition disabled:opacity-50"
+          >
+            {teamActionLoading ? "Connexion..." : "Rejoindre l'écurie"}
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+) : (
+  <></>
+
 {activeTab === "bet" && (
 
 <>
@@ -2145,71 +2243,36 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
 {/* ONGLET CLASSEMENT : LIMITÉ AUX COLLÈGUES DE LA TEAM */}
 
 {activeTab === "standings" && (
-
 <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-5">
-
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2b2b3d] pb-4">
-
 <div>
-
 <div className="flex items-center gap-2">
-
 <Trophy className="w-5 h-5 text-amber-400" />
-
 <h2 className="text-lg font-black text-white">
-
                     Classement de l'Écurie : <span className="text-amber-400">{currentTeam.name}</span>
-
 </h2>
-
 </div>
-
 <p className="text-xs text-zinc-400 mt-0.5">
-
                   Points cumulés sur la saison 2026 entre les {currentTeam.members.length} membres de votre groupe
-
 </p>
-
 </div>
-
-
-
 {/* ACTION DU TEAM PRINCIPAL */}
-
 {currentTeam.isPrincipal && (
-
 <button
-
 onClick={copyInviteCode}
-
 className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-lg shadow-red-900/30"
-
 >
-
 <Share2 className="w-3.5 h-3.5" />
-
 <span>{copiedCode ? "Code Copié !" : "Inviter un Collègue"}</span>
-
 </button>
-
               )}
-
 </div>
-
-
-
 <div className="space-y-2">
-
 {currentTeam.members.map((member) => (
-
 <div 
-
 key={member.id} 
-
 className={`flex items-center justify-between p-3.5 rounded-xl text-xs border transition-all ${
-
 member.name.includes("Alex") 
-
                       ? "bg-[#1f1a2e] border-amber-500/50 shadow-md shadow-amber-950/20" 
 
                       : "bg-[#15151e] border-[#2b2b3d] hover:border-zinc-600"
@@ -2273,7 +2336,8 @@ member.rank === 1 ? "text-amber-400" : member.rank === 2 ? "text-zinc-300" : mem
 </div>
 
         )}
-
+    </>
+)}
 </main>
 
 {showAuthModal && (
