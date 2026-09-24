@@ -1517,7 +1517,7 @@ selectedRound === gp.round
     )}
   </div>
 ) : (
-  <></>
+  <>
 
 {activeTab === "bet" && (
 
