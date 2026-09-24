@@ -395,7 +395,7 @@ const [newTeamName, setNewTeamName] = useState("");
 const [joinTeamCode, setJoinTeamCode] = useState("");
 const [teamActionError, setTeamActionError] = useState("");
 const [teamActionLoading, setTeamActionLoading] = useState(false);
-const isTeamPrincipal = userTeam?.team_principal_id === user?.id;
+
 
 const [officialResultForm, setOfficialResultForm] = useState({
   pole: "", pos1: "", pos2: "", pos3: "", dotd: ""
@@ -441,6 +441,7 @@ const [saveFeedback, setSaveFeedback] = useState({ visible: false, message: "" }
 const currentGP = calendar.find((gp) => gp.round === selectedRound) || calendar[0];
 
 const activeGP = calendar.find((gp) => gp.status === "active") || calendar[16];
+const isTeamPrincipal = userTeam?.team_principal_id === user?.id;
 
 //correspondance des pilotes
 
