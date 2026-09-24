@@ -453,27 +453,18 @@ setActiveTab("bet");
 // Copie du code d'invitation
 
 const copyInviteCode = () => {
-
-navigator.clipboard.writeText(currentTeam.inviteCode);
-
-setCopiedCode(true);
-
-setTimeout(() => setCopiedCode(false), 2500);
-
-  };
-
-
+  if (!userTeam?.invite_code) return;
+  navigator.clipboard.writeText(userTeam.invite_code);
+  setCopiedCode(true);
+  setTimeout(() => setCopiedCode(false), 2500);
+};
 
 // Chargement intelligent des archives ou de la saison 2026 depuis Supabase
 
 const loadSeasonArchive = async (year) => {
-
 setLoadingArchive(true);
-
 try {
-
 if (year === "2026") {
-
 const { data: dbData, error: dbErr } = await supabase
 
           .from("grand_prix")
@@ -634,6 +625,48 @@ loadSeasonArchive(selectedSeason);
   useEffect(() => {
     checkUserTeam();
   }, [user]);
+
+//chargement des membres
+
+const [teamMembersList, setTeamMembersList] = useState([]);
+
+const loadTeamMembers = async (teamId) => {
+  if (!teamId) return;
+
+  const { data, error } = await supabase
+    .from("team_members")
+    .select("user_id, role, profiles(username, email)")
+    .eq("team_id", teamId);
+
+  if (!error && data) {
+    const membersWithPoints = await Promise.all(
+      data.map(async (m) => {
+        const { data: betsData } = await supabase
+          .from("bets")
+          .select("points_awarded")
+          .eq("user_id", m.user_id);
+
+        const totalPoints = betsData?.reduce((sum, b) => sum + (b.points_awarded || 0), 0) || 0;
+
+        return {
+          id: m.user_id,
+          name: m.profiles?.username || m.profiles?.email?.split("@")[0] || "Utilisateur",
+          role: m.role,
+          points: totalPoints
+        };
+      })
+    );
+
+    membersWithPoints.sort((a, b) => b.points - a.points);
+    setTeamMembersList(membersWithPoints);
+  }
+};
+
+useEffect(() => {
+  if (userTeam?.id) {
+    loadTeamMembers(userTeam.id);
+  }
+}, [userTeam]);
 
 //création écurie
 const generateInviteCode = (teamName) => {
@@ -2404,145 +2437,77 @@ member.rank === 1 ? "text-amber-400" : member.rank === 2 ? "text-zinc-300" : mem
 
 {/* MODAL GESTION DE TEAM & INVITATION */}
 
-{showTeamModal && (
-
-<div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-
-<div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
-
-<div className="flex justify-between items-center border-b border-[#2b2b3d] pb-3">
-
-<div className="flex items-center gap-2">
-
-<Crown className="w-5 h-5 text-amber-400" />
-
-<h3 className="text-base font-black text-white">Gestion de l'Écurie</h3>
-
-</div>
-
-<button onClick={() => setShowTeamModal(false)} className="text-zinc-400 hover:text-white">✕</button>
-
-</div>
-
-
-
-<div className="bg-[#15151e] p-4 rounded-xl border border-[#2b2b3d] space-y-2">
-
-<div className="text-xs text-zinc-400">Écurie active :</div>
-
-<div className="text-lg font-black text-white">{currentTeam.name}</div>
-
-<div className="flex items-center justify-between pt-2 border-t border-[#2b2b3d]">
-
-<span className="text-xs text-zinc-400">Code d'invitation collègue :</span>
-
-<div className="flex items-center gap-2">
-
-<span className="font-mono font-black text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30">
-
-{currentTeam.inviteCode}
-
-</span>
-
-<button 
-
-onClick={copyInviteCode}
-
-className="p-1 hover:text-white text-zinc-400 transition"
-
-title="Copier le code"
-
->
-
-<Copy className="w-4 h-4" />
-
-</button>
-
-</div>
-
-</div>
-
-{copiedCode && (
-
-<div className="text-[11px] text-emerald-400 font-bold text-right">
-
-                  ✓ Code copié dans le presse-papier !
-
-</div>
-
-              )}
-
-</div>
-
-
-
-<div className="space-y-2">
-
-<label className="text-xs font-bold text-zinc-400">Rejoindre une autre écurie :</label>
-
-<div className="flex gap-2">
-
-<input
-
-type="text"
-
-placeholder="Ex: F1PARIS"
-
-value={joinCodeInput}
-
-onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
-
-className="bg-[#15151e] border border-[#2b2b3d] rounded-xl px-3 py-2 text-xs font-mono text-white flex-1 outline-none focus:border-[#e10600]"
-
-/>
-
-<button
-
-onClick={() => {
-
-if (joinCodeInput.trim()) {
-
-alert(`Demande d'adhésion pour le code ${joinCodeInput} envoyée !`);
-
-setJoinCodeInput("");
-
-setShowTeamModal(false);
-
-                    }
-
-                  }}
-
-className="bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-4 py-2 rounded-xl transition"
-
->
-
-                  Rejoindre
-
-</button>
-
-</div>
-
-</div>
-
-
-
-<button
-
-onClick={() => setShowTeamModal(false)}
-
-className="w-full bg-[#15151e] hover:bg-[#252538] text-zinc-300 text-xs font-bold py-2.5 rounded-xl border border-[#2b2b3d] transition"
-
->
-
-              Fermer
-
-</button>
-
-</div>
-
-</div>
-
-      )}
+{showTeamModal && userTeam && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      <div className="flex justify-between items-center border-b border-[#2b2b3d] pb-3">
+        <div className="flex items-center gap-2">
+          <Crown className="w-5 h-5 text-amber-400" />
+          <h3 className="text-base font-black text-white">Gestion de l'Écurie</h3>
+        </div>
+        <button onClick={() => setShowTeamModal(false)} className="text-zinc-400 hover:text-white">✕</button>
+      </div>
+
+      <div className="bg-[#15151e] p-4 rounded-xl border border-[#2b2b3d] space-y-2">
+        <div className="text-xs text-zinc-400">Écurie active :</div>
+        <div className="text-lg font-black text-white">{userTeam.name}</div>
+        <div className="flex items-center justify-between pt-2 border-t border-[#2b2b3d]">
+          <span className="text-xs text-zinc-400">Code d'invitation collègue :</span>
+          <div className="flex items-center gap-2">
+            <span className="font-mono font-black text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30">
+              {userTeam.invite_code}
+            </span>
+            <button
+              onClick={copyInviteCode}
+              className="p-1 hover:text-white text-zinc-400 transition"
+              title="Copier le code"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+        {copiedCode && (
+          <div className="text-[11px] text-emerald-400 font-bold text-right">
+            ✓ Code copié dans le presse-papier !
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <div className="text-xs font-bold text-zinc-400 flex items-center gap-1.5">
+          <Users className="w-3.5 h-3.5" />
+          Membres de l'écurie ({teamMembersList.length})
+        </div>
+        <div className="space-y-1.5 max-h-64 overflow-y-auto">
+          {teamMembersList.map((member) => (
+            <div
+              key={member.id}
+              className="flex items-center justify-between p-2.5 rounded-lg bg-[#15151e] border border-[#2b2b3d] text-xs"
+            >
+              <div>
+                <span className="text-white font-bold">{member.name}</span>
+                {member.role === "Team Principal" && (
+                  <span className="ml-2 text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.2 rounded font-black">
+                    <Crown className="w-2.5 h-2.5 inline mr-0.5" />
+                    PRINCIPAL
+                  </span>
+                )}
+              </div>
+              <span className="font-mono font-black text-[#e10600]">{member.points} pts</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <button
+        onClick={() => setShowTeamModal(false)}
+        className="w-full bg-[#15151e] hover:bg-[#252538] text-zinc-300 text-xs font-bold py-2.5 rounded-xl border border-[#2b2b3d] transition"
+      >
+        Fermer
+      </button>
+    </div>
+  </div>
+)}
 
 
 
