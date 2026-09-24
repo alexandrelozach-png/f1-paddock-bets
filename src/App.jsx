@@ -750,6 +750,33 @@ const now = Date.now();
 
 setCurrentTime(now);
 
+
+
+// Exécution du pipeline automatique en arrière-plan
+
+if (activeGP) {
+
+runAutoSyncPipeline(activeGP, supabase).then((res) => {
+
+if (res?.status === "advanced" && res.nextRound) {
+
+setSelectedRound(res.nextRound);
+
+load2026DataFromDB();
+
+          }
+
+if (res?.logs && res.logs.length > 0) {
+
+setSyncEngineLogs((prev) => [...res.logs, ...prev].slice(0, 5));
+
+          }
+        });
+      }
+    }, 1000);
+return () => clearInterval(timer);
+}, [activeGP]);
+
 useEffect(() => {
   // 1. Vérifier si une session existe déjà au chargement de la page
   supabase.auth.getSession().then(({ data: { session } }) => {
@@ -784,38 +811,6 @@ useEffect(() => {
 
   loadProfile();
 }, [user]);
-
-// Exécution du pipeline automatique en arrière-plan
-
-if (activeGP) {
-
-runAutoSyncPipeline(activeGP, supabase).then((res) => {
-
-if (res?.status === "advanced" && res.nextRound) {
-
-setSelectedRound(res.nextRound);
-
-load2026DataFromDB();
-
-          }
-
-if (res?.logs && res.logs.length > 0) {
-
-setSyncEngineLogs((prev) => [...res.logs, ...prev].slice(0, 5));
-
-          }
-
-        });
-
-      }
-
-    }, 1000);
-
-return () => clearInterval(timer);
-
-  }, [activeGP]);
-
-
 
 // Compte à rebours universel adapté au fuseau horaire
 
