@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.10 - fix2 ---
+// --- VERSION: ALPHA v3.11 ---
 import React, { useState, useEffect } from "react";
 import { 
 Trophy, 
@@ -36,7 +36,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.10 - fix2";
+const APP_VERSION = "ALPHA v3.11";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -386,11 +386,15 @@ members: [
 
 
 const [showTeamModal, setShowTeamModal] = useState(false);
-
 const [copiedCode, setCopiedCode] = useState(false);
-
 const [joinCodeInput, setJoinCodeInput] = useState("");
-
+const [userTeam, setUserTeam] = useState(null); // L'écurie réelle de l'utilisateur connecté
+const [checkingTeam, setCheckingTeam] = useState(true); // Chargement en cours
+const [teamOnboardingMode, setTeamOnboardingMode] = useState("choice"); // "choice" | "create" | "join"
+const [newTeamName, setNewTeamName] = useState("");
+const [joinTeamCode, setJoinTeamCode] = useState("");
+const [teamActionError, setTeamActionError] = useState("");
+const [teamActionLoading, setTeamActionLoading] = useState(false);
 
 
 // Sélecteur de saison & Archives
@@ -602,7 +606,150 @@ loadSeasonArchive(selectedSeason);
 
   }, [selectedSeason, activeTab]);
 
+//Gestion des équipes  
+  const checkUserTeam = async () => {
+    if (!user?.id) {
+      setUserTeam(null);
+      setCheckingTeam(false);
+      return;
+    }
+  
+    setCheckingTeam(true);
+  
+    const { data, error } = await supabase
+      .from("team_members")
+      .select("*, teams(*)")
+      .eq("user_id", user.id)
+      .maybeSingle();
+  
+    if (!error && data?.teams) {
+      setUserTeam(data.teams);
+    } else {
+      setUserTeam(null);
+    }
+  
+    setCheckingTeam(false);
+  };
+  
+  useEffect(() => {
+    checkUserTeam();
+  }, [user]);
 
+//création écurie
+const generateInviteCode = (teamName) => {
+  const prefix = teamName.replace(/[^A-Za-z]/g, "").substring(0, 3).toUpperCase() || "F1";
+  const randomPart = Math.floor(1000 + Math.random() * 9000);
+  return `${prefix}${randomPart}`;
+};
+
+const handleCreateTeam = async () => {
+  setTeamActionError("");
+
+  if (!newTeamName.trim() || newTeamName.trim().length < 3) {
+    setTeamActionError("Le nom de l'écurie doit contenir au moins 3 caractères.");
+    return;
+  }
+
+  setTeamActionLoading(true);
+
+  try {
+    // Vérification préalable de disponibilité du nom
+    const { data: existingTeam } = await supabase
+      .from("teams")
+      .select("id")
+      .eq("name", newTeamName.trim())
+      .maybeSingle();
+
+    if (existingTeam) {
+      setTeamActionError("Ce nom d'écurie est déjà pris. Merci d'en choisir un autre.");
+      setTeamActionLoading(false);
+      return;
+    }
+
+    const inviteCode = generateInviteCode(newTeamName.trim());
+
+    const { data: newTeam, error: createError } = await supabase
+      .from("teams")
+      .insert({
+        name: newTeamName.trim(),
+        invite_code: inviteCode,
+        team_principal_id: user.id
+      })
+      .select()
+      .single();
+
+    if (createError) throw createError;
+
+    // Ajout automatique du créateur comme membre (Team Principal)
+    const { error: memberError } = await supabase
+      .from("team_members")
+      .insert({
+        team_id: newTeam.id,
+        user_id: user.id,
+        role: "Team Principal"
+      });
+
+    if (memberError) throw memberError;
+
+    setUserTeam(newTeam);
+    setNewTeamName("");
+  } catch (err) {
+    if (err.message?.includes("duplicate")) {
+      setTeamActionError("Ce nom d'écurie est déjà pris. Merci d'en choisir un autre.");
+    } else {
+      setTeamActionError(err.message || "Une erreur est survenue lors de la création.");
+    }
+  } finally {
+    setTeamActionLoading(false);
+  }
+};
+
+//fonction rejoindre une écurie
+const handleJoinTeam = async () => {
+  setTeamActionError("");
+
+  if (!joinTeamCode.trim()) {
+    setTeamActionError("Merci de saisir un code d'invitation.");
+    return;
+  }
+
+  setTeamActionLoading(true);
+
+  try {
+    const { data: foundTeam, error: findError } = await supabase
+      .from("teams")
+      .select("*")
+      .eq("invite_code", joinTeamCode.trim().toUpperCase())
+      .maybeSingle();
+
+    if (findError || !foundTeam) {
+      setTeamActionError("Ce code d'invitation n'existe pas. Vérifie-le auprès de ton collègue.");
+      setTeamActionLoading(false);
+      return;
+    }
+
+    const { error: joinError } = await supabase
+      .from("team_members")
+      .insert({
+        team_id: foundTeam.id,
+        user_id: user.id,
+        role: "Pilote Titulaire"
+      });
+
+    if (joinError) throw joinError;
+
+    setUserTeam(foundTeam);
+    setJoinTeamCode("");
+  } catch (err) {
+    if (err.message?.includes("duplicate")) {
+      setTeamActionError("Tu fais déjà partie de cette écurie.");
+    } else {
+      setTeamActionError(err.message || "Une erreur est survenue.");
+    }
+  } finally {
+    setTeamActionLoading(false);
+  }
+};
 
 // Synchronisation du calendrier 2026 et séances FP depuis Supabase
 
