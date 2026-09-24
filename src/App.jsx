@@ -957,6 +957,38 @@ setSyncEngineLogs((prev) => [...res.logs, ...prev].slice(0, 5));
 return () => clearInterval(timer);
 }, [activeGP]);
 
+// Chargement du pronostic existant de l'utilisateur pour le GP sélectionné (ALPHA v3.11)
+useEffect(() => {
+  const loadExistingBet = async () => {
+    if (!user?.id || typeof currentGP.id !== "number") {
+      setCurrentBet({ pole: "", pos1: "", pos2: "", pos3: "", dotd: "", isLocked: false });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("bets")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("gp_id", currentGP.id)
+      .maybeSingle();
+
+    if (!error && data) {
+      setCurrentBet({
+        pole: data.pole_id,
+        pos1: data.pos1_id,
+        pos2: data.pos2_id,
+        pos3: data.pos3_id,
+        dotd: data.dotd_id,
+        isLocked: false
+      });
+    } else {
+      setCurrentBet({ pole: "", pos1: "", pos2: "", pos3: "", dotd: "", isLocked: false });
+    }
+  };
+
+  loadExistingBet();
+}, [selectedRound, user?.id, currentGP.id]);
+
 useEffect(() => {
   // 1. Vérifier si une session existe déjà au chargement de la page
   supabase.auth.getSession().then(({ data: { session } }) => {
@@ -1158,18 +1190,56 @@ const handleAuthSubmit = async (e) => {
   }
 };
 
-const handleSaveBet = () => {
+const handleSaveBet = async () => {
+  if (isExpired || !user?.id) return;
 
-if (isExpired) return;
+  if (!currentBet.pole || !currentBet.pos1 || !currentBet.pos2 || !currentBet.pos3 || !currentBet.dotd) {
+    setSaveFeedback({ visible: true, message: "⚠️ Merci de compléter les 5 pronostics avant d'enregistrer." });
+    setTimeout(() => setSaveFeedback({ visible: false, message: "" }), 4000);
+    return;
+  }
 
-setSaveFeedback({ visible: true, message: "Pronostics enregistrés avec succès ! Vous pouvez les modifier à volonté avant la deadline." });
+  if (typeof currentGP.id !== "number") {
+    setSaveFeedback({ visible: true, message: "❌ Ce Grand Prix n'est pas encore synchronisé avec la base de données." });
+    setTimeout(() => setSaveFeedback({ visible: false, message: "" }), 4000);
+    return;
+  }
 
-setTimeout(() => setSaveFeedback({ visible: false, message: "" }), 4000);
+  try {
+    const { error } = await supabase
+      .from("bets")
+      .upsert(
+        {
+          user_id: user.id,
+          gp_id: currentGP.id,
+          pole_id: currentBet.pole,
+          pos1_id: currentBet.pos1,
+          pos2_id: currentBet.pos2,
+          pos3_id: currentBet.pos3,
+          dotd_id: currentBet.dotd,
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: "user_id,gp_id" }
+      );
 
-  };
+    if (error) throw error;
 
-
-
+    setSaveFeedback({
+      visible: true,
+      message: "✅ Pronostics enregistrés avec succès ! Vous pouvez les modifier à volonté avant la deadline."
+    });
+  } catch (err) {
+    console.error("Erreur sauvegarde pari:", err);
+    setSaveFeedback({
+      visible: true,
+      message: err.message?.includes("deadline") || err.message?.includes("Date limite")
+        ? "🔒 Trop tard ! Les qualifications ont déjà commencé."
+        : "❌ Erreur lors de l'enregistrement. Réessayez."
+    });
+  } finally {
+    setTimeout(() => setSaveFeedback({ visible: false, message: "" }), 4000);
+  }
+};
 return (
 
 <div className="min-h-screen bg-[#0e0e14] text-white flex flex-col font-sans">
