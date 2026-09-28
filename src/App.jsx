@@ -908,13 +908,18 @@ const handleAutoFetchResults = async () => {
 
 //récupérations des FP
 
-const [fetchingPractice, setFetchingPractice] = useState(false);
-
-const formatLapTime = (seconds) => {
-  if (!seconds) return "N/A";
-  const minutes = Math.floor(seconds / 60);
-  const secs = (seconds % 60).toFixed(3);
-  return minutes > 0 ? `${minutes}:${secs.padStart(6, "0")}` : `${secs}s`;
+const fetchJsonWithRetry = async (url, retries = 3, delayMs = 1500) => {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    const res = await fetch(url);
+    if (res.status === 429) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs * (attempt + 1)));
+      continue;
+    }
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  }
+  return [];
 };
 
 const handleFetchPracticeResults = async () => {
@@ -922,8 +927,7 @@ const handleFetchPracticeResults = async () => {
   setResultSaveFeedback({ visible: false, message: "" });
 
   try {
-    const sessionsRes = await fetch(`https://api.openf1.org/v1/sessions?year=2026`);
-    const allSessions = await sessionsRes.json();
+    const allSessions = await fetchJsonWithRetry(`https://api.openf1.org/v1/sessions?year=2026`);
 
     const matchingSessions = allSessions.filter(
       (s) =>
@@ -944,15 +948,14 @@ const handleFetchPracticeResults = async () => {
       const sessionType = sessionTypeMap[session.session_name];
       const sessionKey = session.session_key;
 
-      const [lapsRes, stintsRes, driversRes] = await Promise.all([
-        fetch(`https://api.openf1.org/v1/laps?session_key=${sessionKey}`),
-        fetch(`https://api.openf1.org/v1/stints?session_key=${sessionKey}`),
-        fetch(`https://api.openf1.org/v1/drivers?session_key=${sessionKey}`)
-      ]);
+      const laps = await fetchJsonWithRetry(`https://api.openf1.org/v1/laps?session_key=${sessionKey}`);
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
-      const laps = await lapsRes.json();
-      const stints = await stintsRes.json();
-      const drivers = await driversRes.json();
+      const stints = await fetchJsonWithRetry(`https://api.openf1.org/v1/stints?session_key=${sessionKey}`);
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
+      const drivers = await fetchJsonWithRetry(`https://api.openf1.org/v1/drivers?session_key=${sessionKey}`);
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
       const validLaps = laps.filter((l) => l.lap_duration && !l.is_pit_out_lap);
 
@@ -987,7 +990,6 @@ const handleFetchPracticeResults = async () => {
         .sort((a, b) => a.rawTime - b.rawTime)
         .slice(0, 6);
 
-      // On supprime les anciennes données de cette séance avant d'insérer les nouvelles
       await supabase
         .from("practice_results")
         .delete()
@@ -1005,14 +1007,25 @@ const handleFetchPracticeResults = async () => {
         laps_completed: r.laps_completed
       }));
 
-      const { error: insertError } = await supabase.from("practice_results").insert(rowsToInsert);
-      if (!insertError) totalInserted += rowsToInsert.length;
+      if (rowsToInsert.length > 0) {
+        const { error: insertError } = await supabase.from("practice_results").insert(rowsToInsert);
+        if (!insertError) totalInserted += rowsToInsert.length;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 800));
     }
 
-    setResultSaveFeedback({
-      visible: true,
-      message: `✅ ${totalInserted} chronos récupérés et enregistrés pour les séances disponibles !`
-    });
+    if (totalInserted > 0) {
+      setResultSaveFeedback({
+        visible: true,
+        message: `✅ ${totalInserted} chronos récupérés et enregistrés !`
+      });
+    } else {
+      setResultSaveFeedback({
+        visible: true,
+        message: "⚠️ Aucun chrono n'a pu être récupéré (données pas encore disponibles sur l'API)."
+      });
+    }
 
     load2026DataFromDB();
   } catch (err) {
