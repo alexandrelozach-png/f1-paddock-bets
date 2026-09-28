@@ -923,6 +923,13 @@ const fetchJsonWithRetry = async (url, retries = 3, delayMs = 1500) => {
   return [];
 };
 
+const formatLapTime = (seconds) => {
+  if (!seconds) return "N/A";
+  const minutes = Math.floor(seconds / 60);
+  const secs = (seconds % 60).toFixed(3);
+  return minutes > 0 ? `${minutes}:${secs.padStart(6, "0")}` : `${secs}s`;
+};
+
 const handleFetchPracticeResults = async () => {
   setFetchingPractice(true);
   setResultSaveFeedback({ visible: false, message: "" });
@@ -930,9 +937,36 @@ const handleFetchPracticeResults = async () => {
   try {
     const allSessions = await fetchJsonWithRetry(`https://api.openf1.org/v1/sessions?year=2026`);
 
+    const countryTranslations = {
+      "azerbaïdjan": "azerbaijan",
+      "espagne": "spain",
+      "italie": "italy",
+      "royaume-uni": "united kingdom",
+      "pays-bas": "netherlands",
+      "belgique": "belgium",
+      "hongrie": "hungary",
+      "autriche": "austria",
+      "monaco": "monaco",
+      "canada": "canada",
+      "etats-unis": "united states",
+      "mexique": "mexico",
+      "bresil": "brazil",
+      "qatar": "qatar",
+      "singapour": "singapore",
+      "malaisie": "malaysia",
+      "chine": "china",
+      "japon": "japan",
+      "australie": "australia",
+      "arabie saoudite": "saudi arabia",
+      "abou dabi": "united arab emirates"
+    };
+    
+    const rawCountry = currentGP.country?.toLowerCase().replace(/[🇦-🇿]/g, "").trim() || "";
+    const translatedCountry = countryTranslations[rawCountry] || rawCountry;
+    
     const matchingSessions = allSessions.filter(
       (s) =>
-        s.location?.toLowerCase().includes(currentGP.city?.toLowerCase() || "___") &&
+        s.country_name?.toLowerCase().includes(translatedCountry) &&
         ["Practice 1", "Practice 2", "Practice 3"].includes(s.session_name)
     );
 
