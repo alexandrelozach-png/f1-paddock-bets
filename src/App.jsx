@@ -402,6 +402,7 @@ const [officialResultForm, setOfficialResultForm] = useState({
   pole: "", pos1: "", pos2: "", pos3: "", dotd: ""
 });
 const [fetchingResults, setFetchingResults] = useState(false);
+const [fetchingPractice, setFetchingPractice] = useState(false);
 const [resultSaveFeedback, setResultSaveFeedback] = useState({ visible: false, message: "" });
 
 // Sélecteur de saison & Archives
