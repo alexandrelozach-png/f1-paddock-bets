@@ -834,6 +834,9 @@ const handleAutoFetchResults = async () => {
     const races = calendarData?.MRData?.RaceTable?.Races || [];
 
     const targetDate = currentGP.raceDate?.split("T")[0];
+    console.log("DEBUG - currentGP complet:", currentGP);
+    console.log("DEBUG - targetDate calculé:", targetDate);
+
     const matchingRace = races.find((r) => r.date === targetDate);
 
     if (!matchingRace) {
