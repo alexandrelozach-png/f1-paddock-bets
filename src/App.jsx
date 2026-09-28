@@ -84,38 +84,12 @@ const CIRCUIT_SVGS = {
     />
   ),
 
-sepang: (
-
-<svg viewBox="0 0 400 180" className="w-full h-36 stroke-current">
-
-<defs>
-
-<linearGradient id="sepangGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-
-<stop offset="0%" stopColor="#10b981" />
-
-<stop offset="50%" stopColor="#f59e0b" />
-
-<stop offset="100%" stopColor="#3b82f6" />
-
-</linearGradient>
-
-</defs>
-
-<path d="M 50 140 L 330 140 C 360 140 360 110 330 90 L 230 90 C 200 90 200 50 240 50 L 310 50 C 330 50 330 25 300 25 L 120 25 C 90 25 80 50 100 70 L 130 90 C 150 110 130 130 100 130 L 50 140 Z" 
-
-fill="none" stroke="#2b2b3d" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-
-<path d="M 50 140 L 330 140 C 360 140 360 110 330 90 L 230 90 C 200 90 200 50 240 50 L 310 50 C 330 50 330 25 300 25 L 120 25 C 90 25 80 50 100 70 L 130 90 C 150 110 130 130 100 130 L 50 140 Z" 
-
-fill="none" stroke="url(#sepangGrad)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-
-<line x1="180" y1="132" x2="180" y2="148" stroke="#ffffff" strokeWidth="3" />
-
-<text x="185" y="162" fill="#ffffff" fontSize="9" fontFamily="monospace">SEPANG INTERNATIONAL (5.543 KM)</text>
-
-</svg>
-
+  sepang: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackkualalumpurdetailed.webp" 
+      alt="Sepang City Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
   ),
 
 barcelona: (
@@ -247,31 +221,18 @@ practice: []
   { 
 
 round: 18, 
-
 id: "sepang", 
-
 name: "Petronas Malaysian Grand Prix", 
-
 circuit: "Petronas Sepang International Circuit", 
-
 country: "Malaisie 🇲🇾", 
-
 city: "Sepang", 
-
 status: "upcoming", 
-
 isCancelled: false, 
-
 qualiDeadline: "2026-10-03T06:00:00Z", 
-
 isSprint: false, 
-
 length: "5.543 km", 
-
 laps: 56, 
-
 lapRecord: "1:34.080 (Vettel)", 
-
 officialResults: null, 
 
 practice: [] 
@@ -292,26 +253,17 @@ practice: []
 
 ];
 
-
-
 export default function App() {
 
 const [activeTab, setActiveTab] = useState("bet");
-
 const [selectedRound, setSelectedRound] = useState(17);
 const [hasInitializedRound, setHasInitializedRound] = useState(false);
 const [calendarLoadedFromDB, setCalendarLoadedFromDB] = useState(false);
 const [calendar, setCalendar] = useState(INITIAL_CALENDAR_2026);
-
 const [showPractice, setShowPractice] = useState(true);
-
 const [selectedPracticeSession, setSelectedPracticeSession] = useState("FP3");
-
 const [currentTime, setCurrentTime] = useState(Date.now());
-
 const [syncEngineLogs, setSyncEngineLogs] = useState([]);
-
-
 
 // Gestion des Teams / Groupes
 
