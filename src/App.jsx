@@ -436,7 +436,7 @@ const [currentBet, setCurrentBet] = useState({ pole: "", pos1: "", pos2: "", pos
 const [saveFeedback, setSaveFeedback] = useState({ visible: false, message: "" });
 const currentGP = calendar.find((gp) => gp.round === selectedRound) || calendar[0];
 const activeGP = calendar.find((gp) => gp.status === "active") || calendar[16];
-const isTeamPrincipal = userTeam?.team_principal_id === user?.id;
+const isTeamPrincipal = !!user && userTeam?.team_principal_id === user?.id;
 
 //correspondance des pilotes
 
