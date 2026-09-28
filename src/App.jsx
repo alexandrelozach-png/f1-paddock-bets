@@ -930,7 +930,11 @@ const handleSaveOfficialResults = async () => {
       );
 
     if (error) throw error;
-
+    // Marquer le Grand Prix comme terminé pour qu'il apparaisse dans les archives
+    await supabase
+      .from("grand_prix")
+      .update({ completed: true })
+      .eq("id", currentGP.id);
     setResultSaveFeedback({
       visible: true,
       message: "🏆 Résultats officiels enregistrés ! Les points de l'écurie ont été recalculés automatiquement."
@@ -1096,13 +1100,9 @@ setCurrentTime(now);
 // Exécution du pipeline automatique en arrière-plan
 
 if (activeGP) {
-
 runAutoSyncPipeline(activeGP, supabase).then((res) => {
-
 if (res?.status === "advanced" && res.nextRound) {
-
 setSelectedRound(res.nextRound);
-
 load2026DataFromDB();
 
           }
