@@ -87,43 +87,44 @@ const CIRCUIT_SVGS = {
   sepang: (
     <img 
       src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackkualalumpurdetailed.webp" 
-      alt="Sepang City Circuit" 
+      alt="Petronas Sepang International Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  singapore: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksingaporedetailed.webp" 
+      alt="Marina Bay Street Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  austin: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackaustindetailed.webp" 
+      alt="Circuit of the Americas" 
       className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
     />
   ),
 
 barcelona: (
-
 <svg viewBox="0 0 400 180" className="w-full h-36 stroke-current">
-
 <defs>
-
 <linearGradient id="barcaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-
 <stop offset="0%" stopColor="#10b981" />
-
 <stop offset="50%" stopColor="#f59e0b" />
-
 <stop offset="100%" stopColor="#3b82f6" />
-
 </linearGradient>
-
 </defs>
-
 <path d="M 60 145 L 310 145 C 340 145 350 120 330 95 C 315 80 280 85 270 70 C 260 50 280 30 250 25 L 180 25 C 160 25 150 45 130 50 L 90 50 C 70 50 65 75 80 90 L 110 110 C 120 120 105 135 90 135 L 60 145 Z" 
 
 fill="none" stroke="#2b2b3d" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-
 <path d="M 60 145 L 310 145 C 340 145 350 120 330 95 C 315 80 280 85 270 70 C 260 50 280 30 250 25 L 180 25 C 160 25 150 45 130 50 L 90 50 C 70 50 65 75 80 90 L 110 110 C 120 120 105 135 90 135 L 60 145 Z" 
-
 fill="none" stroke="url(#barcaGrad)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-
 <line x1="140" y1="137" x2="140" y2="153" stroke="#ffffff" strokeWidth="3" />
-
 <text x="145" y="165" fill="#ffffff" fontSize="9" fontFamily="monospace">CATALUNYA S1/S2/S3</text>
-
 </svg>
-
   ),
 
 default: (
