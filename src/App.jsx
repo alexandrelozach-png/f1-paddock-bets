@@ -906,6 +906,123 @@ const handleAutoFetchResults = async () => {
   }
 };
 
+//récupérations des FP
+
+const [fetchingPractice, setFetchingPractice] = useState(false);
+
+const formatLapTime = (seconds) => {
+  if (!seconds) return "N/A";
+  const minutes = Math.floor(seconds / 60);
+  const secs = (seconds % 60).toFixed(3);
+  return minutes > 0 ? `${minutes}:${secs.padStart(6, "0")}` : `${secs}s`;
+};
+
+const handleFetchPracticeResults = async () => {
+  setFetchingPractice(true);
+  setResultSaveFeedback({ visible: false, message: "" });
+
+  try {
+    const sessionsRes = await fetch(`https://api.openf1.org/v1/sessions?year=2026`);
+    const allSessions = await sessionsRes.json();
+
+    const matchingSessions = allSessions.filter(
+      (s) =>
+        s.location?.toLowerCase().includes(currentGP.city?.toLowerCase() || "___") &&
+        ["Practice 1", "Practice 2", "Practice 3"].includes(s.session_name)
+    );
+
+    if (matchingSessions.length === 0) {
+      setResultSaveFeedback({ visible: true, message: "⚠️ Aucune séance d'essais trouvée pour ce Grand Prix sur l'API." });
+      setFetchingPractice(false);
+      return;
+    }
+
+    const sessionTypeMap = { "Practice 1": "FP1", "Practice 2": "FP2", "Practice 3": "FP3" };
+    let totalInserted = 0;
+
+    for (const session of matchingSessions) {
+      const sessionType = sessionTypeMap[session.session_name];
+      const sessionKey = session.session_key;
+
+      const [lapsRes, stintsRes, driversRes] = await Promise.all([
+        fetch(`https://api.openf1.org/v1/laps?session_key=${sessionKey}`),
+        fetch(`https://api.openf1.org/v1/stints?session_key=${sessionKey}`),
+        fetch(`https://api.openf1.org/v1/drivers?session_key=${sessionKey}`)
+      ]);
+
+      const laps = await lapsRes.json();
+      const stints = await stintsRes.json();
+      const drivers = await driversRes.json();
+
+      const validLaps = laps.filter((l) => l.lap_duration && !l.is_pit_out_lap);
+
+      const bestPerDriver = {};
+      validLaps.forEach((l) => {
+        if (!bestPerDriver[l.driver_number] || l.lap_duration < bestPerDriver[l.driver_number].lap_duration) {
+          bestPerDriver[l.driver_number] = l;
+        }
+      });
+
+      const lapCountPerDriver = {};
+      validLaps.forEach((l) => {
+        lapCountPerDriver[l.driver_number] = (lapCountPerDriver[l.driver_number] || 0) + 1;
+      });
+
+      const ranking = Object.entries(bestPerDriver)
+        .map(([driverNumber, lap]) => {
+          const driverInfo = drivers.find((d) => d.driver_number === Number(driverNumber));
+          const stint = stints.find(
+            (s) => s.driver_number === Number(driverNumber) && lap.lap_number >= s.lap_start && lap.lap_number <= s.lap_end
+          );
+
+          return {
+            driver_name: driverInfo?.full_name || `#${driverNumber}`,
+            team_name: driverInfo?.team_name || "Inconnu",
+            best_lap_time: formatLapTime(lap.lap_duration),
+            tire_compound: stint?.compound || "N/A",
+            laps_completed: lapCountPerDriver[driverNumber] || 0,
+            rawTime: lap.lap_duration
+          };
+        })
+        .sort((a, b) => a.rawTime - b.rawTime)
+        .slice(0, 6);
+
+      // On supprime les anciennes données de cette séance avant d'insérer les nouvelles
+      await supabase
+        .from("practice_results")
+        .delete()
+        .eq("gp_id", currentGP.id)
+        .eq("session_type", sessionType);
+
+      const rowsToInsert = ranking.map((r, index) => ({
+        gp_id: currentGP.id,
+        session_type: sessionType,
+        position: index + 1,
+        driver_name: r.driver_name,
+        team_name: r.team_name,
+        best_lap_time: r.best_lap_time,
+        tire_compound: r.tire_compound,
+        laps_completed: r.laps_completed
+      }));
+
+      const { error: insertError } = await supabase.from("practice_results").insert(rowsToInsert);
+      if (!insertError) totalInserted += rowsToInsert.length;
+    }
+
+    setResultSaveFeedback({
+      visible: true,
+      message: `✅ ${totalInserted} chronos récupérés et enregistrés pour les séances disponibles !`
+    });
+
+    load2026DataFromDB();
+  } catch (err) {
+    console.error("Erreur récupération essais:", err);
+    setResultSaveFeedback({ visible: true, message: "❌ Erreur lors de la récupération des essais." });
+  } finally {
+    setFetchingPractice(false);
+  }
+};
+
 // Sauvegarde des résultats officiels
 
 const handleSaveOfficialResults = async () => {
@@ -1229,70 +1346,35 @@ const isExpired = currentGP.status === "completed" || timeRemaining.expired;
 
 
 // Formatage de date locale avec gestion automatique du fuseau (Heure de Paris)
-
 const formatQualiDate = (isoString) => {
-
 if (!isoString) return "Date non définie";
-
 const dateObj = new Date(isoString);
-
 const options = {
-
 weekday: "long",
-
 day: "numeric",
-
 month: "long",
-
 year: "numeric",
-
 hour: "2-digit",
-
 minute: "2-digit"
-
     };
-
-
-
 const isParisTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone.includes("Paris");
-
 const formatted = dateObj.toLocaleDateString("fr-FR", options);
-
 return isParisTimeZone ? `${formatted} (heure de Paris)` : formatted;
-
   };
-
-
 
 const getTireBadge = (compound) => {
-
 switch (compound) {
-
 case "SOFT":
-
 return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-red-500/20 text-red-400 border border-red-500/30">🔴 SOFT</span>;
-
 case "MEDIUM":
-
 return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">🟡 MEDIUM</span>;
-
 case "HARD":
-
 return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-slate-200/20 text-white border border-white/30">⚪ HARD</span>;
-
 default:
-
 return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-zinc-800 text-zinc-400">{compound}</span>;
-
     }
-
   };
-
-
-
 const activePracticeList = currentGP.practice?.filter((p) => !p.session || p.session === selectedPracticeSession) || [];
-
-
 
 // Action de validation / sauvegarde des pronostics
 
@@ -2191,6 +2273,15 @@ isExpired
         disabled={fetchingResults}
         className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold px-3 py-1.5 rounded-lg transition disabled:opacity-50"
       >
+        <button
+  onClick={handleFetchPracticeResults}
+  disabled={fetchingPractice}
+  className="flex items-center gap-1.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/40 text-blue-300 text-xs font-bold px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+>
+  <RefreshCw className={`w-3.5 h-3.5 ${fetchingPractice ? "animate-spin" : ""}`} />
+  {fetchingPractice ? "Récupération..." : "Récupérer les Essais (FP1-FP3)"}
+</button>
+
         <RefreshCw className={`w-3.5 h-3.5 ${fetchingResults ? "animate-spin" : ""}`} />
         {fetchingResults ? "Récupération..." : "Récupérer via API"}
       </button>
