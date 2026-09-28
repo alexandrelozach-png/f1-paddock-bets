@@ -643,26 +643,20 @@ const [teamMembersList, setTeamMembersList] = useState([]);
 const loadTeamMembers = async (teamId) => {
   if (!teamId) return;
 
-  console.log("DEBUG - Début loadTeamMembers pour teamId:", teamId);
-
   try {
     const { data, error } = await supabase
       .from("team_members")
       .select("user_id, role, profiles(username, email)")
       .eq("team_id", teamId);
 
-    console.log("DEBUG - Résultat team_members:", data, "Erreur:", error);
-
     if (!error && data) {
       const membersWithPoints = await Promise.all(
         data.map(async (m) => {
-          const { data: betsData, error: betsError } = await supabase
+          const { data: betsData } = await supabase
             .from("bets")
             .select("points_awarded")
             .eq("user_id", m.user_id)
             .eq("team_id", teamId);
-
-          console.log(`DEBUG - Bets pour user ${m.user_id}:`, betsData, "Erreur:", betsError);
 
           const totalPoints = betsData?.reduce((sum, b) => sum + (b.points_awarded || 0), 0) || 0;
 
@@ -676,11 +670,10 @@ const loadTeamMembers = async (teamId) => {
       );
 
       membersWithPoints.sort((a, b) => b.points - a.points);
-      console.log("DEBUG - Liste finale des membres:", membersWithPoints);
       setTeamMembersList(membersWithPoints);
     }
   } catch (err) {
-    console.error("DEBUG - Erreur catchée dans loadTeamMembers:", err);
+    console.error("Erreur lors du chargement des membres:", err);
   }
 };
 
