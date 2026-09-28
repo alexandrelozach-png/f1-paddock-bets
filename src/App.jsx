@@ -342,7 +342,7 @@ export default function App() {
 const [activeTab, setActiveTab] = useState("bet");
 
 const [selectedRound, setSelectedRound] = useState(17);
-
+const [hasInitializedRound, setHasInitializedRound] = useState(false);
 const [calendar, setCalendar] = useState(INITIAL_CALENDAR_2026);
 
 const [showPractice, setShowPractice] = useState(true);
@@ -1122,6 +1122,14 @@ setSyncEngineLogs((prev) => [...res.logs, ...prev].slice(0, 5));
 return () => clearInterval(timer);
 }, [activeGP]);
 
+useEffect(() => {
+  if (!hasInitializedRound && calendar.length > 0) {
+    const computedActiveGP = calendar.find((gp) => !gp.completed && !gp.isCancelled) || calendar[calendar.length - 1];
+    setSelectedRound(computedActiveGP.round);
+    setHasInitializedRound(true);
+  }
+}, [calendar, hasInitializedRound]);
+
 // Chargement du pronostic existant de l'utilisateur pour le GP sélectionné (ALPHA v3.11)
 useEffect(() => {
   const loadExistingBet = async () => {
@@ -1448,6 +1456,7 @@ return (
 <div className="flex items-center gap-2 sm:gap-3 shrink-0">
 
 {/* BOUTON F1 CLIQUABLE : RETOUR AU GRAND PRIX ACTIF */}
+
 
 <button
 
