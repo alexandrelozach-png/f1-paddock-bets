@@ -832,25 +832,19 @@ const handleAutoFetchResults = async () => {
     const calendarData = await calendarRes.json();
     const races = calendarData?.MRData?.RaceTable?.Races || [];
 
-    console.log("DEBUG - currentGP.raceDate BRUT:", currentGP.raceDate);
-    console.log("DEBUG - Nombre de courses reçues de l'API:", races.length);
+    // Fonction qui ramène une date à minuit UTC, en ignorant l'heure précise
+    const normalizeDate = (d) => {
+      const date = new Date(d);
+      return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+    };
 
-    const targetDateObj = new Date(currentGP.raceDate);
-    console.log("DEBUG - targetDateObj:", targetDateObj, "Valide ?", !isNaN(targetDateObj));
-
-    races.forEach((r) => {
-      const raceDateObj = new Date(r.date);
-      const diff = (targetDateObj - raceDateObj) / (1000 * 60 * 60 * 24);
-      console.log(`DEBUG - Round ${r.round} (${r.raceName}) : date=${r.date}, diff en jours=${diff}`);
-    });
+    const targetDateObj = normalizeDate(currentGP.raceDate);
 
     const matchingRace = races.find((r) => {
-      const raceDateObj = new Date(r.date);
+      const raceDateObj = normalizeDate(r.date);
       const diffInDays = Math.abs((targetDateObj - raceDateObj) / (1000 * 60 * 60 * 24));
       return diffInDays <= 1;
     });
-
-    console.log("DEBUG - matchingRace trouvée:", matchingRace);
 
     if (!matchingRace) {
       setResultSaveFeedback({
@@ -863,12 +857,10 @@ const handleAutoFetchResults = async () => {
 
     const apiRound = matchingRace.round;
 
-    // 2. Pole position avec le BON round
     const qualiRes = await fetch(`https://api.jolpi.ca/ergast/f1/2026/${apiRound}/qualifying.json`);
     const qualiData = await qualiRes.json();
     const poleDriverFamily = qualiData?.MRData?.RaceTable?.Races?.[0]?.QualifyingResults?.[0]?.Driver?.familyName;
 
-    // 3. Podium avec le BON round
     const raceRes = await fetch(`https://api.jolpi.ca/ergast/f1/2026/${apiRound}/results.json`);
     const raceData = await raceRes.json();
     const results = raceData?.MRData?.RaceTable?.Races?.[0]?.Results || [];
