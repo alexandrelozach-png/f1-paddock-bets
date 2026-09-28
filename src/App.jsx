@@ -643,33 +643,44 @@ const [teamMembersList, setTeamMembersList] = useState([]);
 const loadTeamMembers = async (teamId) => {
   if (!teamId) return;
 
-  const { data: betsData } = await supabase
-  .from("bets")
-  .select("points_awarded")
-  .eq("user_id", m.user_id)
-  .eq("team_id", teamId);
+  console.log("DEBUG - Début loadTeamMembers pour teamId:", teamId);
 
-  if (!error && data) {
-    const membersWithPoints = await Promise.all(
-      data.map(async (m) => {
-        const { data: betsData } = await supabase
-          .from("bets")
-          .select("points_awarded")
-          .eq("user_id", m.user_id);
+  try {
+    const { data, error } = await supabase
+      .from("team_members")
+      .select("user_id, role, profiles(username, email)")
+      .eq("team_id", teamId);
 
-        const totalPoints = betsData?.reduce((sum, b) => sum + (b.points_awarded || 0), 0) || 0;
+    console.log("DEBUG - Résultat team_members:", data, "Erreur:", error);
 
-        return {
-          id: m.user_id,
-          name: m.profiles?.username || m.profiles?.email?.split("@")[0] || "Utilisateur",
-          role: m.role,
-          points: totalPoints
-        };
-      })
-    );
+    if (!error && data) {
+      const membersWithPoints = await Promise.all(
+        data.map(async (m) => {
+          const { data: betsData, error: betsError } = await supabase
+            .from("bets")
+            .select("points_awarded")
+            .eq("user_id", m.user_id)
+            .eq("team_id", teamId);
 
-    membersWithPoints.sort((a, b) => b.points - a.points);
-    setTeamMembersList(membersWithPoints);
+          console.log(`DEBUG - Bets pour user ${m.user_id}:`, betsData, "Erreur:", betsError);
+
+          const totalPoints = betsData?.reduce((sum, b) => sum + (b.points_awarded || 0), 0) || 0;
+
+          return {
+            id: m.user_id,
+            name: m.profiles?.username || m.profiles?.email?.split("@")[0] || "Utilisateur",
+            role: m.role,
+            points: totalPoints
+          };
+        })
+      );
+
+      membersWithPoints.sort((a, b) => b.points - a.points);
+      console.log("DEBUG - Liste finale des membres:", membersWithPoints);
+      setTeamMembersList(membersWithPoints);
+    }
+  } catch (err) {
+    console.error("DEBUG - Erreur catchée dans loadTeamMembers:", err);
   }
 };
 
