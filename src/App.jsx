@@ -643,10 +643,11 @@ const [teamMembersList, setTeamMembersList] = useState([]);
 const loadTeamMembers = async (teamId) => {
   if (!teamId) return;
 
-  const { data, error } = await supabase
-    .from("team_members")
-    .select("user_id, role, profiles(username, email)")
-    .eq("team_id", teamId);
+  const { data: betsData } = await supabase
+  .from("bets")
+  .select("points_awarded")
+  .eq("user_id", m.user_id)
+  .eq("team_id", teamId);
 
   if (!error && data) {
     const membersWithPoints = await Promise.all(
@@ -791,6 +792,32 @@ const handleJoinTeam = async () => {
     }
   } finally {
     setTeamActionLoading(false);
+  }
+};
+
+//Quitter une équipe
+
+const handleLeaveTeam = async () => {
+  const confirmed = window.confirm(
+    "⚠️ Attention : si vous quittez cette écurie, vous perdrez l'accès à tous les points accumulés ici. Vous repartirez à 0 dans votre nouvelle écurie. Voulez-vous continuer ?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const { error } = await supabase
+      .from("team_members")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("team_id", userTeam.id);
+
+    if (error) throw error;
+
+    setUserTeam(null);
+    setTeamOnboardingMode("choice");
+    setShowTeamModal(false);
+  } catch (err) {
+    alert("Erreur lors du départ de l'écurie : " + err.message);
   }
 };
 
@@ -1367,6 +1394,7 @@ const handleSaveBet = async () => {
         {
           user_id: user.id,
           gp_id: currentGP.id,
+          team_id: userTeam?.id || null,
           pole_id: currentBet.pole,
           pos1_id: currentBet.pos1,
           pos2_id: currentBet.pos2,
@@ -2804,6 +2832,12 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
         onClick={() => setShowTeamModal(false)}
         className="w-full bg-[#15151e] hover:bg-[#252538] text-zinc-300 text-xs font-bold py-2.5 rounded-xl border border-[#2b2b3d] transition"
       >
+      <button
+        onClick={handleLeaveTeam}
+        className="w-full bg-red-950/40 hover:bg-red-900/50 text-red-400 text-xs font-bold py-2.5 rounded-xl border border-red-800/50 transition"
+      >
+        Quitter cette écurie
+      </button>
         Fermer
       </button>
     </div>
