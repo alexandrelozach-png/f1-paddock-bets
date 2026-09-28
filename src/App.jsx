@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.12 ---
+// --- VERSION: ALPHA v3.13 ---
 import React, { useState, useEffect } from "react";
 import { 
 Trophy, 
@@ -36,58 +36,33 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.12";
+const APP_VERSION = "ALPHA v3.13";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
-
   { id: "leclerc", name: "Charles Leclerc", number: 16, team: "Ferrari", teamColor: "#E8002D" },
-
   { id: "hamilton", name: "Lewis Hamilton", number: 44, team: "Ferrari", teamColor: "#E8002D" },
-
   { id: "norris", name: "Lando Norris", number: 4, team: "McLaren", teamColor: "#FF8000" },
-
   { id: "piastri", name: "Oscar Piastri", number: 81, team: "McLaren", teamColor: "#FF8000" },
-
   { id: "verstappen", name: "Max Verstappen", number: 1, team: "Red Bull Racing", teamColor: "#3671C6" },
-
   { id: "hadjar", name: "Isack Hadjar", number: 6, team: "Red Bull Racing", teamColor: "#3671C6" },
-
   { id: "russell", name: "George Russell", number: 63, team: "Mercedes", teamColor: "#27F4D2" },
-
   { id: "antonelli", name: "Kimi Antonelli", number: 12, team: "Mercedes", teamColor: "#27F4D2" },
-
   { id: "alonso", name: "Fernando Alonso", number: 14, team: "Aston Martin", teamColor: "#229971" },
-
   { id: "stroll", name: "Lance Stroll", number: 18, team: "Aston Martin", teamColor: "#229971" },
-
   { id: "albon", name: "Alexander Albon", number: 23, team: "Williams", teamColor: "#64C4FF" },
-
   { id: "sainz", name: "Carlos Sainz", number: 55, team: "Williams", teamColor: "#64C4FF" },
-
   { id: "gasly", name: "Pierre Gasly", number: 10, team: "Alpine", teamColor: "#FF87BC" },
-
   { id: "colapinto", name: "Franco Colapinto", number: 43, team: "Alpine", teamColor: "#FF87BC" },
-
   { id: "lawson", name: "Liam Lawson", number: 30, team: "Racing Bulls", teamColor: "#6692FF" },
-
   { id: "lindblad", name: "Arvid Lindblad", number: 45, team: "Racing Bulls", teamColor: "#6692FF" },
-
   { id: "hulkenberg", name: "Nico Hülkenberg", number: 27, team: "Sauber Audi", teamColor: "#52E252" },
-
   { id: "bortoleto", name: "Gabriel Bortoleto", number: 5, team: "Sauber Audi", teamColor: "#52E252" },
-
   { id: "ocon", name: "Esteban Ocon", number: 31, team: "Haas", teamColor: "#B6BABD" },
-
   { id: "bearman", name: "Oliver Bearman", number: 87, team: "Haas", teamColor: "#B6BABD" },
-
   { id: "perez", name: "Sergio Pérez", number: 11, team: "Cadillac", teamColor: "#D4AF37" },
-
   { id: "bottas", name: "Valtteri Bottas", number: 77, team: "Cadillac", teamColor: "#D4AF37" }
-
 ];
-
-
 
 // --- TRACÉS VECTORIELS SVG OFFICIELS ---
 
@@ -213,8 +188,6 @@ fill="none" stroke="url(#defGrad)" strokeWidth="4" strokeLinecap="round" strokeL
 
 };
 
-
-
 // --- CALENDRIER 2026 STRICTEMENT CHRONOLOGIQUE ---
 
 const INITIAL_CALENDAR_2026 = [
@@ -254,33 +227,19 @@ const INITIAL_CALENDAR_2026 = [
   { 
 
 round: 17, 
-
 id: "baku", 
-
 name: "Azerbaijan Grand Prix (Bakou)", 
-
 circuit: "Baku City Circuit", 
-
 country: "Azerbaïdjan 🇦🇿", 
-
 city: "Bakou", 
-
 status: "active", 
-
 isCancelled: false,
-
 qualiDeadline: "2026-09-25T14:00:00Z",
-
 isSprint: false, 
-
 length: "6.003 km", 
-
 laps: 51, 
-
 lapRecord: "1:43.009 (Leclerc)", 
-
 officialResults: null, 
-
 practice: [] 
 
   },
@@ -316,9 +275,7 @@ lapRecord: "1:34.080 (Vettel)",
 officialResults: null, 
 
 practice: [] 
-
   },
-
   { round: 19, id: "singapore", name: "Singapore Grand Prix", circuit: "Marina Bay Street Circuit", country: "Singapour 🇸🇬", city: "Marina Bay", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-10T13:00:00Z", isSprint: false, length: "4.940 km", laps: 62, lapRecord: "1:34.486 (Ricciardo)", officialResults: null, practice: [] },
 
   { round: 20, id: "austin", name: "United States Grand Prix", circuit: "Circuit of the Americas", country: "USA 🇺🇸", city: "Austin", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-24T22:00:00Z", isSprint: true, length: "5.513 km", laps: 56, lapRecord: "1:36.169 (Leclerc)", officialResults: null, practice: [] },
@@ -1564,32 +1521,19 @@ className="bg-[#e10600] hover:bg-[#c30500] text-white font-black italic tracking
 
 </button>
 
-<div>
-
-<div className="flex items-center gap-2">
-
-<span className="font-black text-xs sm:text-sm tracking-wider text-zinc-100 uppercase">
-
-                  Paddock Bets
-
-</span>
-
-<span className="text-[9px] font-mono tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded flex items-center gap-1 font-semibold">
-
-<span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-
-{APP_VERSION}
-
-</span>
-
-<span className="hidden lg:inline text-[9px] font-mono text-zinc-400 border border-zinc-700 px-1.5 py-0.5 rounded">
-
-                  AutoSync : Actif
-
-</span>
-
-</div>
-
+<div className="hidden sm:block">
+  <div className="flex items-center gap-2">
+    <span className="font-black text-xs sm:text-sm tracking-wider text-zinc-100 uppercase">
+      Paddock Bets
+    </span>
+    <span className="text-[9px] font-mono tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded flex items-center gap-1 font-semibold">
+      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+      {APP_VERSION}
+    </span>
+    <span className="hidden lg:inline text-[9px] font-mono text-zinc-400 border border-zinc-700 px-1.5 py-0.5 rounded">
+      AutoSync : Actif
+    </span>
+  </div>
 </div>
 
 </div>
@@ -1617,7 +1561,7 @@ className="bg-[#e10600] hover:bg-[#c30500] text-white font-black italic tracking
 )}
 
 </div>
-<div className="flex items-center gap-1.5 sm:gap-3">
+<div className="flex items-center gap-1 sm:gap-3 shrink-0">
 
 <nav className="hidden md:flex items-center bg-[#1e1e2d] border border-[#2b2b3d] p-1 rounded-xl text-xs">
 
