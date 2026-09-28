@@ -1124,7 +1124,7 @@ return () => clearInterval(timer);
 
 useEffect(() => {
   if (!hasInitializedRound && calendar.length > 0) {
-    const computedActiveGP = calendar.find((gp) => !gp.completed && !gp.isCancelled) || calendar[calendar.length - 1];
+    const computedActiveGP = calendar.find((gp) => gp.status !== "completed" && !gp.isCancelled) || calendar[calendar.length - 1];
     setSelectedRound(computedActiveGP.round);
     setHasInitializedRound(true);
   }
