@@ -961,7 +961,7 @@ const handleFetchPracticeResults = async () => {
       "abou dabi": "united arab emirates"
     };
     
-    const rawCountry = currentGP.country?.toLowerCase().replace(/[🇦-🇿]/g, "").trim() || "";
+    const rawCountry = currentGP.country?.toLowerCase().replace(/[^a-zàâäéèêëïîôöùûüç\s-]/gi, "").trim() || "";
     const translatedCountry = countryTranslations[rawCountry] || rawCountry;
     
     const matchingSessions = allSessions.filter(
