@@ -1517,101 +1517,54 @@ className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.
 activeTab === "bet" ? "bg-[#e10600] text-white" : "text-zinc-400 hover:text-white"
 
 }`}
-
 >
-
 <Flag className="w-3.5 h-3.5" /> Paris
-
 </button>
-
 <button
-
 onClick={() => setActiveTab("standings")}
-
 className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
-
 activeTab === "standings" ? "bg-[#e10600] text-white" : "text-zinc-400 hover:text-white"
-
 }`}
-
 >
-
 <Trophy className="w-3.5 h-3.5" /> Classement
-
 </button>
-
 <button
-
 onClick={() => setActiveTab("history")}
-
 className={`px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 ${
-
 activeTab === "history" ? "bg-[#e10600] text-white" : "text-zinc-400 hover:text-white"
-
 }`}
 
 >
-
 <History className="w-3.5 h-3.5" /> Résultats & Saisons
-
 </button>
-
 </nav>
 
-
-
 {/* Menu Smartphone */}
-
 <div className="md:hidden relative">
-
 <select
-
 value={activeTab}
-
 onChange={(e) => setActiveTab(e.target.value)}
-
 className="bg-[#1e1e2d] border border-[#2b2b3d] text-zinc-200 text-xs font-bold rounded-lg px-2.5 py-1.5 outline-none appearance-none pr-7"
-
 >
-
 <option value="bet">🏁 Paris</option>
-
 <option value="standings">🏆 Classement Team</option>
-
 <option value="history">📜 Résultats & Saisons</option>
-
 </select>
 
 <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-
 </div>
-
-
-
 {user ? (
-
 <div className="flex items-center gap-1.5 bg-[#1e1e2d] border border-emerald-500/40 px-2 sm:px-3 py-1.5 rounded-xl text-xs">
-
 <User className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-
 <span className="text-zinc-100 font-semibold truncate max-w-[80px] sm:max-w-[120px]">
-
 {userProfile?.username || user.email?.split("@")[0]}
-
 </span>
-
 <button onClick={() => supabase.auth.signOut()} className="text-zinc-400 hover:text-red-400 p-0.5">
-
 <LogOut className="w-3.5 h-3.5" />
-
 </button>
-
 </div>
-
             ) : (
-
 <button
-
 onClick={() => setShowAuthModal(true)}
 
 className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition"
@@ -1685,10 +1638,7 @@ selectedRound === gp.round
           ))}
 
 </div>
-
 </section>
-
-
 
 {/* CONTENU PRINCIPAL */}
 
@@ -1799,92 +1749,47 @@ selectedRound === gp.round
 {/* CARTE GP EN COURS & COMPTE À REBOURS */}
 
 <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl relative overflow-hidden">
-
 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-
 <div>
-
 <div className="flex items-center gap-2">
-
 <span className="text-xs font-bold text-[#e10600] uppercase tracking-wider">
-
                       Round {currentGP.round} • {currentGP.country}
-
 </span>
-
 {currentGP.isCancelled && (
-
 <span className="text-[10px] bg-red-500/20 border border-red-500/40 text-red-400 px-2 py-0.5 rounded font-bold flex items-center gap-1">
-
 <XCircle className="w-3 h-3" /> Grand Prix Annulé
-
 </span>
-
                     )}
-
 {currentGP.isSprint && !currentGP.isCancelled && (
-
 <span className="text-[10px] bg-amber-500/20 border border-amber-500/40 text-amber-400 px-2 py-0.5 rounded font-bold flex items-center gap-1">
-
 <Zap className="w-3 h-3" /> Week-end Sprint
-
 </span>
-
                     )}
-
 </div>
-
 <h1 className="text-2xl font-black text-white mt-1">{currentGP.name}</h1>
-
 <p className="text-xs text-zinc-400 flex items-center gap-1 mt-1">
-
 <MapPin className="w-4 h-4 text-[#e10600]" />
-
 {currentGP.circuit}
-
 </p>
-
 </div>
-
-
-
 <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl flex flex-col justify-center shrink-0">
-
 <div className="flex items-center gap-3">
-
 <Clock className="w-6 h-6 text-[#e10600] animate-pulse shrink-0" />
-
 <div>
-
 <div className="text-[10px] uppercase font-bold text-zinc-400">
-
                         Compte à rebours Qualifications
-
 </div>
-
 {currentGP.isCancelled ? (
-
 <div className="text-xs font-bold text-red-400">ÉVÉNEMENT ANNULÉ</div>
-
                       ) : isExpired ? (
-
 <div className="text-xs font-bold text-red-400">PRONOSTICS FERMÉS</div>
-
                       ) : (
-
 <div className="text-lg font-black font-mono text-white">
-
 {timeRemaining.days}j {timeRemaining.hours}h {timeRemaining.minutes}m {timeRemaining.seconds}s
-
 </div>
-
                       )}
-
 </div>
-
 </div>
-
-
 
 {!currentGP.isCancelled && (
 
@@ -1931,7 +1836,9 @@ selectedRound === gp.round
 
 </div>
 
-
+{/* BARRIÈRE D'ACCÈS : ESSAIS, PARIS ET ADMIN RÉSERVÉS AUX MEMBRES CONNECTÉS D'UNE ÉCURIE */}
+{user && userTeam ? (
+  <>
 
 {/* VOLET ESSAIS LIBRES & PNEUMATIQUES DE TOUS LES GRANDS PRIX */}
 
@@ -2188,83 +2095,48 @@ className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg
                         ))}
 
 </select>
-
 </div>
 
-
-
 <div>
-
 <span className="text-[11px] text-zinc-300 font-bold block mb-1">2e 🥈</span>
-
 <select
-
 disabled={isExpired}
-
 value={currentBet.pos2}
-
 onChange={(e) => setCurrentBet({ ...currentBet, pos2: e.target.value })}
-
 className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs disabled:opacity-50"
-
 >
-
 <option value="">Choisir...</option>
-
 {DRIVERS_2026.map((d) => (
-
 <option key={d.id} value={d.id} disabled={currentBet.pos1 === d.id || currentBet.pos3 === d.id}>{d.name}</option>
 
                         ))}
 
 </select>
-
 </div>
-
-
-
 <div>
-
 <span className="text-[11px] text-amber-600 font-bold block mb-1">3e 🥉</span>
-
 <select
-
 disabled={isExpired}
-
 value={currentBet.pos3}
-
 onChange={(e) => setCurrentBet({ ...currentBet, pos3: e.target.value })}
-
 className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs disabled:opacity-50"
-
 >
-
 <option value="">Choisir...</option>
-
 {DRIVERS_2026.map((d) => (
-
 <option key={d.id} value={d.id} disabled={currentBet.pos1 === d.id || currentBet.pos2 === d.id}>{d.name}</option>
 
                         ))}
 
 </select>
-
 </div>
-
 </div>
-
 </div>
-
-
 
 {/* BOUTON D'ENREGISTREMENT ET DE MODIFICATION DES PARIS */}
 
 <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-
 <div className="text-xs text-zinc-400">
-
 {isExpired ? (
-
 <span className="text-red-400 flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" /> Les modifications sont closes pour cette manche.</span>
 
                   ) : (
@@ -2274,15 +2146,10 @@ className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg
                   )}
 
 </div>
-
 <button
-
 onClick={handleSaveBet}
-
 disabled={isExpired}
-
 className={`px-5 py-2.5 rounded-xl text-xs font-black tracking-wide uppercase transition-all flex items-center gap-2 shadow-lg ${
-
 isExpired
 
                     ? "bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700"
@@ -2290,27 +2157,17 @@ isExpired
                     : "bg-[#e10600] hover:bg-[#c30500] text-white shadow-red-900/30 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
 
 }`}
-
 >
-
 <Check className="w-4 h-4" />
-
 <span>{isExpired ? "Pronostics Fermés" : "Enregistrer mes pronostics"}</span>
-
 </button>
-
 </div>
-
-
 
 {saveFeedback.visible && (
 
 <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs flex items-center gap-2 animate-fadeIn">
-
 <CheckCircle2 className="w-4 h-4 shrink-0" />
-
 <span>{saveFeedback.message}</span>
-
 </div>
 
               )}
@@ -2320,8 +2177,23 @@ isExpired
             )}
 
 </>
-
-        )}
+) : (
+  <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-10 text-center space-y-3">
+    <Lock className="w-10 h-10 text-zinc-500 mx-auto" />
+    <h3 className="text-white font-bold text-sm">Accès réservé aux membres</h3>
+    <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+      Connectez-vous et rejoignez (ou créez) une écurie pour consulter les essais libres et enregistrer vos pronostics.
+    </p>
+    {!user && (
+      <button
+        onClick={() => setShowAuthModal(true)}
+        className="bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-4 py-2 rounded-xl transition"
+      >
+        Se connecter / S'inscrire
+      </button>
+    )}
+  </div>
+)}
 
 {/* PANNEAU ADMIN : SAISIE DES RÉSULTATS OFFICIELS (TEAM PRINCIPAL UNIQUEMENT) */}
 {isTeamPrincipal && !currentGP.isCancelled && activeTab === "bet" && (
@@ -2418,7 +2290,7 @@ isExpired
       </div>
     )}
 
-    <button
+<button
       onClick={handleSaveOfficialResults}
       className="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-2.5 rounded-xl text-xs uppercase tracking-wide transition"
     >
@@ -2426,198 +2298,109 @@ isExpired
     </button>
   </div>
 )}
+  </>
+)}
 
 {/* ONGLET HISTORIQUE & SÉLECTEUR DE SAISON */}
 
 {activeTab === "history" && (
-
 <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-5">
-
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2b2b3d] pb-4">
-
 <div>
-
 <h2 className="text-lg font-black text-white flex items-center gap-2">
-
 <History className="w-5 h-5 text-blue-400" />
-
                   Résultats & Archives Officielles
-
 </h2>
-
 <p className="text-xs text-zinc-400">Données officielles consolidées dans la base de données Supabase</p>
-
 </div>
-
-
-
 <div className="flex items-center gap-2">
-
 <span className="text-xs text-zinc-400 font-bold flex items-center gap-1">
-
 <Globe className="w-3.5 h-3.5 text-emerald-400" /> Saison :
-
 </span>
-
 <select
-
 value={selectedSeason}
-
 onChange={(e) => setSelectedSeason(e.target.value)}
-
 className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rounded-lg px-3 py-1.5 outline-none"
-
 >
-
 <option value="2026">2026 (En cours)</option>
-
 <option value="2025">2025 (Terminée)</option>
-
 <option value="2024">2024 (Terminée)</option>
-
 </select>
-
 </div>
-
 </div>
-
-
 
 {loadingArchive ? (
-
 <div className="py-12 text-center text-zinc-400 text-xs flex flex-col items-center gap-2">
-
 <RefreshCw className="w-6 h-6 animate-spin text-[#e10600]" />
-
 <span>Chargement des données officielles depuis Supabase...</span>
-
 </div>
-
             ) : selectedSeason === "2026" ? (
-
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
 {season2026OfficialFromDB.map((gp) => (
 
 <div key={gp.round} className="bg-[#15151e] border border-[#2b2b3d] p-4 rounded-xl text-xs space-y-2">
 
 <div className="flex justify-between items-center">
-
 <strong className="text-white">Round {gp.round} • {gp.raceName}</strong>
-
 <span className={`text-[10px] px-2 py-0.5 rounded ${gp.isCancelled ? "bg-red-900/40 text-red-300 border border-red-700/40" : "bg-zinc-800 text-zinc-400"}`}>
-
 {gp.isCancelled ? "Annulé" : "Terminé"}
-
 </span>
-
 </div>
-
 {gp.isCancelled ? (
-
 <div className="text-zinc-500 italic pt-1">Grand Prix officiellement déprogrammé du calendrier mondial.</div>
-
                     ) : (
-
 <div className="pt-2 border-t border-[#2b2b3d] space-y-1">
-
 <div>🥇 1er: <strong className="text-amber-400">{gp.p1?.name}</strong> <span className="text-zinc-500 text-[10px]">({gp.p1?.team})</span></div>
-
 <div>🥈 2e: <strong className="text-zinc-300">{gp.p2?.name}</strong> <span className="text-zinc-500 text-[10px]">({gp.p2?.team})</span></div>
-
 <div>🥉 3e: <strong className="text-amber-600">{gp.p3?.name}</strong> <span className="text-zinc-500 text-[10px]">({gp.p3?.team})</span></div>
-
 <div className="text-zinc-400 pt-1 flex items-center justify-between">
-
 <span>Pole: <strong className="text-white">{gp.pole}</strong></span>
-
 {gp.dotd && (
-
 <span className="bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20 font-bold">
-
                               DOTD: {gp.dotd}
-
 </span>
-
                           )}
-
 </div>
-
 </div>
-
                     )}
-
 </div>
-
                 ))}
-
 </div>
-
             ) : (
-
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
 {seasonArchiveResults.map((race) => (
-
 <div key={race.round} className="bg-[#15151e] border border-[#2b2b3d] p-4 rounded-xl text-xs space-y-2">
-
 <div className="flex justify-between items-center">
-
 <strong className="text-white">R{race.round} • {race.raceName}</strong>
-
 <span className="text-[10px] bg-blue-900/40 text-blue-300 border border-blue-700/40 px-2 py-0.5 rounded font-mono">
-
 {race.date}
-
 </span>
-
 </div>
-
 <div className="text-[11px] text-zinc-400">{race.circuitName} ({race.country})</div>
-
 <div className="pt-2 border-t border-[#2b2b3d] space-y-1">
-
 <div>🥇 1er: <strong className="text-amber-400">{race.p1 ? `${race.p1.name} (${race.p1.team})` : "N/A"}</strong></div>
-
 <div>🥈 2e: <strong className="text-zinc-300">{race.p2 ? `${race.p2.name} (${race.p2.team})` : "N/A"}</strong></div>
-
 <div>🥉 3e: <strong className="text-amber-600">{race.p3 ? `${race.p3.name} (${race.p3.team})` : "N/A"}</strong></div>
-
 <div className="text-zinc-400 pt-1 flex items-center justify-between">
-
 {race.fastestLap && <span>⚡ Meilleur tour: <strong className="text-emerald-400">{race.fastestLap}</strong></span>}
-
 {race.dotd && (
-
 <span className="bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20 font-bold">
-
                             DOTD: {race.dotd}
-
 </span>
-
                         )}
-
 </div>
-
 </div>
-
 </div>
-
                 ))}
-
 </div>
-
             )}
-
 </div>
-
         )}
-
-
 
 {/* ONGLET CLASSEMENT : LIMITÉ AUX COLLÈGUES DE LA TEAM */}
 
-{activeTab === "standings" && userTeam && (
+{activeTab === "standings" && (
+  user && userTeam ? (
   <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-5">
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2b2b3d] pb-4">
       <div>
@@ -2684,6 +2467,23 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
       )}
     </div>
   </div>
+  ) : (
+    <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-10 text-center space-y-3">
+      <Lock className="w-10 h-10 text-zinc-500 mx-auto" />
+      <h3 className="text-white font-bold text-sm">Accès réservé aux membres</h3>
+      <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+        Connectez-vous et rejoignez une écurie pour consulter le classement.
+      </p>
+      {!user && (
+        <button
+          onClick={() => setShowAuthModal(true)}
+          className="bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-4 py-2 rounded-xl transition"
+        >
+          Se connecter / S'inscrire
+        </button>
+      )}
+    </div>
+  )
 )}
     </>
 )}
