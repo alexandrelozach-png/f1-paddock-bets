@@ -1085,12 +1085,12 @@ return () => clearInterval(timer);
 }, [activeGP]);
 
 useEffect(() => {
-  if (!hasInitializedRound && calendar.length > 0) {
+  if (!hasInitializedRound && calendarLoadedFromDB) {
     const computedActiveGP = calendar.find((gp) => gp.status !== "completed" && !gp.isCancelled) || calendar[calendar.length - 1];
     setSelectedRound(computedActiveGP.round);
     setHasInitializedRound(true);
   }
-}, [calendar, hasInitializedRound]);
+}, [calendar, calendarLoadedFromDB, hasInitializedRound]);
 
 // Chargement du pronostic existant de l'utilisateur pour le GP sélectionné (ALPHA v3.11)
 useEffect(() => {
