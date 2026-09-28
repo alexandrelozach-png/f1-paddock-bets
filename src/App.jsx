@@ -151,6 +151,18 @@ fill="none" stroke="url(#defGrad)" strokeWidth="4" strokeLinecap="round" strokeL
   )
 
 };
+const CIRCUIT_ROUND_MAP = {
+  1: "melbourne",
+  2: "shanghai",
+  3: "suzuka",
+
+  9: "barcelona",
+  16: "madrid",
+  17: "baku",
+  18: "sepang",
+  19: "singapore",
+  20: "austin"
+};
 
 // --- CALENDRIER 2026 STRICTEMENT CHRONOLOGIQUE ---
 
@@ -356,27 +368,16 @@ const res = g.official_results?.[0] || g.official_results;
 return {
 
 round: g.round,
-
 raceName: g.name,
-
 circuitName: g.circuit_name,
-
 country: g.country,
-
 date: g.race_start_time?.split("T")[0] || "2026",
-
 isCancelled: g.is_cancelled,
-
 pole: res?.pole_id ? DRIVERS_2026.find((d) => d.id === res.pole_id)?.name || res.pole_id.toUpperCase() : "N/A",
-
 p1: res?.pos1_id ? { name: DRIVERS_2026.find((d) => d.id === res.pos1_id)?.name || res.pos1_id.toUpperCase(), team: DRIVERS_2026.find((d) => d.id === res.pos1_id)?.team || "" } : null,
-
 p2: res?.pos2_id ? { name: DRIVERS_2026.find((d) => d.id === res.pos2_id)?.name || res.pos2_id.toUpperCase(), team: DRIVERS_2026.find((d) => d.id === res.pos2_id)?.team || "" } : null,
-
 p3: res?.pos3_id ? { name: DRIVERS_2026.find((d) => d.id === res.pos3_id)?.name || res.pos3_id.toUpperCase(), team: DRIVERS_2026.find((d) => d.id === res.pos3_id)?.team || "" } : null,
-
 dotd: res?.dotd_id ? DRIVERS_2026.find((d) => d.id === res.dotd_id)?.name || res.dotd_id.toUpperCase() : null
-
               };
 
             });
@@ -388,41 +389,22 @@ setSeason2026OfficialFromDB(formatted);
       } else {
 
 const { data: dbData, error: dbErr } = await supabase
-
           .from("season_archives")
-
           .select("*")
-
           .eq("season", parseInt(year, 10))
-
           .order("round", { ascending: true });
-
-
-
 if (!dbErr && dbData && dbData.length > 0) {
-
 setSeasonArchiveResults(
-
 dbData.map((r) => ({
-
 round: r.round,
-
 raceName: r.race_name,
-
 circuitName: r.circuit_name,
-
 country: r.country,
-
 date: r.race_date,
-
 p1: { name: r.p1_name, team: r.p1_team },
-
 p2: { name: r.p2_name, team: r.p2_team },
-
 p3: { name: r.p3_name, team: r.p3_team },
-
 fastestLap: r.fastest_lap,
-
 dotd: r.dotd_name || r.p1_name
 
             }))
@@ -1768,7 +1750,7 @@ selectedRound === gp.round
 {/* TRACÉ DU CIRCUIT */}
 <div className="mt-4 pt-4 border-t border-[#2b2b3d] flex flex-col md:flex-row items-center gap-4">
   <div className="w-full md:w-2/3 bg-[#0e0e14] rounded-lg p-2 border border-[#2b2b3d]">
-  {CIRCUIT_SVGS[currentGP.id] || CIRCUIT_SVGS.default}
+  {CIRCUIT_SVGS[CIRCUIT_ROUND_MAP[currentGP.round]] || CIRCUIT_SVGS.default}
   </div>
 
 
