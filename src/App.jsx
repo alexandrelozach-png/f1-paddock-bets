@@ -435,7 +435,7 @@ const [authLoadingAction, setAuthLoadingAction] = useState(false);
 const [currentBet, setCurrentBet] = useState({ pole: "", pos1: "", pos2: "", pos3: "", dotd: "", isLocked: false });
 const [saveFeedback, setSaveFeedback] = useState({ visible: false, message: "" });
 const currentGP = calendar.find((gp) => gp.round === selectedRound) || calendar[0];
-const activeGP = calendar.find((gp) => !gp.completed && !gp.isCancelled) || calendar[calendar.length - 1];
+const activeGP = calendar.find((gp) => gp.status !== "completed" && !gp.isCancelled) || calendar[calendar.length - 1];
 const isTeamPrincipal = !!user && userTeam?.team_principal_id === user?.id;
 
 //correspondance des pilotes
@@ -1045,7 +1045,7 @@ isSprint: dbMatch.is_sprint ?? localGP.isSprint,
 
 isCancelled: dbMatch.is_cancelled ?? localGP.isCancelled,
 
-status: dbMatch.completed ? "completed" : dbMatch.round === 17 ? "active" : "upcoming",
+status: dbMatch.completed ? "completed" : "upcoming",
 
 practice: matchingPractice.length > 0 ? matchingPractice : localGP.practice,
 
