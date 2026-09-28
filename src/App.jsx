@@ -828,17 +828,29 @@ const handleAutoFetchResults = async () => {
   setResultSaveFeedback({ visible: false, message: "" });
 
   try {
-    // 1. Récupérer le calendrier complet pour trouver le VRAI round Jolpica
     const calendarRes = await fetch(`https://api.jolpi.ca/ergast/f1/2026.json?limit=100`);
     const calendarData = await calendarRes.json();
     const races = calendarData?.MRData?.RaceTable?.Races || [];
 
+    console.log("DEBUG - currentGP.raceDate BRUT:", currentGP.raceDate);
+    console.log("DEBUG - Nombre de courses reçues de l'API:", races.length);
+
     const targetDateObj = new Date(currentGP.raceDate);
+    console.log("DEBUG - targetDateObj:", targetDateObj, "Valide ?", !isNaN(targetDateObj));
+
+    races.forEach((r) => {
+      const raceDateObj = new Date(r.date);
+      const diff = (targetDateObj - raceDateObj) / (1000 * 60 * 60 * 24);
+      console.log(`DEBUG - Round ${r.round} (${r.raceName}) : date=${r.date}, diff en jours=${diff}`);
+    });
+
     const matchingRace = races.find((r) => {
       const raceDateObj = new Date(r.date);
       const diffInDays = Math.abs((targetDateObj - raceDateObj) / (1000 * 60 * 60 * 24));
-      return diffInDays <= 1; // Tolérance d'1 jour pour absorber les décalages de fuseau horaire
+      return diffInDays <= 1;
     });
+
+    console.log("DEBUG - matchingRace trouvée:", matchingRace);
 
     if (!matchingRace) {
       setResultSaveFeedback({
