@@ -343,6 +343,7 @@ const [activeTab, setActiveTab] = useState("bet");
 
 const [selectedRound, setSelectedRound] = useState(17);
 const [hasInitializedRound, setHasInitializedRound] = useState(false);
+const [calendarLoadedFromDB, setCalendarLoadedFromDB] = useState(false);
 const [calendar, setCalendar] = useState(INITIAL_CALENDAR_2026);
 
 const [showPractice, setShowPractice] = useState(true);
@@ -982,21 +983,12 @@ const { data: practiceData } = await supabase
 
 
 if (!gpErr && gpData && gpData.length > 0) {
-
 setCalendar((prev) =>
-
 prev.map((localGP) => {
-
 const dbMatch = gpData.find((d) => d.round === localGP.round);
-
 if (!dbMatch) return localGP;
-
 const res = dbMatch.official_results?.[0] || dbMatch.official_results;
-
-
-
 const matchingPractice = practiceData
-
 ? practiceData
 
                   .filter((p) => p.grand_prix?.round === localGP.round || p.gp_id === dbMatch.id)
@@ -1004,63 +996,33 @@ const matchingPractice = practiceData
                   .map((p) => ({
 
 session: p.session_type,
-
 pos: p.position,
-
 driver: p.driver_name,
-
 team: p.team_name,
-
 time: p.best_lap_time,
-
 tire: p.tire_compound,
-
 laps: p.laps_completed
-
                   }))
-
 : [];
-
-
-
 return {
-
 ...localGP,
-
 id: dbMatch.id || localGP.id,
-
 name: dbMatch.name || localGP.name,
-
 circuit: dbMatch.circuit_name || localGP.circuit,
-
 country: dbMatch.country || localGP.country,
-
 city: dbMatch.city || localGP.city,
-
 qualiDeadline: dbMatch.quali_start_time || localGP.qualiDeadline,
-
 raceDate: dbMatch.race_start_time || localGP.raceDate,
-
 isSprint: dbMatch.is_sprint ?? localGP.isSprint,
-
 isCancelled: dbMatch.is_cancelled ?? localGP.isCancelled,
-
 status: dbMatch.completed ? "completed" : "upcoming",
-
 practice: matchingPractice.length > 0 ? matchingPractice : localGP.practice,
-
 officialResults: res ? {
-
 pole: res.pole_id,
-
 pos1: res.pos1_id,
-
 pos2: res.pos2_id,
-
 pos3: res.pos3_id,
-
 dotd: res.dotd_id
-
               } : localGP.officialResults
 
             };
@@ -1068,7 +1030,7 @@ dotd: res.dotd_id
           })
 
         );
-
+        setCalendarLoadedFromDB(true);
       }
 
     } catch (err) {
