@@ -833,11 +833,12 @@ const handleAutoFetchResults = async () => {
     const calendarData = await calendarRes.json();
     const races = calendarData?.MRData?.RaceTable?.Races || [];
 
-    const targetDate = currentGP.raceDate?.split("T")[0];
-    console.log("DEBUG - currentGP complet:", currentGP);
-    console.log("DEBUG - targetDate calculé:", targetDate);
-
-    const matchingRace = races.find((r) => r.date === targetDate);
+    const targetDateObj = new Date(currentGP.raceDate);
+    const matchingRace = races.find((r) => {
+      const raceDateObj = new Date(r.date);
+      const diffInDays = Math.abs((targetDateObj - raceDateObj) / (1000 * 60 * 60 * 24));
+      return diffInDays <= 1; // Tolérance d'1 jour pour absorber les décalages de fuseau horaire
+    });
 
     if (!matchingRace) {
       setResultSaveFeedback({
