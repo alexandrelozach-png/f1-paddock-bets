@@ -108,23 +108,12 @@ const CIRCUIT_SVGS = {
     />
   ),
 
-barcelona: (
-<svg viewBox="0 0 400 180" className="w-full h-36 stroke-current">
-<defs>
-<linearGradient id="barcaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-<stop offset="0%" stopColor="#10b981" />
-<stop offset="50%" stopColor="#f59e0b" />
-<stop offset="100%" stopColor="#3b82f6" />
-</linearGradient>
-</defs>
-<path d="M 60 145 L 310 145 C 340 145 350 120 330 95 C 315 80 280 85 270 70 C 260 50 280 30 250 25 L 180 25 C 160 25 150 45 130 50 L 90 50 C 70 50 65 75 80 90 L 110 110 C 120 120 105 135 90 135 L 60 145 Z" 
-
-fill="none" stroke="#2b2b3d" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-<path d="M 60 145 L 310 145 C 340 145 350 120 330 95 C 315 80 280 85 270 70 C 260 50 280 30 250 25 L 180 25 C 160 25 150 45 130 50 L 90 50 C 70 50 65 75 80 90 L 110 110 C 120 120 105 135 90 135 L 60 145 Z" 
-fill="none" stroke="url(#barcaGrad)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-<line x1="140" y1="137" x2="140" y2="153" stroke="#ffffff" strokeWidth="3" />
-<text x="145" y="165" fill="#ffffff" fontSize="9" fontFamily="monospace">CATALUNYA S1/S2/S3</text>
-</svg>
+  barcelona: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackcatalunyadetailed.webp" 
+      alt="Circuit de Barcelona-Catalunya" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
   ),
 
 default: (
@@ -265,37 +254,6 @@ const [showPractice, setShowPractice] = useState(true);
 const [selectedPracticeSession, setSelectedPracticeSession] = useState("FP3");
 const [currentTime, setCurrentTime] = useState(Date.now());
 const [syncEngineLogs, setSyncEngineLogs] = useState([]);
-
-// Gestion des Teams / Groupes
-
-const [currentTeam, setCurrentTeam] = useState({
-
-name: "Scuderia Bosch R&D",
-
-inviteCode: "SB2026",
-
-isPrincipal: true,
-
-members: [
-
-      { id: "1", name: "Alexandre L. (Alex)", role: "Team Principal", points: 84, rank: 1, avatar: "🏎️" },
-
-      { id: "2", name: "Mélissa", role: "Pilote Titulaire", points: 79, rank: 2, avatar: "⚡" },
-
-      { id: "3", name: "Jacques", role: "Pilote Titulaire", points: 71, rank: 3, avatar: "🏁" },
-
-      { id: "4", name: "Léo", role: "Ingénieur Stratégie", points: 68, rank: 4, avatar: "📊" },
-
-      { id: "5", name: "Marion", role: "Pilote Essais", points: 64, rank: 5, avatar: "🎯" },
-
-      { id: "6", name: "Clément", role: "Télémétrie", points: 59, rank: 6, avatar: "🛠️" }
-
-    ]
-
-  });
-
-
-
 const [showTeamModal, setShowTeamModal] = useState(false);
 const [copiedCode, setCopiedCode] = useState(false);
 const [joinCodeInput, setJoinCodeInput] = useState("");
@@ -306,8 +264,6 @@ const [newTeamName, setNewTeamName] = useState("");
 const [joinTeamCode, setJoinTeamCode] = useState("");
 const [teamActionError, setTeamActionError] = useState("");
 const [teamActionLoading, setTeamActionLoading] = useState(false);
-
-
 const [officialResultForm, setOfficialResultForm] = useState({
   pole: "", pos1: "", pos2: "", pos3: "", dotd: ""
 });
@@ -318,21 +274,15 @@ const [resultSaveFeedback, setResultSaveFeedback] = useState({ visible: false, m
 // Sélecteur de saison & Archives
 
 const [selectedSeason, setSelectedSeason] = useState("2026");
-
 const [seasonArchiveResults, setSeasonArchiveResults] = useState([]);
-
 const [season2026OfficialFromDB, setSeason2026OfficialFromDB] = useState([]);
-
 const [loadingArchive, setLoadingArchive] = useState(false);
-
-
 
 // Utilisateur & Session
 
 const [user, setUser] = useState(null);
 const [userProfile, setUserProfile] = useState(null);
 const [authLoading, setAuthLoading] = useState(true);
-
 const [showAuthModal, setShowAuthModal] = useState(false);
 const [authMode, setAuthMode] = useState("login"); // "login" ou "signup"
 const [authEmail, setAuthEmail] = useState("");
@@ -340,7 +290,6 @@ const [authPassword, setAuthPassword] = useState("");
 const [authUsername, setAuthUsername] = useState("");
 const [authError, setAuthError] = useState("");
 const [authLoadingAction, setAuthLoadingAction] = useState(false);
-
 
 // Pronostics & Validation
 
@@ -363,14 +312,9 @@ const findDriverIdByFamilyName = (familyName) => {
 // Raccourci vers le Grand Prix actif (Bouton F1)
 
 const goToActiveGrandPrix = () => {
-
 setSelectedRound(activeGP.round);
-
 setActiveTab("bet");
-
-  };
-
-
+};
 
 // Copie du code d'invitation
 
@@ -1824,11 +1768,7 @@ selectedRound === gp.round
 {/* TRACÉ DU CIRCUIT */}
 <div className="mt-4 pt-4 border-t border-[#2b2b3d] flex flex-col md:flex-row items-center gap-4">
   <div className="w-full md:w-2/3 bg-[#0e0e14] rounded-lg p-2 border border-[#2b2b3d]">
-    {currentGP.round === 16 || currentGP.id === "madrid" ? CIRCUIT_SVGS.madrid :
-     currentGP.round === 17 || currentGP.id === "baku" ? CIRCUIT_SVGS.baku : 
-     currentGP.round === 18 || currentGP.id === "sepang" ? CIRCUIT_SVGS.sepang : 
-     currentGP.round === 9 || currentGP.id === "barcelona" ? CIRCUIT_SVGS.barcelona : 
-     CIRCUIT_SVGS.default}
+  {CIRCUIT_SVGS[currentGP.id] || CIRCUIT_SVGS.default}
   </div>
 
 
