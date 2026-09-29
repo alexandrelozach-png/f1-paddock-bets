@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.13 ---
+// --- VERSION: ALPHA v3.14 ---
 import React, { useState, useEffect } from "react";
 import { 
 Trophy, 
@@ -36,7 +36,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.13";
+const APP_VERSION = "ALPHA v3.14";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
