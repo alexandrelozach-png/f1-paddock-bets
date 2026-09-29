@@ -68,6 +68,30 @@ const DRIVERS_2026 = [
 
 const CIRCUIT_SVGS = {
 
+  melbourne: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmelbournedetailed.webp" 
+      alt="Albert Park Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  shanghai: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackshanghaidetailed.webp" 
+      alt="Shanghai International Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  Suzuka: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksuzukadetailed.webp" 
+      alt="Suzuka Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
   madrid: (
     <img 
       src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmadringdetailed.webp" 
@@ -155,13 +179,28 @@ const CIRCUIT_ROUND_MAP = {
   1: "melbourne",
   2: "shanghai",
   3: "suzuka",
-
+  4: "sakir",
+  5: "jeddah",
+  6: "miami",
+  7: "montreal",
+  8: "monaco",
   9: "barcelona",
+  10: "spielberg",
+  11: "silverstone",
+  12: "spa",
+  13: "hungaroring",
+  14: "zandvoort",
+  15: "monza",
   16: "madrid",
   17: "baku",
   18: "sepang",
   19: "singapore",
-  20: "austin"
+  20: "austin",
+  21: "mexico",
+  22: "saopolo",
+  23: "lasvegas",
+  24: "lusail",
+  25: "abudabhi",
 };
 
 // --- CALENDRIER 2026 STRICTEMENT CHRONOLOGIQUE ---
@@ -180,7 +219,7 @@ const INITIAL_CALENDAR_2026 = [
 
   { round: 6, id: "miami", name: "Miami Grand Prix", circuit: "Miami International Autodrome", country: "USA 🇺🇸", city: "Miami", status: "completed", isCancelled: false, qualiDeadline: "2026-05-02T20:00:00Z", isSprint: true, length: "5.412 km", laps: 57, lapRecord: "1:29.708 (Verstappen)", officialResults: { pole: "verstappen", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "norris" }, practice: [] },
 
-  { round: 7, id: "montreal", name: "Canadian Grand Prix", circuit: "Circuit Gilles-Villeneuve", country: "Canada 🇨🇦", city: "Montréal", status: "completed", isCancelled: false, qualiDeadline: "2026-05-23T20:00:00Z", isSprint: false, length: "4.361 km", laps: 70, lapRecord: "1:13.078 (Bottas)", officialResults: { pole: "russell", pos1: "verstappen", pos2: "norris", pos3: "russell", dotd: "norris" }, practice: [] },
+  { round: 7, id: "montreal", name: "Canadian Grand Prix", circuit: "Circuit Gilles-Villeneuve", country: "Canada 🇨🇦", city: "Montréal", status: "completed", isCancelled: false, qualiDeadline: "2026-05-23T20:00:00Z", isSprint: true, length: "4.361 km", laps: 70, lapRecord: "1:13.078 (Bottas)", officialResults: { pole: "russell", pos1: "verstappen", pos2: "norris", pos3: "russell", dotd: "norris" }, practice: [] },
 
   { round: 8, id: "monaco", name: "Grand Prix de Monaco", circuit: "Circuit de Monaco", country: "Monaco 🇲🇨", city: "Monte-Carlo", status: "completed", isCancelled: false, qualiDeadline: "2026-06-06T14:00:00Z", isSprint: false, length: "3.337 km", laps: 78, lapRecord: "1:12.909 (Hamilton)", officialResults: { pole: "leclerc", pos1: "leclerc", pos2: "piastri", pos3: "sainz", dotd: "leclerc" }, practice: [] },
 
@@ -190,7 +229,7 @@ const INITIAL_CALENDAR_2026 = [
 
   { round: 11, id: "silverstone", name: "British Grand Prix", circuit: "Silverstone Circuit", country: "Royaume-Uni 🇬🇧", city: "Silverstone", status: "completed", isCancelled: false, qualiDeadline: "2026-07-04T14:00:00Z", isSprint: false, length: "5.891 km", laps: 52, lapRecord: "1:27.097 (Verstappen)", officialResults: { pole: "russell", pos1: "hamilton", pos2: "verstappen", pos3: "norris", dotd: "hamilton" }, practice: [] },
 
-  { round: 12, id: "spa", name: "Belgian Grand Prix", circuit: "Circuit de Spa-Francorchamps", country: "Belgique 🇧🇪", city: "Spa", status: "completed", isCancelled: false, qualiDeadline: "2026-07-18T14:00:00Z", isSprint: true, length: "7.004 km", laps: 44, lapRecord: "1:44.701 (Perez)", officialResults: { pole: "leclerc", pos1: "hamilton", pos2: "piastri", pos3: "leclerc", dotd: "hamilton" }, practice: [] },
+  { round: 12, id: "spa", name: "Belgian Grand Prix", circuit: "Circuit de Spa-Francorchamps", country: "Belgique 🇧🇪", city: "Spa", status: "completed", isCancelled: false, qualiDeadline: "2026-07-18T14:00:00Z", isSprint: false, length: "7.004 km", laps: 44, lapRecord: "1:44.701 (Perez)", officialResults: { pole: "leclerc", pos1: "hamilton", pos2: "piastri", pos3: "leclerc", dotd: "hamilton" }, practice: [] },
 
   { round: 13, id: "hungaroring", name: "Hungarian Grand Prix", circuit: "Hungaroring", country: "Hongrie 🇭🇺", city: "Budapest", status: "completed", isCancelled: false, qualiDeadline: "2026-07-25T14:00:00Z", isSprint: false, length: "4.381 km", laps: 70, lapRecord: "1:16.627 (Hamilton)", officialResults: { pole: "norris", pos1: "piastri", pos2: "norris", pos3: "hamilton", dotd: "piastri" }, practice: [] },
 
@@ -282,6 +321,8 @@ const [officialResultForm, setOfficialResultForm] = useState({
 const [fetchingResults, setFetchingResults] = useState(false);
 const [fetchingPractice, setFetchingPractice] = useState(false);
 const [resultSaveFeedback, setResultSaveFeedback] = useState({ visible: false, message: "" });
+const [syncingCalendar, setSyncingCalendar] = useState(false);
+const [calendarSyncFeedback, setCalendarSyncFeedback] = useState({ visible: false, message: "" });
 
 // Sélecteur de saison & Archives
 
@@ -764,6 +805,71 @@ const formatLapTime = (seconds) => {
   const minutes = Math.floor(seconds / 60);
   const secs = (seconds % 60).toFixed(3);
   return minutes > 0 ? `${minutes}:${secs.padStart(6, "0")}` : `${secs}s`;
+};
+
+//Fonction synchronisation calendrier officiel
+
+const handleSyncFullCalendar = async () => {
+  setSyncingCalendar(true);
+  setCalendarSyncFeedback({ visible: false, message: "" });
+
+  try {
+    const calendarRes = await fetch(`https://api.jolpi.ca/ergast/f1/2026.json?limit=100`);
+    const calendarData = await calendarRes.json();
+    const jolpicaRaces = calendarData?.MRData?.RaceTable?.Races || [];
+
+    let updatedCount = 0;
+
+    for (const gp of calendar) {
+      if (gp.isCancelled) continue;
+
+      const normalizeDate = (d) => {
+        const date = new Date(d);
+        return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+      };
+
+      const targetDate = normalizeDate(gp.raceDate);
+
+      const matchingRace = jolpicaRaces.find((r) => {
+        const raceDate = normalizeDate(r.date);
+        const diff = Math.abs((targetDate - raceDate) / (1000 * 60 * 60 * 24));
+        return diff <= 2;
+      });
+
+      if (!matchingRace) continue;
+
+      const raceDateTime = `${matchingRace.date}T${matchingRace.time}`;
+      const qualiDateTime = matchingRace.Qualifying
+        ? `${matchingRace.Qualifying.date}T${matchingRace.Qualifying.time}`
+        : null;
+
+      if (!qualiDateTime) continue;
+
+      const { error } = await supabase
+        .from("grand_prix")
+        .update({
+          race_start_time: raceDateTime,
+          quali_start_time: qualiDateTime
+        })
+        .eq("id", gp.id);
+
+      if (!error) updatedCount++;
+
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    }
+
+    setCalendarSyncFeedback({
+      visible: true,
+      message: `✅ ${updatedCount} Grand(s) Prix synchronisé(s) avec les vraies dates officielles !`
+    });
+
+    load2026DataFromDB();
+  } catch (err) {
+    console.error("Erreur synchro calendrier:", err);
+    setCalendarSyncFeedback({ visible: true, message: "❌ Erreur lors de la synchronisation." });
+  } finally {
+    setSyncingCalendar(false);
+  }
 };
 
 const handleFetchPracticeResults = async () => {
@@ -2579,6 +2685,21 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
       >
         Quitter cette écurie
       </button>
+      {userProfile?.is_super_admin && (
+  <button
+    onClick={handleSyncFullCalendar}
+    disabled={syncingCalendar}
+    className="w-full bg-purple-950/40 hover:bg-purple-900/50 text-purple-400 text-xs font-bold py-2.5 rounded-xl border border-purple-800/50 transition disabled:opacity-50"
+  >
+    {syncingCalendar ? "Synchronisation..." : "🔄 Actualiser le Calendrier (Super Admin)"}
+  </button>
+)}
+
+{calendarSyncFeedback.visible && (
+  <div className="p-3 bg-purple-500/10 border border-purple-500/30 text-purple-300 rounded-xl text-xs">
+    {calendarSyncFeedback.message}
+  </div>
+)}
         Fermer
       </button>
     </div>
