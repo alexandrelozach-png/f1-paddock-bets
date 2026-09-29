@@ -1005,33 +1005,45 @@ const handleFetchPracticeResults = async () => {
   setResultSaveFeedback({ visible: false, message: "" });
 
   try {
-    const countryTranslations = {
-      "azerbaïdjan": "azerbaijan", "espagne": "spain", "italie": "italy",
-      "royaume-uni": "united kingdom", "pays-bas": "netherlands", "belgique": "belgium",
-      "hongrie": "hungary", "autriche": "austria", "monaco": "monaco", "canada": "canada",
-      "etats-unis": "united states", "usa": "united states", "mexique": "mexico",
-      "bresil": "brazil", "qatar": "qatar", "singapour": "singapore", "malaisie": "malaysia",
-      "chine": "china", "japon": "japan", "australie": "australia",
-      "arabie saoudite": "saudi arabia", "abou dabi": "united arab emirates",
-      "emirats arabes unis": "united arab emirates", "bahrein": "bahrain"
-    };
-
-    const rawCountry = currentGP.country?.toLowerCase().replace(/[^a-zàâäéèêëïîôöùûüç\s-]/gi, "").trim() || "";
-    const translatedCountry = countryTranslations[rawCountry] || rawCountry;
-
     const allSessions = await fetchJsonWithRetry(`https://api.openf1.org/v1/sessions?year=2026`);
 
-    // Séances récupérées via OpenF1 (FP1 + Sprint Quali si applicable)
+    const normalizeDate = (d) => {
+      const date = new Date(d);
+      return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+    };
+    
+    const targetDate = normalizeDate(currentGP.raceDate);
+    
+    // On identifie le bon week-end via la séance "Race", en trouvant la date la plus proche
+    const raceSessions = allSessions.filter((s) => s.session_name === "Race");
+    
+    let closestRace = null;
+    let closestDiff = Infinity;
+    
+    raceSessions.forEach((s) => {
+      const diff = Math.abs(normalizeDate(s.date_start) - targetDate);
+      if (diff < closestDiff) {
+        closestDiff = diff;
+        closestRace = s;
+      }
+    });
+    
+    if (!closestRace || closestDiff > 1000 * 60 * 60 * 24 * 3) {
+      setResultSaveFeedback({ visible: true, message: "⚠️ Impossible d'identifier le bon week-end sur l'API." });
+      setFetchingPractice(false);
+      return;
+    }
+    
+    const meetingKey = closestRace.meeting_key;
+    
     const openF1SessionMap = currentGP.isSprint
       ? { "Practice 1": "FP1", "Sprint Qualifying": "SQ" }
       : { "Practice 1": "FP1", "Practice 2": "FP2", "Practice 3": "FP3" };
-
+    
     const targetSessionNames = Object.keys(openF1SessionMap);
-
+    
     const matchingSessions = allSessions.filter(
-      (s) =>
-        s.country_name?.toLowerCase().includes(translatedCountry) &&
-        targetSessionNames.includes(s.session_name)
+      (s) => s.meeting_key === meetingKey && targetSessionNames.includes(s.session_name)
     );
 
     let totalInserted = 0;
