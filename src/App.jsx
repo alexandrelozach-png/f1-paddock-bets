@@ -1014,7 +1014,7 @@ const handleFetchPracticeResults = async () => {
     
     const targetDate = normalizeDate(currentGP.raceDate);
     
-    // On identifie le bon week-end via la séance "Race", en trouvant la date la plus proche
+// On identifie le bon week-end via la séance "Race", en trouvant la date la plus proche
     const raceSessions = allSessions.filter((s) => s.session_name === "Race");
     
     let closestRace = null;
@@ -1201,7 +1201,7 @@ const handleSaveOfficialResults = async () => {
       );
 
     if (error) throw error;
-    // Marquer le Grand Prix comme terminé pour qu'il apparaisse dans les archives
+// Marquer le Grand Prix comme terminé pour qu'il apparaisse dans les archives
     await supabase
       .from("grand_prix")
       .update({ completed: true })
@@ -1211,7 +1211,7 @@ const handleSaveOfficialResults = async () => {
       message: "🏆 Résultats officiels enregistrés ! Les points de l'écurie ont été recalculés automatiquement."
     });
 
-    // Recharge les données pour rafraîchir l'affichage
+// Recharge les données pour rafraîchir l'affichage
     load2026DataFromDB();
     if (userTeam?.id) loadTeamMembers(userTeam.id);
   } catch (err) {
@@ -1314,8 +1314,6 @@ useEffect(() => {
 load2026DataFromDB();
 
   }, []);
-
-
 
 // Horloge dynamique et exécution du Moteur d'Automatisation Temporelle (ALPHA v3.9)
 
@@ -1520,6 +1518,33 @@ return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-zinc-800 t
     }
   };
 const activePracticeList = currentGP.practice?.filter((p) => !p.session || p.session === selectedPracticeSession) || [];
+
+  // fonction affichage récap des paris
+  const [teamBetsSummary, setTeamBetsSummary] = useState([]);
+
+  const getDriverName = (driverId) => DRIVERS_2026.find((d) => d.id === driverId)?.name || driverId || "—";
+  
+  useEffect(() => {
+    const loadTeamBetsSummary = async () => {
+      if (!isExpired || !userTeam?.id || typeof currentGP.id !== "number") {
+        setTeamBetsSummary([]);
+        return;
+      }
+  
+      const { data, error } = await supabase
+        .from("bets")
+        .select("*, profiles(username)")
+        .eq("gp_id", currentGP.id)
+        .eq("team_id", userTeam.id);
+  
+      if (!error && data) {
+        setTeamBetsSummary(data);
+      }
+    };
+  
+    loadTeamBetsSummary();
+  }, [isExpired, userTeam?.id, currentGP.id]);
+
 
 // Action de validation / sauvegarde des pronostics
 
@@ -2014,257 +2039,138 @@ selectedRound === gp.round
 {/* VOLET ESSAIS LIBRES & PNEUMATIQUES DE TOUS LES GRANDS PRIX */}
 
 {!currentGP.isCancelled && (
-
 <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl overflow-hidden shadow-2xl">
-
 <button 
-
 onClick={() => setShowPractice(!showPractice)}
-
 className="w-full p-4 flex items-center justify-between text-left hover:bg-[#252538] transition-colors"
-
 >
-
 <div className="flex items-center gap-2">
-
 <Gauge className="w-5 h-5 text-emerald-400" />
-
 <div>
-
 <h3 className="text-sm font-black text-white">Forces en Présence • Essais Libres & Pneumatiques</h3>
-
 <p className="text-[11px] text-zinc-400">Télémétries réelles FP1, FP2 et FP3 synchronisées automatiquement à T-2h</p>
-
 </div>
-
 </div>
-
 {showPractice ? <ChevronUp className="w-4 h-4 text-zinc-400" /> : <ChevronDown className="w-4 h-4 text-zinc-400" />}
-
 </button>
 
-
-
 {showPractice && (
-
 <div className="p-4 pt-0 border-t border-[#2b2b3d] bg-[#15151e]/60">
-
 <div className="flex items-center justify-between py-3">
-
 <span className="text-xs font-bold text-zinc-400">Séance affichée :</span>
-
 <div className="flex gap-1.5">
-
 {(currentGP.isSprint ? ["FP1", "SQ", "SR"] : ["FP1", "FP2", "FP3"]).map((s) => (
-
 <button
-
 key={s}
-
 onClick={() => setSelectedPracticeSession(s)}
-
 className={`px-2.5 py-1 rounded text-xs font-bold font-mono transition ${
-
 selectedPracticeSession === s ? "bg-[#e10600] text-white" : "bg-[#1e1e2d] text-zinc-400 hover:text-white"
-
 }`}
 
 >
 
 {s}
-
 </button>
-
                         ))}
-
 </div>
-
 </div>
-
-
 
 {activePracticeList.length > 0 ? (
-
 <div className="divide-y divide-[#2b2b3d] border border-[#2b2b3d] rounded-xl overflow-hidden bg-[#12121b]">
-
 {activePracticeList.map((item, idx) => (
-
 <div key={idx} className="p-2.5 px-3 flex items-center justify-between text-xs hover:bg-[#181826]">
-
 <div className="flex items-center gap-3">
-
 <span className="font-mono font-bold text-zinc-500 w-4">#{item.pos}</span>
-
 <div>
-
 <strong className="text-zinc-100">{item.driver}</strong>
-
 <span className="text-[10px] text-zinc-400 ml-1.5 font-mono">({item.team})</span>
-
 </div>
-
 </div>
-
 <div className="flex items-center gap-3">
-
 <span className="font-mono font-black text-emerald-400">{item.time}</span>
-
 {getTireBadge(item.tire)}
-
 <span className="text-[10px] text-zinc-500 font-mono hidden sm:inline">{item.laps} tours</span>
-
 </div>
-
 </div>
-
                         ))}
 
 </div>
-
                     ) : (
-
 <div className="p-6 text-center text-xs text-zinc-500 italic">
-
                         Aucun chrono enregistré dans Supabase pour la séance {selectedPracticeSession} de ce Grand Prix. Synchronisation automatique à T-2h des qualifications.
-
 </div>
-
                     )}
-
 </div>
-
                 )}
-
 </div>
-
             )}
-
-
 
 {/* FORMULAIRE DES PARIS & BOUTON D'ENREGISTREMENT */}
 
 {!currentGP.isCancelled && (
-
 <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-4">
-
 <div className="flex items-center justify-between">
-
 <h2 className="text-lg font-bold text-white flex items-center gap-2">
-
 <Flame className="w-5 h-5 text-[#e10600]" />
-
                   Vos 5 Pronostics pour {currentGP.name}
-
 </h2>
-
 {isExpired ? (
-
 <span className="text-[11px] bg-red-500/20 text-red-400 border border-red-500/30 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5">
-
 <Lock className="w-3.5 h-3.5" /> Pronostics Clôturés
-
 </span>
-
                 ) : (
-
 <span className="text-[11px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5">
-
 <Sparkles className="w-3.5 h-3.5" /> Pronostics Ouverts
-
 </span>
-
                 )}
-
 </div>
-
-
 
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
 <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl">
-
 <label className="text-xs font-bold text-zinc-300 block mb-1">Pole Position (+1 pt)</label>
-
 <select
-
 disabled={isExpired}
-
 value={currentBet.pole}
-
 onChange={(e) => setCurrentBet({ ...currentBet, pole: e.target.value })}
-
 className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs disabled:opacity-50"
-
 >
 
 <option value="">Choisir un pilote...</option>
-
 {DRIVERS_2026.map((d) => <option key={d.id} value={d.id}>#{d.number} {d.name} ({d.team})</option>)}
-
 </select>
-
 </div>
 
-
-
 <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl">
-
 <label className="text-xs font-bold text-zinc-300 block mb-1">Driver of the Day (+1 pt)</label>
-
 <select
-
 disabled={isExpired}
-
 value={currentBet.dotd}
-
 onChange={(e) => setCurrentBet({ ...currentBet, dotd: e.target.value })}
-
 className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs disabled:opacity-50"
-
 >
 
 <option value="">Choisir un pilote...</option>
-
 {DRIVERS_2026.map((d) => <option key={d.id} value={d.id}>#{d.number} {d.name} ({d.team})</option>)}
-
 </select>
-
 </div>
-
 </div>
-
-
 
 <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl">
-
 <label className="text-xs font-bold text-zinc-300 block mb-2">Podium (1er, 2e, 3e - Règle Anti-Doublon)</label>
-
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-
 <div>
-
 <span className="text-[11px] text-amber-400 font-bold block mb-1">1er 🥇</span>
-
 <select
 
 disabled={isExpired}
-
 value={currentBet.pos1}
-
 onChange={(e) => setCurrentBet({ ...currentBet, pos1: e.target.value })}
-
 className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg text-xs disabled:opacity-50"
-
 >
-
 <option value="">Choisir...</option>
-
 {DRIVERS_2026.map((d) => (
-
 <option key={d.id} value={d.id} disabled={currentBet.pos2 === d.id || currentBet.pos3 === d.id}>{d.name}</option>
-
                         ))}
-
 </select>
 </div>
 
@@ -2347,6 +2253,45 @@ isExpired
 
             )}
 
+{isExpired && teamBetsSummary.length > 0 && (
+  <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-3">
+    <h2 className="text-sm font-black text-white flex items-center gap-2">
+      <Users className="w-4 h-4 text-blue-400" />
+      Pronostics de l'Écurie pour {currentGP.name}
+    </h2>
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-zinc-400 border-b border-[#2b2b3d]">
+            <th className="text-left py-2 px-2">Membre</th>
+            <th className="text-left py-2 px-2">Pole</th>
+            <th className="text-left py-2 px-2">1er</th>
+            <th className="text-left py-2 px-2">2e</th>
+            <th className="text-left py-2 px-2">3e</th>
+            <th className="text-left py-2 px-2">DOTD</th>
+            <th className="text-right py-2 px-2">Points</th>
+          </tr>
+        </thead>
+        <tbody>
+          {teamBetsSummary.map((bet) => (
+            <tr key={bet.id} className="border-b border-[#2b2b3d]/50">
+              <td className="py-2 px-2 font-bold text-white">{bet.profiles?.username || "Utilisateur"}</td>
+              <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pole_id)}</td>
+              <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pos1_id)}</td>
+              <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pos2_id)}</td>
+              <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pos3_id)}</td>
+              <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.dotd_id)}</td>
+              <td className="py-2 px-2 text-right font-mono font-black text-[#e10600]">
+                {currentGP.officialResults ? `${bet.points_awarded ?? 0} pts` : "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
 </>
 ) : (
   <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-10 text-center space-y-3">
@@ -2364,7 +2309,10 @@ isExpired
       </button>
     )}
   </div>
+  
 )}
+
+
 
 {/* PANNEAU ADMIN : SAISIE DES RÉSULTATS OFFICIELS (TEAM PRINCIPAL UNIQUEMENT) */}
 {userProfile?.is_super_admin && !currentGP.isCancelled && activeTab === "bet" && (
