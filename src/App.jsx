@@ -972,7 +972,7 @@ const handleSyncFullCalendar = async () => {
         : null;
 
       if (!qualiDateTime) continue;
-
+      if (typeof gp.id !== "number") continue;
       const { error } = await supabase
         .from("grand_prix")
         .update({
@@ -1320,19 +1320,15 @@ load2026DataFromDB();
 // Horloge dynamique et exécution du Moteur d'Automatisation Temporelle (ALPHA v3.9)
 
 useEffect(() => {
-
 const timer = setInterval(() => {
-
 const now = Date.now();
-
 setCurrentTime(now);
-
 
 
 // Exécution du pipeline automatique en arrière-plan
 
-if (activeGP) {
-runAutoSyncPipeline(activeGP, supabase).then((res) => {
+if (activeGP && typeof activeGP.id === "number") {
+  runAutoSyncPipeline(activeGP, supabase).then((res) => {
 if (res?.status === "advanced" && res.nextRound) {
 setSelectedRound(res.nextRound);
 load2026DataFromDB();
@@ -1791,49 +1787,27 @@ className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white 
 {/* SÉLECTEUR 25 GP ORDONNÉ CHRONOLOGIQUEMENT */}
 
 <section className="bg-[#12121b] border-b border-[#2b2b3d] px-4 py-2.5 overflow-x-auto">
-
 <div className="max-w-6xl mx-auto flex items-center gap-2 min-w-max">
-
 <Calendar className="w-4 h-4 text-zinc-500 shrink-0 mr-1" />
-
 {calendar.map((gp) => (
-
 <button
-
 key={gp.round}
-
 onClick={() => setSelectedRound(gp.round)}
-
 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 border ${
-
 selectedRound === gp.round
-
                   ? "bg-[#e10600] border-[#e10600] text-white shadow-lg shadow-red-900/30"
-
                   : gp.isCancelled
-
                   ? "bg-[#181824] border-red-900/30 text-zinc-500 line-through"
-
                   : gp.status === "completed"
-
                   ? "bg-[#181824] border-[#2b2b3d] text-zinc-400 hover:text-white"
-
                   : "bg-[#181824] border-[#2b2b3d] text-zinc-300 hover:border-zinc-500"
-
 }`}
-
 >
-
 <span>R{gp.round}</span>
-
 <span>{gp.city}</span>
-
 {gp.isCancelled && <span className="text-[9px] bg-red-900/40 text-red-400 px-1 py-0.2 rounded font-mono">ANNULÉ</span>}
-
 {gp.isSprint && !gp.isCancelled && <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1 py-0.2 rounded font-mono">SPRINT</span>}
-
 {gp.status === "active" && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
-
 </button>
 
           ))}
@@ -2393,7 +2367,7 @@ isExpired
 )}
 
 {/* PANNEAU ADMIN : SAISIE DES RÉSULTATS OFFICIELS (TEAM PRINCIPAL UNIQUEMENT) */}
-{isTeamPrincipal && !currentGP.isCancelled && activeTab === "bet" && (
+{userProfile?.is_super_admin && !currentGP.isCancelled && activeTab === "bet" && (
   <div className="bg-[#1e1e2d] border-2 border-amber-500/40 rounded-2xl p-5 shadow-2xl space-y-4">
     <div className="flex items-center justify-between flex-wrap gap-2">
       <h2 className="text-sm font-black text-amber-400 flex items-center gap-2">
