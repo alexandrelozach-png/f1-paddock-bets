@@ -84,10 +84,106 @@ const CIRCUIT_SVGS = {
     />
   ),
 
-  Suzuka: (
+  suzuka: (
     <img 
       src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksuzukadetailed.webp" 
       alt="Suzuka Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  sakhir: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksakhirdetailed.webp" 
+      alt="Bahreïn international Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  jeddah: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/content/dam/fom-website/2018-redesign-assets/Circuit%20maps%2016x9/Saudi_Arabia_Circuit.webp" 
+      alt="Jeddah Corniche Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  miami: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmiamidetailed.webp" 
+      alt="Miami International Autodrome" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  montreal: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmontrealdetailed.webp" 
+      alt="Circuit Gilles-Villeneuve" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  monaco: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmontecarlodetailed.webp" 
+      alt="Circuit de Monaco" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  barcelona: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackcatalunyadetailed.webp" 
+      alt="Circuit de Barcelona-Catalunya" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  spielberg: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackspielbergdetailed.webp" 
+      alt="Red-Bull Ring" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  silverstone: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracksilverstonedetailed.webp" 
+      alt="Silverstone Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  spa: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackspafrancorchampsdetailed.webp" 
+      alt="Spa Francorchamps Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  hungaroring: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackhungaroringdetailed.webp" 
+      alt="hungaroring" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  zandvoort: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackzandvoortdetailed.webp" 
+      alt="Circuit Zandvoort" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  monza: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmonzadetailed.webp" 
+      alt="Autodromo Nazionale Monza" 
       className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
     />
   ),
@@ -132,10 +228,42 @@ const CIRCUIT_SVGS = {
     />
   ),
 
-  barcelona: (
+  mexico: (
     <img 
-      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackcatalunyadetailed.webp" 
-      alt="Circuit de Barcelona-Catalunya" 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackmexicocitydetailed.webp" 
+      alt="Autódromo Hermanos Rodríguez" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  saopaulo: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackinterlagosdetailed.webp" 
+      alt="Autódromo de Interlagos" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  lasvegas: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracklasvegasdetailed.webp" 
+      alt="Las Vegas Strip Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  lusail: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026tracklusaildetailed.webp" 
+      alt="Lusail International Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  abudabhi: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2026/track/2026trackyasmarinacircuitdetailed.webp" 
+      alt="Yas Marina Circuit" 
       className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
     />
   ),
@@ -179,7 +307,7 @@ const CIRCUIT_ROUND_MAP = {
   1: "melbourne",
   2: "shanghai",
   3: "suzuka",
-  4: "sakir",
+  4: "sakhir",
   5: "jeddah",
   6: "miami",
   7: "montreal",
@@ -197,7 +325,7 @@ const CIRCUIT_ROUND_MAP = {
   19: "singapore",
   20: "austin",
   21: "mexico",
-  22: "saopolo",
+  22: "saopaulo",
   23: "lasvegas",
   24: "lusail",
   25: "abudabhi",
@@ -213,7 +341,7 @@ const INITIAL_CALENDAR_2026 = [
 
   { round: 3, id: "suzuka", name: "Japanese Grand Prix", circuit: "Suzuka Circuit", country: "Japon 🇯🇵", city: "Suzuka", status: "completed", isCancelled: false, qualiDeadline: "2026-03-28T06:00:00Z", isSprint: false, length: "5.807 km", laps: 53, lapRecord: "1:30.983 (Hamilton)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "sainz", dotd: "leclerc" }, practice: [] },
 
-  { round: 4, id: "sakhir", name: "Bahrain Grand Prix (Annulé)", circuit: "Bahrain International Circuit", country: "Bahreïn 🇧🇭", city: "Sakhir", status: "completed", isCancelled: true, qualiDeadline: "2026-04-11T16:00:00Z", isSprint: false, length: "5.412 km", laps: 57, lapRecord: "1:31.447 (de la Rosa)", officialResults: null, practice: [] },
+  { round: 4, id: "sakhir", name: "Bahrain Grand Prix (Annulé)", circuit: "-it", country: "Bahreïn 🇧🇭", city: "Sakhir", status: "completed", isCancelled: true, qualiDeadline: "2026-04-11T16:00:00Z", isSprint: false, length: "5.412 km", laps: 57, lapRecord: "1:31.447 (de la Rosa)", officialResults: null, practice: [] },
 
   { round: 5, id: "jeddah", name: "Saudi Arabian Grand Prix (Annulé)", circuit: "Jeddah Corniche Circuit", country: "Arabie Saoudite 🇸🇦", city: "Djeddah", status: "completed", isCancelled: true, qualiDeadline: "2026-04-18T17:00:00Z", isSprint: false, length: "6.174 km", laps: 50, lapRecord: "1:30.734 (Hamilton)", officialResults: null, practice: [] },
 
