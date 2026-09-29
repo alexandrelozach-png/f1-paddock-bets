@@ -2069,7 +2069,7 @@ className="w-full p-4 flex items-center justify-between text-left hover:bg-[#252
 
 <div className="flex gap-1.5">
 
-{["FP1", "FP2", "FP3"].map((s) => (
+{(currentGP.isSprint ? ["FP1", "SQ", "SR"] : ["FP1", "FP2", "FP3"]).map((s) => (
 
 <button
 
