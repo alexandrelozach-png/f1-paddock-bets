@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.14 ---
+// --- VERSION: ALPHA v3.15 ---
 import React, { useState, useEffect } from "react";
 import { 
 Trophy, 
@@ -36,7 +36,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.14";
+const APP_VERSION = "ALPHA v3.15";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -1005,52 +1005,39 @@ const handleFetchPracticeResults = async () => {
   setResultSaveFeedback({ visible: false, message: "" });
 
   try {
-    const allSessions = await fetchJsonWithRetry(`https://api.openf1.org/v1/sessions?year=2026`);
-
     const countryTranslations = {
-      "azerbaïdjan": "azerbaijan",
-      "espagne": "spain",
-      "italie": "italy",
-      "royaume-uni": "united kingdom",
-      "pays-bas": "netherlands",
-      "belgique": "belgium",
-      "hongrie": "hungary",
-      "autriche": "austria",
-      "monaco": "monaco",
-      "canada": "canada",
-      "etats-unis": "united states",
-      "mexique": "mexico",
-      "bresil": "brazil",
-      "qatar": "qatar",
-      "singapour": "singapore",
-      "malaisie": "malaysia",
-      "chine": "china",
-      "japon": "japan",
-      "australie": "australia",
-      "arabie saoudite": "saudi arabia",
-      "abou dabi": "united arab emirates"
+      "azerbaïdjan": "azerbaijan", "espagne": "spain", "italie": "italy",
+      "royaume-uni": "united kingdom", "pays-bas": "netherlands", "belgique": "belgium",
+      "hongrie": "hungary", "autriche": "austria", "monaco": "monaco", "canada": "canada",
+      "etats-unis": "united states", "usa": "united states", "mexique": "mexico",
+      "bresil": "brazil", "qatar": "qatar", "singapour": "singapore", "malaisie": "malaysia",
+      "chine": "china", "japon": "japan", "australie": "australia",
+      "arabie saoudite": "saudi arabia", "abou dabi": "united arab emirates",
+      "emirats arabes unis": "united arab emirates", "bahrein": "bahrain"
     };
-    
+
     const rawCountry = currentGP.country?.toLowerCase().replace(/[^a-zàâäéèêëïîôöùûüç\s-]/gi, "").trim() || "";
     const translatedCountry = countryTranslations[rawCountry] || rawCountry;
-    
+
+    const allSessions = await fetchJsonWithRetry(`https://api.openf1.org/v1/sessions?year=2026`);
+
+    // Séances récupérées via OpenF1 (FP1 + Sprint Quali si applicable)
+    const openF1SessionMap = currentGP.isSprint
+      ? { "Practice 1": "FP1", "Sprint Qualifying": "SQ" }
+      : { "Practice 1": "FP1", "Practice 2": "FP2", "Practice 3": "FP3" };
+
+    const targetSessionNames = Object.keys(openF1SessionMap);
+
     const matchingSessions = allSessions.filter(
       (s) =>
         s.country_name?.toLowerCase().includes(translatedCountry) &&
-        ["Practice 1", "Practice 2", "Practice 3"].includes(s.session_name)
+        targetSessionNames.includes(s.session_name)
     );
 
-    if (matchingSessions.length === 0) {
-      setResultSaveFeedback({ visible: true, message: "⚠️ Aucune séance d'essais trouvée pour ce Grand Prix sur l'API." });
-      setFetchingPractice(false);
-      return;
-    }
-
-    const sessionTypeMap = { "Practice 1": "FP1", "Practice 2": "FP2", "Practice 3": "FP3" };
     let totalInserted = 0;
 
     for (const session of matchingSessions) {
-      const sessionType = sessionTypeMap[session.session_name];
+      const sessionType = openF1SessionMap[session.session_name];
       const sessionKey = session.session_key;
 
       const laps = await fetchJsonWithRetry(`https://api.openf1.org/v1/laps?session_key=${sessionKey}`);
@@ -1082,7 +1069,6 @@ const handleFetchPracticeResults = async () => {
           const stint = stints.find(
             (s) => s.driver_number === Number(driverNumber) && lap.lap_number >= s.lap_start && lap.lap_number <= s.lap_end
           );
-
           return {
             driver_name: driverInfo?.full_name || `#${driverNumber}`,
             team_name: driverInfo?.team_name || "Inconnu",
@@ -1095,11 +1081,7 @@ const handleFetchPracticeResults = async () => {
         .sort((a, b) => a.rawTime - b.rawTime)
         .slice(0, 6);
 
-      await supabase
-        .from("practice_results")
-        .delete()
-        .eq("gp_id", currentGP.id)
-        .eq("session_type", sessionType);
+      await supabase.from("practice_results").delete().eq("gp_id", currentGP.id).eq("session_type", sessionType);
 
       const rowsToInsert = ranking.map((r, index) => ({
         gp_id: currentGP.id,
@@ -1113,29 +1095,66 @@ const handleFetchPracticeResults = async () => {
       }));
 
       if (rowsToInsert.length > 0) {
-        const { error: insertError } = await supabase.from("practice_results").insert(rowsToInsert);
-        if (!insertError) totalInserted += rowsToInsert.length;
+        const { error } = await supabase.from("practice_results").insert(rowsToInsert);
+        if (!error) totalInserted += rowsToInsert.length;
       }
 
       await new Promise((resolve) => setTimeout(resolve, 800));
     }
 
-    if (totalInserted > 0) {
-      setResultSaveFeedback({
-        visible: true,
-        message: `✅ ${totalInserted} chronos récupérés et enregistrés !`
+    // Course Sprint : classement RÉEL via Jolpica (pas les meilleurs tours)
+    if (currentGP.isSprint) {
+      const jolpicaCalendarRes = await fetch(`https://api.jolpi.ca/ergast/f1/2026.json?limit=100`);
+      const jolpicaCalendarData = await jolpicaCalendarRes.json();
+      const jolpicaRaces = jolpicaCalendarData?.MRData?.RaceTable?.Races || [];
+
+      const normalizeDate = (d) => {
+        const date = new Date(d);
+        return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+      };
+
+      const targetDate = normalizeDate(currentGP.raceDate);
+      const matchingRace = jolpicaRaces.find((r) => {
+        const diff = Math.abs((targetDate - normalizeDate(r.date)) / (1000 * 60 * 60 * 24));
+        return diff <= 2;
       });
-    } else {
-      setResultSaveFeedback({
-        visible: true,
-        message: "⚠️ Aucun chrono n'a pu être récupéré (données pas encore disponibles sur l'API)."
-      });
+
+      if (matchingRace) {
+        const sprintRes = await fetch(`https://api.jolpi.ca/ergast/f1/2026/${matchingRace.round}/sprint.json`);
+        const sprintData = await sprintRes.json();
+        const sprintResults = sprintData?.MRData?.RaceTable?.Races?.[0]?.SprintResults || [];
+
+        await supabase.from("practice_results").delete().eq("gp_id", currentGP.id).eq("session_type", "SR");
+
+        const sprintRows = sprintResults.slice(0, 6).map((r) => ({
+          gp_id: currentGP.id,
+          session_type: "SR",
+          position: parseInt(r.position),
+          driver_name: `${r.Driver?.givenName} ${r.Driver?.familyName}`,
+          team_name: r.Constructor?.name || "Inconnu",
+          best_lap_time: r.Time?.time || "N/A",
+          tire_compound: "N/A",
+          laps_completed: parseInt(r.laps) || 0
+        }));
+
+        if (sprintRows.length > 0) {
+          const { error } = await supabase.from("practice_results").insert(sprintRows);
+          if (!error) totalInserted += sprintRows.length;
+        }
+      }
     }
+
+    setResultSaveFeedback({
+      visible: true,
+      message: totalInserted > 0
+        ? `✅ ${totalInserted} chronos/résultats récupérés et enregistrés !`
+        : "⚠️ Aucune donnée n'a pu être récupérée."
+    });
 
     load2026DataFromDB();
   } catch (err) {
     console.error("Erreur récupération essais:", err);
-    setResultSaveFeedback({ visible: true, message: "❌ Erreur lors de la récupération des essais." });
+    setResultSaveFeedback({ visible: true, message: "❌ Erreur lors de la récupération." });
   } finally {
     setFetchingPractice(false);
   }
