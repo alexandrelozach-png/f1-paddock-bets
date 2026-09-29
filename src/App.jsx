@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.15 ---
+// --- VERSION: ALPHA v3.16 ---
 import React, { useState, useEffect } from "react";
 import { 
 Trophy, 
@@ -36,7 +36,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.15";
+const APP_VERSION = "ALPHA v3.16";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -353,15 +353,15 @@ const INITIAL_CALENDAR_2026 = [
 
   { round: 9, id: "barcelona", name: "Gran Premio de España (Barcelone)", circuit: "Circuit de Barcelona-Catalunya", country: "Espagne 🇪🇸", city: "Barcelone", status: "completed", isCancelled: false, qualiDeadline: "2026-06-13T14:00:00Z", isSprint: false, length: "4.657 km", laps: 66, lapRecord: "1:16.330 (Verstappen)", officialResults: { pole: "norris", pos1: "verstappen", pos2: "norris", pos3: "hamilton", dotd: "norris" }, practice: [] },
 
-  { round: 10, id: "spielberg", name: "Austrian Grand Prix", circuit: "Red Bull Ring", country: "Autriche 🇦🇹", city: "Spielberg", status: "completed", isCancelled: false, qualiDeadline: "2026-06-27T14:00:00Z", isSprint: true, length: "4.318 km", laps: 71, lapRecord: "1:05.619 (Sainz)", officialResults: { pole: "verstappen", pos1: "russell", pos2: "piastri", pos3: "sainz", dotd: "norris" }, practice: [] },
+  { round: 10, id: "spielberg", name: "Austrian Grand Prix", circuit: "Red Bull Ring", country: "Autriche 🇦🇹", city: "Spielberg", status: "completed", isCancelled: false, qualiDeadline: "2026-06-27T14:00:00Z", isSprint: false, length: "4.318 km", laps: 71, lapRecord: "1:05.619 (Sainz)", officialResults: { pole: "verstappen", pos1: "russell", pos2: "piastri", pos3: "sainz", dotd: "norris" }, practice: [] },
 
-  { round: 11, id: "silverstone", name: "British Grand Prix", circuit: "Silverstone Circuit", country: "Royaume-Uni 🇬🇧", city: "Silverstone", status: "completed", isCancelled: false, qualiDeadline: "2026-07-04T14:00:00Z", isSprint: false, length: "5.891 km", laps: 52, lapRecord: "1:27.097 (Verstappen)", officialResults: { pole: "russell", pos1: "hamilton", pos2: "verstappen", pos3: "norris", dotd: "hamilton" }, practice: [] },
+  { round: 11, id: "silverstone", name: "British Grand Prix", circuit: "Silverstone Circuit", country: "Royaume-Uni 🇬🇧", city: "Silverstone", status: "completed", isCancelled: false, qualiDeadline: "2026-07-04T14:00:00Z", isSprint: true, length: "5.891 km", laps: 52, lapRecord: "1:27.097 (Verstappen)", officialResults: { pole: "russell", pos1: "hamilton", pos2: "verstappen", pos3: "norris", dotd: "hamilton" }, practice: [] },
 
   { round: 12, id: "spa", name: "Belgian Grand Prix", circuit: "Circuit de Spa-Francorchamps", country: "Belgique 🇧🇪", city: "Spa", status: "completed", isCancelled: false, qualiDeadline: "2026-07-18T14:00:00Z", isSprint: false, length: "7.004 km", laps: 44, lapRecord: "1:44.701 (Perez)", officialResults: { pole: "leclerc", pos1: "hamilton", pos2: "piastri", pos3: "leclerc", dotd: "hamilton" }, practice: [] },
 
   { round: 13, id: "hungaroring", name: "Hungarian Grand Prix", circuit: "Hungaroring", country: "Hongrie 🇭🇺", city: "Budapest", status: "completed", isCancelled: false, qualiDeadline: "2026-07-25T14:00:00Z", isSprint: false, length: "4.381 km", laps: 70, lapRecord: "1:16.627 (Hamilton)", officialResults: { pole: "norris", pos1: "piastri", pos2: "norris", pos3: "hamilton", dotd: "piastri" }, practice: [] },
 
-  { round: 14, id: "zandvoort", name: "Dutch Grand Prix", circuit: "Circuit Zandvoort", country: "Pays-Bas 🇳🇱", city: "Zandvoort", status: "completed", isCancelled: false, qualiDeadline: "2026-08-22T13:00:00Z", isSprint: false, length: "4.259 km", laps: 72, lapRecord: "1:11.097 (Hamilton)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "norris" }, practice: [] },
+  { round: 14, id: "zandvoort", name: "Dutch Grand Prix", circuit: "Circuit Zandvoort", country: "Pays-Bas 🇳🇱", city: "Zandvoort", status: "completed", isCancelled: false, qualiDeadline: "2026-08-22T13:00:00Z", isSprint: true, length: "4.259 km", laps: 72, lapRecord: "1:11.097 (Hamilton)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "norris" }, practice: [] },
 
   { round: 15, id: "monza", name: "Gran Premio d'Italia (Monza)", circuit: "Autodromo Nazionale Monza", country: "Italie 🇮🇹", city: "Monza", status: "completed", isCancelled: false, qualiDeadline: "2026-09-05T14:00:00Z", isSprint: false, length: "5.793 km", laps: 53, lapRecord: "1:21.046 (Barrichello)", officialResults: { pole: "norris", pos1: "leclerc", pos2: "piastri", pos3: "norris", dotd: "leclerc" }, practice: [] },
 
@@ -406,17 +406,17 @@ officialResults: null,
 
 practice: [] 
   },
-  { round: 19, id: "singapore", name: "Singapore Grand Prix", circuit: "Marina Bay Street Circuit", country: "Singapour 🇸🇬", city: "Marina Bay", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-10T13:00:00Z", isSprint: false, length: "4.940 km", laps: 62, lapRecord: "1:34.486 (Ricciardo)", officialResults: null, practice: [] },
+  { round: 19, id: "singapore", name: "Singapore Grand Prix", circuit: "Marina Bay Street Circuit", country: "Singapour 🇸🇬", city: "Marina Bay", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-10T13:00:00Z", isSprint: true, length: "4.940 km", laps: 62, lapRecord: "1:34.486 (Ricciardo)", officialResults: null, practice: [] },
 
-  { round: 20, id: "austin", name: "United States Grand Prix", circuit: "Circuit of the Americas", country: "USA 🇺🇸", city: "Austin", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-24T22:00:00Z", isSprint: true, length: "5.513 km", laps: 56, lapRecord: "1:36.169 (Leclerc)", officialResults: null, practice: [] },
+  { round: 20, id: "austin", name: "United States Grand Prix", circuit: "Circuit of the Americas", country: "USA 🇺🇸", city: "Austin", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-24T22:00:00Z", isSprint: false, length: "5.513 km", laps: 56, lapRecord: "1:36.169 (Leclerc)", officialResults: null, practice: [] },
 
   { round: 21, id: "mexico", name: "Gran Premio de México", circuit: "Autódromo Hermanos Rodríguez", country: "Mexique 🇲🇽", city: "Mexico", status: "upcoming", isCancelled: false, qualiDeadline: "2026-10-31T20:00:00Z", isSprint: false, length: "4.304 km", laps: 71, lapRecord: "1:17.774 (Bottas)", officialResults: null, practice: [] },
 
-  { round: 22, id: "saopaulo", name: "Grande Prêmio de São Paulo", circuit: "Autódromo de Interlagos", country: "Brésil 🇧🇷", city: "São Paulo", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-07T18:00:00Z", isSprint: true, length: "4.309 km", laps: 71, lapRecord: "1:10.540 (Bottas)", officialResults: null, practice: [] },
+  { round: 22, id: "saopaulo", name: "Grande Prêmio de São Paulo", circuit: "Autódromo de Interlagos", country: "Brésil 🇧🇷", city: "São Paulo", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-07T18:00:00Z", isSprint: false, length: "4.309 km", laps: 71, lapRecord: "1:10.540 (Bottas)", officialResults: null, practice: [] },
 
   { round: 23, id: "lasvegas", name: "Las Vegas Grand Prix", circuit: "Las Vegas Strip Circuit", country: "USA 🇺🇸", city: "Las Vegas", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-21T06:00:00Z", isSprint: false, length: "6.201 km", laps: 50, lapRecord: "1:35.490 (Piastri)", officialResults: null, practice: [] },
 
-  { round: 24, id: "lusail", name: "Qatar Grand Prix", circuit: "Lusail International Circuit", country: "Qatar 🇶🇦", city: "Lusail", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-28T18:00:00Z", isSprint: true, length: "5.419 km", laps: 57, lapRecord: "1:24.319 (Verstappen)", officialResults: null, practice: [] },
+  { round: 24, id: "lusail", name: "Qatar Grand Prix", circuit: "Lusail International Circuit", country: "Qatar 🇶🇦", city: "Lusail", status: "upcoming", isCancelled: false, qualiDeadline: "2026-11-28T18:00:00Z", isSprint: false, length: "5.419 km", laps: 57, lapRecord: "1:24.319 (Verstappen)", officialResults: null, practice: [] },
 
   { round: 25, id: "abudhabi", name: "Abu Dhabi Grand Prix (Finale)", circuit: "Yas Marina Circuit", country: "Émirats Arabes Unis 🇦🇪", city: "Yas Island", status: "upcoming", isCancelled: false, qualiDeadline: "2026-12-05T14:00:00Z", isSprint: false, length: "5.281 km", laps: 58, lapRecord: "1:26.103 (Verstappen)", officialResults: null, practice: [] }
 
@@ -1694,9 +1694,6 @@ className="bg-[#e10600] hover:bg-[#c30500] text-white font-black italic tracking
     <span className="text-[9px] font-mono tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded flex items-center gap-1 font-semibold">
       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
       {APP_VERSION}
-    </span>
-    <span className="hidden lg:inline text-[9px] font-mono text-zinc-400 border border-zinc-700 px-1.5 py-0.5 rounded">
-      AutoSync : Actif
     </span>
   </div>
 </div>
