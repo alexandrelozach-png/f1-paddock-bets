@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.16 ---
+// --- VERSION: ALPHA v3.17 ---
 import React, { useState, useEffect } from "react";
 import { 
 Trophy, 
@@ -36,7 +36,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.16";
+const APP_VERSION = "ALPHA v3.17";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -1687,17 +1687,15 @@ return (
 
 
 <button
-
-onClick={goToActiveGrandPrix}
-
-title="Retourner au Grand Prix actif"
-
-className="bg-[#e10600] hover:bg-[#c30500] text-white font-black italic tracking-tighter text-lg sm:text-xl px-2.5 py-0.5 rounded shadow-lg shadow-red-900/40 cursor-pointer transition-transform hover:scale-105 active:scale-95"
-
+  onClick={goToActiveGrandPrix}
+  title="Retourner au Grand Prix actif"
+  className="shadow-lg shadow-red-900/40 cursor-pointer transition-transform hover:scale-105 active:scale-95 rounded-lg overflow-hidden shrink-0"
 >
-
-              F1
-
+  <img 
+    src="/icon-192.png" 
+    alt="F1 Paddock Bets" 
+    className="w-9 h-9 sm:w-10 sm:h-10 object-cover"
+  />
 </button>
 
 <div className="hidden sm:block">
