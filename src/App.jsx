@@ -527,13 +527,9 @@ setLoadingArchive(true);
 try {
 if (year === "2026") {
 const { data: dbData, error: dbErr } = await supabase
-
           .from("grand_prix")
-
           .select("*, official_results(*)")
-
           .eq("season", 2026)
-
           .order("round", { ascending: true });
 
 
