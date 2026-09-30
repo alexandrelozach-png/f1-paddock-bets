@@ -2250,13 +2250,17 @@ isExpired
 
             )}
 
+{/* Affichage tableau récapitulatif des paris */}
+
 {isExpired && teamBetsSummary.length > 0 && (
   <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-3">
     <h2 className="text-sm font-black text-white flex items-center gap-2">
       <Users className="w-4 h-4 text-blue-400" />
       Pronostics de l'Écurie pour {currentGP.name}
     </h2>
-    <div className="overflow-x-auto">
+
+    {/* VERSION TABLEAU (écrans moyens et grands) */}
+    <div className="hidden sm:block overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
           <tr className="text-zinc-400 border-b border-[#2b2b3d]">
@@ -2285,6 +2289,27 @@ isExpired
           ))}
         </tbody>
       </table>
+    </div>
+
+    {/* VERSION CARTES (smartphone) */}
+    <div className="sm:hidden space-y-2">
+      {teamBetsSummary.map((bet) => (
+        <div key={bet.id} className="bg-[#15151e] border border-[#2b2b3d] rounded-xl p-3 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <strong className="text-white text-sm">{bet.profiles?.username || "Utilisateur"}</strong>
+            <span className="font-mono font-black text-[#e10600] text-sm">
+              {currentGP.officialResults ? `${bet.points_awarded ?? 0} pts` : "—"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5 text-[11px] text-zinc-400">
+            <div>Pole: <span className="text-zinc-200 font-semibold">{getDriverName(bet.pole_id)}</span></div>
+            <div>DOTD: <span className="text-zinc-200 font-semibold">{getDriverName(bet.dotd_id)}</span></div>
+            <div>1er: <span className="text-zinc-200 font-semibold">{getDriverName(bet.pos1_id)}</span></div>
+            <div>2e: <span className="text-zinc-200 font-semibold">{getDriverName(bet.pos2_id)}</span></div>
+            <div>3e: <span className="text-zinc-200 font-semibold">{getDriverName(bet.pos3_id)}</span></div>
+          </div>
+        </div>
+      ))}
     </div>
   </div>
 )}
