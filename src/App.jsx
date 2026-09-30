@@ -271,33 +271,19 @@ const CIRCUIT_SVGS = {
 default: (
 
 <svg viewBox="0 0 400 180" className="w-full h-36 stroke-current">
-
 <defs>
-
 <linearGradient id="defGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-
 <stop offset="0%" stopColor="#10b981" />
-
 <stop offset="50%" stopColor="#f59e0b" />
-
 <stop offset="100%" stopColor="#3b82f6" />
-
 </linearGradient>
-
 </defs>
-
 <path d="M 60 130 C 100 150 250 150 310 130 C 360 110 350 50 280 40 C 220 30 180 70 130 50 C 80 30 40 80 60 130 Z" 
-
 fill="none" stroke="#2b2b3d" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-
 <path d="M 60 130 C 100 150 250 150 310 130 C 360 110 350 50 280 40 C 220 30 180 70 130 50 C 80 30 40 80 60 130 Z" 
-
 fill="none" stroke="url(#defGrad)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-
 <line x1="180" y1="132" x2="180" y2="148" stroke="#ffffff" strokeWidth="3" />
-
 <text x="185" y="162" fill="#ffffff" fontSize="9" fontFamily="monospace">SECTEURS S1 • S2 • S3</text>
-
 </svg>
 
   )
@@ -335,9 +321,37 @@ const CIRCUIT_ROUND_MAP = {
 
 const INITIAL_CALENDAR_2026 = [
 
-  { round: 1, id: "melbourne", name: "Australian Grand Prix", circuit: "Albert Park Circuit", country: "Australie 🇦🇺", city: "Melbourne", status: "completed", isCancelled: false, qualiDeadline: "2026-03-07T05:00:00Z", isSprint: false, length: "5.278 km", laps: 58, lapRecord: "1:19.813 (Leclerc)", officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "sainz" }, practice: [] },
+  { round: 1, 
+    id: "melbourne", 
+    name: "Australian Grand Prix", 
+    circuit: "Albert Park Circuit", 
+    country: "Australie 🇦🇺", 
+    city: "Melbourne", 
+    status: "completed", 
+    isCancelled: false, 
+    qualiDeadline: "2026-03-07T05:00:00Z", 
+    isSprint: false, 
+    length: "5.278 km", 
+    laps: 58, 
+    lapRecord: "1:19.813 (Leclerc)", 
+    officialResults: { pole: "norris", pos1: "norris", pos2: "verstappen", pos3: "leclerc", dotd: "sainz" }, 
+    practice: [] },
 
-  { round: 2, id: "shanghai", name: "Chinese Grand Prix", circuit: "Shanghai International Circuit", country: "Chine 🇨🇳", city: "Shanghai", status: "completed", isCancelled: false, qualiDeadline: "2026-03-14T07:00:00Z", isSprint: true, length: "5.451 km", laps: 56, lapRecord: "1:32.238 (Schumacher)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "leclerc", dotd: "leclerc" }, practice: [] },
+  { round: 2, 
+    id: "shanghai", 
+    name: "Chinese Grand Prix", 
+    circuit: "Shanghai International Circuit", 
+    country: "Chine 🇨🇳", 
+    city: "Shanghai", 
+    status: "completed", 
+    isCancelled: false, 
+    qualiDeadline: "2026-03-14T07:00:00Z", 
+    isSprint: true, 
+    length: "5.451 km", 
+    laps: 56, 
+    lapRecord: "1:32.238 (Schumacher)", 
+    officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "leclerc", dotd: "leclerc" }, 
+    practice: [] },
 
   { round: 3, id: "suzuka", name: "Japanese Grand Prix", circuit: "Suzuka Circuit", country: "Japon 🇯🇵", city: "Suzuka", status: "completed", isCancelled: false, qualiDeadline: "2026-03-28T06:00:00Z", isSprint: false, length: "5.807 km", laps: 53, lapRecord: "1:30.983 (Hamilton)", officialResults: { pole: "verstappen", pos1: "verstappen", pos2: "norris", pos3: "sainz", dotd: "leclerc" }, practice: [] },
 
