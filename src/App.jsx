@@ -1,5 +1,6 @@
 // --- VERSION: ALPHA v3.17 ---
 import React, { useState, useEffect } from "react";
+import { CheckCircle } from 'lucide-react';
 import { 
 Trophy, 
 Clock, 
