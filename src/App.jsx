@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.17 ---
+// --- VERSION: ALPHA v3.18 ---
 import React, { useState, useEffect } from "react";
 import { CheckCircle } from 'lucide-react';
 import { 
@@ -37,7 +37,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.17";
+const APP_VERSION = "ALPHA v3.18";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -2340,11 +2340,21 @@ isExpired
             </span>
           </div>
           <div className="grid grid-cols-2 gap-1.5 text-[11px] text-zinc-400">
-            <div>Pole: <span className="text-zinc-200 font-semibold">{getDriverName(bet.pole_id)}</span></div>
-            <div>DOTD: <span className="text-zinc-200 font-semibold">{getDriverName(bet.dotd_id)}</span></div>
-            <div>1er: <span className="text-zinc-200 font-semibold">{getDriverName(bet.pos1_id)}</span></div>
-            <div>2e: <span className="text-zinc-200 font-semibold">{getDriverName(bet.pos2_id)}</span></div>
-            <div>3e: <span className="text-zinc-200 font-semibold">{getDriverName(bet.pos3_id)}</span></div>
+          <span className={`${getPredictionColor(bet.pole_id, currentGP.officialResults?.pole)} font-semibold`}>
+  {getDriverName(bet.pole_id)}
+</span>
+<span className={`${getPredictionColor(bet.dotd_id, currentGP.officialResults?.dotd)} font-semibold`}>
+  {getDriverName(bet.dotd_id)}
+</span>
+<span className={`${getPredictionColor(bet.pos1_id, currentGP.officialResults?.pos1, 0)} font-semibold`}>
+  {getDriverName(bet.pos1_id)}
+</span>
+<span className={`${getPredictionColor(bet.pos2_id, currentGP.officialResults?.pos2, 1)} font-semibold`}>
+  {getDriverName(bet.pos2_id)}
+</span>
+<span className={`${getPredictionColor(bet.pos3_id, currentGP.officialResults?.pos3, 2)} font-semibold`}>
+  {getDriverName(bet.pos3_id)}
+</span>
           </div>
         </div>
       ))}
