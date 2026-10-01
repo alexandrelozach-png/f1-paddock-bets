@@ -1529,9 +1529,17 @@ return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-zinc-800 t
   };
 const activePracticeList = currentGP.practice?.filter((p) => !p.session || p.session === selectedPracticeSession) || [];
 
+// fonction des couleurs résultats
+const getPredictionColor = (betDriverId, officialDriverId, positionDiff) => {
+  if (!officialDriverId) return "text-zinc-300"; // Les résultats officiels ne sont pas encore rentrés
+  if (betDriverId === officialDriverId) return "text-green-400"; // Correct à 100%
+  if (positionDiff === 1) return "text-yellow-400"; // Décalage d’une position
+  if (positionDiff === 2) return "text-orange-400"; // Décalage de deux positions
+  return "text-red-400"; // Incorrect
+};
+
   // fonction affichage récap des paris
   const [teamBetsSummary, setTeamBetsSummary] = useState([]);
-
   const getDriverName = (driverId) => DRIVERS_2026.find((d) => d.id === driverId)?.name || driverId || "—";
   
   useEffect(() => {
@@ -1793,23 +1801,14 @@ className="bg-[#1e1e2d] border border-[#2b2b3d] text-zinc-200 text-xs font-bold 
             ) : (
 <button
 onClick={() => setShowAuthModal(true)}
-
 className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition"
-
 >
-
 <LogIn className="w-3.5 h-3.5" />
-
 <span>Connexion</span>
-
 </button>
-
             )}
-
 </div>
-
 </div>
-
 </header>
 
 
@@ -2258,6 +2257,8 @@ isExpired
 
             )}
 
+
+
 {/* Affichage tableau récapitulatif des paris */}
 
 {isExpired && teamBetsSummary.length > 0 && (
@@ -2266,6 +2267,23 @@ isExpired
       <Users className="w-4 h-4 text-blue-400" />
       Pronostics de l'Écurie pour {currentGP.name}
     </h2>
+
+    {/* resultats officiels */}
+    {currentGP.officialResults && (
+  <div className="bg-[#15151e] border border-green-500 rounded-xl p-3 space-y-2">
+    <h3 className="text-sm font-bold text-green-400 flex items-center gap-2">
+      <CheckCircle className="w-4 h-4" />
+      Résultats Officiels de {currentGP.name}
+    </h3>
+    <div className="grid grid-cols-2 gap-1 text-xs text-white">
+      <span>Pole : <strong>{getDriverName(currentGP.officialResults.pole)}</strong></span>
+      <span>DOTD : <strong>{getDriverName(currentGP.officialResults.dotd)}</strong></span>
+      <span>1er : <strong>{getDriverName(currentGP.officialResults.pos1)}</strong></span>
+      <span>2e : <strong>{getDriverName(currentGP.officialResults.pos2)}</strong></span>
+      <span>3e : <strong>{getDriverName(currentGP.officialResults.pos3)}</strong></span>
+    </div>
+  </div>
+)}
 
     {/* VERSION TABLEAU (écrans moyens et grands) */}
     <div className="hidden sm:block overflow-x-auto">
@@ -2285,7 +2303,9 @@ isExpired
           {teamBetsSummary.map((bet) => (
             <tr key={bet.id} className="border-b border-[#2b2b3d]/50">
               <td className="py-2 px-2 font-bold text-white">{bet.profiles?.username || "Utilisateur"}</td>
-              <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pole_id)}</td>
+              <td className={`py-2 px-2 ${getPredictionColor(bet.pole_id, currentGP.officialResults?.pole)}`}>
+  {getDriverName(bet.pole_id)}
+</td>
               <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pos1_id)}</td>
               <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pos2_id)}</td>
               <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pos3_id)}</td>
