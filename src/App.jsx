@@ -2306,10 +2306,18 @@ isExpired
               <td className={`py-2 px-2 ${getPredictionColor(bet.pole_id, currentGP.officialResults?.pole)}`}>
   {getDriverName(bet.pole_id)}
 </td>
-              <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pos1_id)}</td>
-              <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pos2_id)}</td>
-              <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.pos3_id)}</td>
-              <td className="py-2 px-2 text-zinc-300">{getDriverName(bet.dotd_id)}</td>
+<td className={`py-2 px-2 ${getPredictionColor(bet.pos1_id, currentGP.officialResults?.pos1, 0)}`}>
+  {getDriverName(bet.pos1_id)}
+</td>
+<td className={`py-2 px-2 ${getPredictionColor(bet.pos2_id, currentGP.officialResults?.pos2, 1)}`}>
+  {getDriverName(bet.pos2_id)}
+</td>
+<td className={`py-2 px-2 ${getPredictionColor(bet.pos3_id, currentGP.officialResults?.pos3, 2)}`}>
+  {getDriverName(bet.pos3_id)}
+</td>
+              <td className={`py-2 px-2 ${getPredictionColor(bet.dotd_id, currentGP.officialResults?.dotd)}`}>
+  {getDriverName(bet.dotd_id)}
+</td>
               <td className="py-2 px-2 text-right font-mono font-black text-[#e10600]">
                 {currentGP.officialResults ? `${bet.points_awarded ?? 0} pts` : "—"}
               </td>
