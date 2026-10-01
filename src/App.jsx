@@ -1532,11 +1532,12 @@ const activePracticeList = currentGP.practice?.filter((p) => !p.session || p.ses
 
 // fonction des couleurs résultats
 const getPredictionColor = (betDriverId, officialDriverId, positionDiff) => {
-  if (!officialDriverId) return "text-zinc-300"; // Les résultats officiels ne sont pas encore rentrés
-  if (betDriverId === officialDriverId) return "text-green-400"; // Correct à 100%
-  if (positionDiff === 1) return "text-yellow-400"; // Décalage d’une position
-  if (positionDiff === 2) return "text-orange-400"; // Décalage de deux positions
-  return "text-red-400"; // Incorrect
+  if (!officialDriverId) return "text-zinc-300"; // Pas de résultats officiels -> couleur par défaut
+  if (betDriverId === officialDriverId) return "text-green-400"; // Prédiction exacte
+  if (!positionDiff && positionDiff !== 0) return "text-red-400"; // Le pilote n’est pas dans le top 3 officiel
+  if (positionDiff === 1) return "text-yellow-400"; // Décalé d’une position
+  if (positionDiff === 2) return "text-orange-400"; // Décalé de deux positions
+  return "text-red-400"; // Mauvais ou trop loin
 };
 
   // fonction affichage récap des paris
