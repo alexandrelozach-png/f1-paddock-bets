@@ -2372,8 +2372,6 @@ isExpired
   
 )}
 
-
-
 {/* PANNEAU ADMIN : SAISIE DES RÉSULTATS OFFICIELS (TEAM PRINCIPAL UNIQUEMENT) */}
 {userProfile?.is_super_admin && !currentGP.isCancelled && activeTab === "bet" && (
   <div className="bg-[#1e1e2d] border-2 border-amber-500/40 rounded-2xl p-5 shadow-2xl space-y-4">
