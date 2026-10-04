@@ -2131,6 +2131,10 @@ selectedPracticeSession === s ? "bg-[#e10600] text-white" : "bg-[#1e1e2d] text-z
                 )}
 </div>
 
+
+{!isExpired && (
+      <>
+
 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 <div className="bg-[#15151e] border border-[#2b2b3d] p-3.5 rounded-xl">
 <label className="text-xs font-bold text-zinc-300 block mb-1">Pole Position (+1 pt)</label>
@@ -2213,6 +2217,7 @@ className="w-full bg-[#1e1e2d] border border-[#2b2b3d] text-white p-2 rounded-lg
 </select>
 </div>
 </div>
+
 </div>
 
 {/* BOUTON D'ENREGISTREMENT ET DE MODIFICATION DES PARIS */}
@@ -2254,6 +2259,9 @@ isExpired
 </div>
 
               )}
+
+</>
+    )}
 
 </div>
 
