@@ -2340,22 +2340,12 @@ isExpired
             </span>
           </div>
           <div className="grid grid-cols-2 gap-1.5 text-[11px] text-zinc-400">
-          <span className={`${getPredictionColor(bet.pole_id, currentGP.officialResults?.pole)} font-semibold`}>
-  {getDriverName(bet.pole_id)}
-</span>
-<span className={`${getPredictionColor(bet.dotd_id, currentGP.officialResults?.dotd)} font-semibold`}>
-  {getDriverName(bet.dotd_id)}
-</span>
-<span className={`${getPredictionColor(bet.pos1_id, currentGP.officialResults?.pos1, 0)} font-semibold`}>
-  {getDriverName(bet.pos1_id)}
-</span>
-<span className={`${getPredictionColor(bet.pos2_id, currentGP.officialResults?.pos2, 1)} font-semibold`}>
-  {getDriverName(bet.pos2_id)}
-</span>
-<span className={`${getPredictionColor(bet.pos3_id, currentGP.officialResults?.pos3, 2)} font-semibold`}>
-  {getDriverName(bet.pos3_id)}
-</span>
-          </div>
+  <div>Pole 🎯 <span className={`${getPredictionColor(bet.pole_id, currentGP.officialResults?.pole)} font-semibold`}>{getDriverName(bet.pole_id)}</span></div>
+  <div>DOTD ⭐ <span className={`${getPredictionColor(bet.dotd_id, currentGP.officialResults?.dotd)} font-semibold`}>{getDriverName(bet.dotd_id)}</span></div>
+  <div>🥇 <span className={`${getPredictionColor(bet.pos1_id, currentGP.officialResults?.pos1, 0)} font-semibold`}>{getDriverName(bet.pos1_id)}</span></div>
+  <div>🥈 <span className={`${getPredictionColor(bet.pos2_id, currentGP.officialResults?.pos2, 1)} font-semibold`}>{getDriverName(bet.pos2_id)}</span></div>
+  <div>🥉 <span className={`${getPredictionColor(bet.pos3_id, currentGP.officialResults?.pos3, 2)} font-semibold`}>{getDriverName(bet.pos3_id)}</span></div>
+</div>
         </div>
       ))}
     </div>
