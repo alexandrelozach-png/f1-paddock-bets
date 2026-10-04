@@ -1531,13 +1531,28 @@ return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-zinc-800 t
 const activePracticeList = currentGP.practice?.filter((p) => !p.session || p.session === selectedPracticeSession) || [];
 
 // fonction des couleurs résultats
-const getPredictionColor = (betDriverId, officialDriverId, positionDiff) => {
-  if (!officialDriverId) return "text-zinc-300"; // Pas de résultats officiels -> couleur par défaut
-  if (betDriverId === officialDriverId) return "text-green-400"; // Prédiction exacte
-  if (!positionDiff && positionDiff !== 0) return "text-red-400"; // Le pilote n’est pas dans le top 3 officiel
-  if (positionDiff === 1) return "text-yellow-400"; // Décalé d’une position
-  if (positionDiff === 2) return "text-orange-400"; // Décalé de deux positions
-  return "text-red-400"; // Mauvais ou trop loin
+const getPredictionColor = (betDriverId, betType, officialResults) => {
+  if (!officialResults || !betDriverId) return "text-zinc-300";
+
+  // Pole et DOTD : correct ou pas
+  if (betType === "pole") {
+    return betDriverId === officialResults.pole ? "text-green-400" : "text-red-400";
+  }
+  if (betType === "dotd") {
+    return betDriverId === officialResults.dotd ? "text-green-400" : "text-red-400";
+  }
+
+  // Podium : on calcule le vrai écart de position
+  const podium = [officialResults.pos1, officialResults.pos2, officialResults.pos3];
+  const betIndex = ["pos1", "pos2", "pos3"].indexOf(betType);
+  const actualIndex = podium.indexOf(betDriverId);
+
+  if (actualIndex === -1) return "text-red-400"; // Pilote pas dans le top 3
+  const diff = Math.abs(betIndex - actualIndex);
+  if (diff === 0) return "text-green-400";
+  if (diff === 1) return "text-yellow-400";
+  if (diff === 2) return "text-orange-400";
+  return "text-red-400";
 };
 
   // fonction affichage récap des paris
@@ -2313,19 +2328,28 @@ isExpired
           {teamBetsSummary.map((bet) => (
             <tr key={bet.id} className="border-b border-[#2b2b3d]/50">
               <td className="py-2 px-2 font-bold text-white">{bet.profiles?.username || "Utilisateur"}</td>
-              <td className={`py-2 px-2 ${getPredictionColor(bet.pole_id, currentGP.officialResults?.pole)}`}>
+{/* Pole */}
+<td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pole_id, "pole", currentGP.officialResults)}`}>
   {getDriverName(bet.pole_id)}
 </td>
-<td className={`py-2 px-2 ${getPredictionColor(bet.pos1_id, currentGP.officialResults?.pos1, 0)}`}>
+
+{/* P1 */}
+<td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pos1_id, "pos1", currentGP.officialResults)}`}>
   {getDriverName(bet.pos1_id)}
 </td>
-<td className={`py-2 px-2 ${getPredictionColor(bet.pos2_id, currentGP.officialResults?.pos2, 1)}`}>
+
+{/* P2 */}
+<td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pos2_id, "pos2", currentGP.officialResults)}`}>
   {getDriverName(bet.pos2_id)}
 </td>
-<td className={`py-2 px-2 ${getPredictionColor(bet.pos3_id, currentGP.officialResults?.pos3, 2)}`}>
+
+{/* P3 */}
+<td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pos3_id, "pos3", currentGP.officialResults)}`}>
   {getDriverName(bet.pos3_id)}
 </td>
-              <td className={`py-2 px-2 ${getPredictionColor(bet.dotd_id, currentGP.officialResults?.dotd)}`}>
+
+{/* DOTD */}
+<td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.dotd_id, "dotd", currentGP.officialResults)}`}>
   {getDriverName(bet.dotd_id)}
 </td>
               <td className="py-2 px-2 text-right font-mono font-black text-[#e10600]">
@@ -2348,11 +2372,11 @@ isExpired
             </span>
           </div>
           <div className="grid grid-cols-2 gap-1.5 text-[11px] text-zinc-400">
-  <div>Pole 🎯 <span className={`${getPredictionColor(bet.pole_id, currentGP.officialResults?.pole)} font-semibold`}>{getDriverName(bet.pole_id)}</span></div>
-  <div>DOTD ⭐ <span className={`${getPredictionColor(bet.dotd_id, currentGP.officialResults?.dotd)} font-semibold`}>{getDriverName(bet.dotd_id)}</span></div>
-  <div>🥇 <span className={`${getPredictionColor(bet.pos1_id, currentGP.officialResults?.pos1, 0)} font-semibold`}>{getDriverName(bet.pos1_id)}</span></div>
-  <div>🥈 <span className={`${getPredictionColor(bet.pos2_id, currentGP.officialResults?.pos2, 1)} font-semibold`}>{getDriverName(bet.pos2_id)}</span></div>
-  <div>🥉 <span className={`${getPredictionColor(bet.pos3_id, currentGP.officialResults?.pos3, 2)} font-semibold`}>{getDriverName(bet.pos3_id)}</span></div>
+  <div>Pole 🎯 <span className={`font-semibold ${getPredictionColor(bet.pole_id, "pole", currentGP.officialResults)}`}>{getDriverName(bet.pole_id)}</span></div>
+  <div>DOTD ⭐ <span className={`font-semibold ${getPredictionColor(bet.dotd_id, "dotd", currentGP.officialResults)}`}>{getDriverName(bet.dotd_id)}</span></div>
+  <div>🥇 <span className={`font-semibold ${getPredictionColor(bet.pos1_id, "pos1", currentGP.officialResults)}`}>{getDriverName(bet.pos1_id)}</span></div>
+  <div>🥈 <span className={`font-semibold ${getPredictionColor(bet.pos2_id, "pos2", currentGP.officialResults)}`}>{getDriverName(bet.pos2_id)}</span></div>
+  <div>🥉 <span className={`font-semibold ${getPredictionColor(bet.pos3_id, "pos3", currentGP.officialResults)}`}>{getDriverName(bet.pos3_id)}</span></div>
 </div>
         </div>
       ))}
