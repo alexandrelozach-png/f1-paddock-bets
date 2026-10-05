@@ -1531,7 +1531,7 @@ const activePracticeList = currentGP.practice?.filter((p) => !p.session || p.ses
 
 // fonction des couleurs résultats
 const getPredictionColor = (betDriverId, betType, officialResults) => {
-  console.log("DEBUG getPredictionColor:", { betDriverId, betType, officialResults });
+  console.log("DEBUG:", betDriverId, betType, JSON.stringify(officialResults));
   if (!officialResults || !betDriverId) return "text-zinc-300";
 
   // Pole et DOTD : correct ou pas
