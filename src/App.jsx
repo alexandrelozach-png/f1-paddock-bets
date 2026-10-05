@@ -1,6 +1,6 @@
 // --- VERSION: ALPHA v3.20 ---
 import React, { useState, useEffect } from "react";
-import { CheckCircle, Trash2, Bell } from 'lucide-react';
+import { CheckCircle, User, Crown, Lock, Trash2, Bell, X } from 'lucide-react';
 import { 
 Trophy, 
 Clock, 
