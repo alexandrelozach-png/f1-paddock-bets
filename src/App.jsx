@@ -2331,9 +2331,6 @@ isExpired
 
     {/* VERSION TABLEAU (écrans moyens et grands) */}
     <div className="hidden sm:block overflow-x-auto">
-    <div className="text-xs text-yellow-400 p-2">
-  DEBUG: {JSON.stringify(currentGP.officialResults)}
-</div>
       <table className="w-full text-xs">
         <thead>
           <tr className="text-zinc-400 border-b border-[#2b2b3d]">
