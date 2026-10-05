@@ -2286,12 +2286,7 @@ isExpired
 
 {/* Affichage tableau récapitulatif des paris */}
 
-{/* DIAGNOSTIC TEMPORAIRE */}
-{console.log("DEBUG RECAP - isExpired:", isExpired, 
-  "teamBetsSummary length:", teamBetsSummary.length,
-  "officialResults:", currentGP.officialResults,
-  "currentGP.id:", currentGP.id
-)}
+
 
 {isExpired && teamBetsSummary.length > 0 && (
   <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-3">
@@ -2319,6 +2314,9 @@ isExpired
 
     {/* VERSION TABLEAU (écrans moyens et grands) */}
     <div className="hidden sm:block overflow-x-auto">
+    <div className="text-xs text-yellow-400 p-2">
+  DEBUG: {JSON.stringify(currentGP.officialResults)}
+</div>
       <table className="w-full text-xs">
         <thead>
           <tr className="text-zinc-400 border-b border-[#2b2b3d]">
