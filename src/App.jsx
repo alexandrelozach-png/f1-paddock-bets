@@ -1498,7 +1498,6 @@ const timeRemaining = calculateTimeRemaining(currentGP.qualiDeadline);
 const isExpired = currentGP.status === "completed" || timeRemaining.expired;
 
 
-
 // Formatage de date locale avec gestion automatique du fuseau (Heure de Paris)
 const formatQualiDate = (isoString) => {
 if (!isoString) return "Date non définie";
