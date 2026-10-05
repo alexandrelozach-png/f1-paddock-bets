@@ -19,17 +19,23 @@ import {
   Crown,
   Check,
   CheckCircle2,
+  CheckCircle,
   Clock,
   MapPin,
   Flame,
   Gauge,
   Globe,
   Users,
-  CheckCircle,
   Trash2,
   Bell,
+  X,
   Calendar,
-  X
+  PlusCircle,
+  XCircle,
+  AlertCircle,
+  ArrowLeft,
+  Star,
+  Home
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
