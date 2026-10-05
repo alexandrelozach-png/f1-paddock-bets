@@ -1,6 +1,6 @@
-// --- VERSION: ALPHA v3.18 ---
+// --- VERSION: ALPHA v3.20 ---
 import React, { useState, useEffect } from "react";
-import { CheckCircle, Trash2 } from 'lucide-react';
+import { CheckCircle, Trash2, Bell } from 'lucide-react';
 import { 
 Trophy, 
 Clock, 
@@ -37,7 +37,7 @@ import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.18";
+const APP_VERSION = "ALPHA v3.20";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -487,6 +487,7 @@ const [authPassword, setAuthPassword] = useState("");
 const [authUsername, setAuthUsername] = useState("");
 const [authError, setAuthError] = useState("");
 const [authLoadingAction, setAuthLoadingAction] = useState(false);
+const [showProfileModal, setShowProfileModal] = useState(false);
 
 //Suppression de compte
 
@@ -1854,25 +1855,29 @@ className="bg-[#1e1e2d] border border-[#2b2b3d] text-zinc-200 text-xs font-bold 
 
 <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
 </div>
+
+{/* Profil */}
+
 {user ? (
-<div className="flex items-center gap-1.5 bg-[#1e1e2d] border border-emerald-500/40 px-2 sm:px-3 py-1.5 rounded-xl text-xs">
-<User className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-<span className="text-zinc-100 font-semibold truncate max-w-[80px] sm:max-w-[120px]">
-{userProfile?.username || user.email?.split("@")[0]}
-</span>
-<button onClick={() => supabase.auth.signOut()} className="text-zinc-400 hover:text-red-400 p-0.5">
-<LogOut className="w-3.5 h-3.5" />
-</button>
-</div>
-            ) : (
-<button
-onClick={() => setShowAuthModal(true)}
-className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition"
->
-<LogIn className="w-3.5 h-3.5" />
-<span>Connexion</span>
-</button>
-            )}
+  <button
+    onClick={() => setShowProfileModal(true)}
+    className="flex items-center gap-1.5 bg-[#1e1e2d] hover:bg-[#252538] border border-emerald-500/40 px-2 sm:px-3 py-1.5 rounded-xl text-xs transition"
+  >
+    <User className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+    <span className="text-zinc-100 font-semibold truncate max-w-[80px] sm:max-w-[120px]">
+      {userProfile?.username || user.email?.split("@")[0]}
+    </span>
+    <ChevronDown className="w-3 h-3 text-zinc-400" />
+  </button>
+) : (
+  <button
+    onClick={() => setShowAuthModal(true)}
+    className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition"
+  >
+    <LogIn className="w-3.5 h-3.5" />
+    <span>Connexion</span>
+  </button>
+)}
 </div>
 </div>
 </header>
@@ -2749,6 +2754,90 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
 )}
 </main>
 
+{/* Volet gestion profil */}
+
+{showProfileModal && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl">
+
+      {/* EN-TÊTE PROFIL */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-white font-black text-lg flex items-center gap-2">
+          <User className="w-5 h-5 text-emerald-400" />
+          Mon Profil
+        </h2>
+        <button
+          onClick={() => setShowProfileModal(false)}
+          className="text-zinc-400 hover:text-white transition"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* INFOS UTILISATEUR */}
+      <div className="bg-[#15151e] border border-[#2b2b3d] rounded-xl p-4 space-y-2">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <User className="w-5 h-5 text-emerald-400" />
+          </div>
+          <div>
+            <p className="text-white font-black text-sm">
+              {userProfile?.username || "Utilisateur"}
+            </p>
+            <p className="text-zinc-400 text-[11px]">{user?.email}</p>
+          </div>
+        </div>
+        {userTeam && (
+          <div className="pt-2 border-t border-[#2b2b3d] flex items-center gap-2 text-xs text-zinc-400">
+            <Crown className="w-3.5 h-3.5 text-amber-400" />
+            <span>Écurie : <strong className="text-white">{userTeam.name}</strong></span>
+          </div>
+        )}
+      </div>
+
+      {/* ACTIONS */}
+      <div className="space-y-2">
+
+        {/* FUTUR : Bouton Notifications (placeholder) */}
+        <button
+          disabled
+          className="w-full flex items-center gap-2 bg-[#15151e] text-zinc-500 text-xs font-bold py-2.5 px-4 rounded-xl border border-[#2b2b3d] cursor-not-allowed opacity-50"
+        >
+          <Bell className="w-3.5 h-3.5" />
+          Notifications
+          <span className="ml-auto text-[10px] bg-zinc-700 px-1.5 py-0.5 rounded">Bientôt</span>
+        </button>
+
+        {/* DÉCONNEXION */}
+        <button
+          onClick={async () => {
+            await supabase.auth.signOut();
+            setShowProfileModal(false);
+            setUser(null);
+            setUserProfile(null);
+            setUserTeam(null);
+          }}
+          className="w-full flex items-center gap-2 bg-[#15151e] hover:bg-[#252538] text-zinc-300 text-xs font-bold py-2.5 px-4 rounded-xl border border-[#2b2b3d] transition"
+        >
+          <LogOut className="w-3.5 h-3.5 text-zinc-400" />
+          Se déconnecter
+        </button>
+
+        {/* SUPPRESSION DE COMPTE */}
+        <button
+          onClick={() => {
+            setShowProfileModal(false);
+            setShowDeleteAccountModal(true);
+          }}
+          className="w-full flex items-center gap-2 bg-red-950/20 hover:bg-red-950/40 text-red-500 text-xs font-bold py-2.5 px-4 rounded-xl border border-red-900/40 transition"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+          Supprimer mon compte
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
 {/* Bouton de suppression de compte */}
 
@@ -2965,14 +3054,6 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
       >
         Quitter cette écurie
       </button>
-
-      <button
-  onClick={() => setShowDeleteAccountModal(true)}
-  className="w-full bg-red-950/20 hover:bg-red-950/40 text-red-500 text-xs font-bold py-2.5 rounded-xl border border-red-900/40 transition"
->
-  <Trash2 className="w-3.5 h-3.5 inline mr-1.5" />
-  Supprimer mon compte
-</button>
 
       {userProfile?.is_super_admin && (
   <button
