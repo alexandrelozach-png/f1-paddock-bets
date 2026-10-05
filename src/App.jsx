@@ -1531,28 +1531,47 @@ const activePracticeList = currentGP.practice?.filter((p) => !p.session || p.ses
 
 // fonction des couleurs résultats
 const getPredictionColor = (betDriverId, betType, officialResults) => {
-  console.log("DEBUG:", betDriverId, betType, JSON.stringify(officialResults));
   if (!officialResults || !betDriverId) return "text-zinc-300";
 
-  // Pole et DOTD : correct ou pas
+  // Pole : correct ou incorrect
   if (betType === "pole") {
-    return betDriverId === officialResults.pole ? "text-green-400" : "text-red-400";
+    return betDriverId === officialResults.pole 
+      ? "text-green-400" 
+      : "text-red-400";
   }
+
+  // DOTD : correct ou incorrect
   if (betType === "dotd") {
-    return betDriverId === officialResults.dotd ? "text-green-400" : "text-red-400";
+    return betDriverId === officialResults.dotd 
+      ? "text-green-400" 
+      : "text-red-400";
   }
 
-  // Podium : on calcule le vrai écart de position
-  const podium = [officialResults.pos1, officialResults.pos2, officialResults.pos3];
-  const betIndex = ["pos1", "pos2", "pos3"].indexOf(betType);
-  const actualIndex = podium.indexOf(betDriverId);
+  // Podium P1 : comparaison explicite position par position
+  if (betType === "pos1") {
+    if (betDriverId === officialResults.pos1) return "text-green-400";  // exact ✅
+    if (betDriverId === officialResults.pos2) return "text-yellow-400"; // décalé 1 place
+    if (betDriverId === officialResults.pos3) return "text-orange-400"; // décalé 2 places
+    return "text-red-400"; // pas dans le top 3
+  }
 
-  if (actualIndex === -1) return "text-red-400"; // Pilote pas dans le top 3
-  const diff = Math.abs(betIndex - actualIndex);
-  if (diff === 0) return "text-green-400";
-  if (diff === 1) return "text-yellow-400";
-  if (diff === 2) return "text-orange-400";
-  return "text-red-400";
+  // Podium P2 : comparaison explicite position par position
+  if (betType === "pos2") {
+    if (betDriverId === officialResults.pos2) return "text-green-400";  // exact ✅
+    if (betDriverId === officialResults.pos1) return "text-yellow-400"; // décalé 1 place
+    if (betDriverId === officialResults.pos3) return "text-yellow-400"; // décalé 1 place
+    return "text-red-400"; // pas dans le top 3
+  }
+
+  // Podium P3 : comparaison explicite position par position
+  if (betType === "pos3") {
+    if (betDriverId === officialResults.pos3) return "text-green-400";  // exact ✅
+    if (betDriverId === officialResults.pos2) return "text-yellow-400"; // décalé 1 place
+    if (betDriverId === officialResults.pos1) return "text-orange-400"; // décalé 2 places
+    return "text-red-400"; // pas dans le top 3
+  }
+
+  return "text-zinc-300";
 };
 
   // fonction affichage récap des paris
@@ -2285,8 +2304,6 @@ isExpired
 
 
 {/* Affichage tableau récapitulatif des paris */}
-
-
 
 {isExpired && teamBetsSummary.length > 0 && (
   <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-3">
