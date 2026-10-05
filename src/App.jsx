@@ -2286,6 +2286,13 @@ isExpired
 
 {/* Affichage tableau récapitulatif des paris */}
 
+{/* DIAGNOSTIC TEMPORAIRE */}
+{console.log("DEBUG RECAP - isExpired:", isExpired, 
+  "teamBetsSummary length:", teamBetsSummary.length,
+  "officialResults:", currentGP.officialResults,
+  "currentGP.id:", currentGP.id
+)}
+
 {isExpired && teamBetsSummary.length > 0 && (
   <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-3">
     <h2 className="text-sm font-black text-white flex items-center gap-2">
@@ -2325,39 +2332,32 @@ isExpired
           </tr>
         </thead>
         <tbody>
-          {teamBetsSummary.map((bet) => (
-            <tr key={bet.id} className="border-b border-[#2b2b3d]/50">
-              <td className="py-2 px-2 font-bold text-white">{bet.profiles?.username || "Utilisateur"}</td>
-{/* Pole */}
-<td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pole_id, "pole", currentGP.officialResults)}`}>
-  {getDriverName(bet.pole_id)}
-</td>
-
-{/* P1 */}
-<td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pos1_id, "pos1", currentGP.officialResults)}`}>
-  {getDriverName(bet.pos1_id)}
-</td>
-
-{/* P2 */}
-<td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pos2_id, "pos2", currentGP.officialResults)}`}>
-  {getDriverName(bet.pos2_id)}
-</td>
-
-{/* P3 */}
-<td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pos3_id, "pos3", currentGP.officialResults)}`}>
-  {getDriverName(bet.pos3_id)}
-</td>
-
-{/* DOTD */}
-<td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.dotd_id, "dotd", currentGP.officialResults)}`}>
-  {getDriverName(bet.dotd_id)}
-</td>
-              <td className="py-2 px-2 text-right font-mono font-black text-[#e10600]">
-                {currentGP.officialResults ? `${bet.points_awarded ?? 0} pts` : "—"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
+  {teamBetsSummary.map((bet) => (
+    <tr key={bet.id} className="border-b border-[#2b2b3d]/50">
+      <td className="py-2 px-2 font-bold text-white">
+        {bet.profiles?.username || "Utilisateur"}
+      </td>
+      <td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pole_id, "pole", currentGP.officialResults)}`}>
+        {getDriverName(bet.pole_id)}
+      </td>
+      <td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pos1_id, "pos1", currentGP.officialResults)}`}>
+        {getDriverName(bet.pos1_id)}
+      </td>
+      <td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pos2_id, "pos2", currentGP.officialResults)}`}>
+        {getDriverName(bet.pos2_id)}
+      </td>
+      <td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.pos3_id, "pos3", currentGP.officialResults)}`}>
+        {getDriverName(bet.pos3_id)}
+      </td>
+      <td className={`py-2 px-2 font-semibold ${getPredictionColor(bet.dotd_id, "dotd", currentGP.officialResults)}`}>
+        {getDriverName(bet.dotd_id)}
+      </td>
+      <td className="py-2 px-2 text-right font-mono font-black text-[#e10600]">
+        {currentGP.officialResults ? `${bet.points_awarded ?? 0} pts` : "—"}
+      </td>
+    </tr>
+  ))}
+</tbody>
       </table>
     </div>
 
