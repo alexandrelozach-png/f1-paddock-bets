@@ -28,6 +28,7 @@ import {
   CheckCircle,
   Trash2,
   Bell,
+  Calendar,
   X
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
