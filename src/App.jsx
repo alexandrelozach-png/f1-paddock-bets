@@ -467,6 +467,7 @@ const [resultSaveFeedback, setResultSaveFeedback] = useState({ visible: false, m
 const [syncingCalendar, setSyncingCalendar] = useState(false);
 const [calendarSyncFeedback, setCalendarSyncFeedback] = useState({ visible: false, message: "" });
 
+
 // Sélecteur de saison & Archives
 
 const [selectedSeason, setSelectedSeason] = useState("2026");
@@ -486,6 +487,12 @@ const [authPassword, setAuthPassword] = useState("");
 const [authUsername, setAuthUsername] = useState("");
 const [authError, setAuthError] = useState("");
 const [authLoadingAction, setAuthLoadingAction] = useState(false);
+
+//Suppression de compte
+
+const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+const [deleteAccountConfirm, setDeleteAccountConfirm] = useState("");
+const [deletingAccount, setDeletingAccount] = useState(false);
 
 // Pronostics & Validation
 
@@ -700,6 +707,29 @@ useEffect(() => {
     loadTeamMembers(userTeam.id);
   }
 }, [userTeam]);
+
+//suppression de compte
+
+const handleDeleteAccount = async () => {
+  if (deleteAccountConfirm !== "SUPPRIMER") return;
+  setDeletingAccount(true);
+
+  try {
+    const { error } = await supabase.rpc("delete_own_account");
+    if (error) throw error;
+
+    await supabase.auth.signOut();
+    setShowDeleteAccountModal(false);
+    setUser(null);
+    setUserProfile(null);
+    setUserTeam(null);
+  } catch (err) {
+    console.error("Erreur suppression compte:", err);
+    alert("Erreur lors de la suppression. Contacte l'administrateur.");
+  } finally {
+    setDeletingAccount(false);
+  }
+};
 
 //création écurie
 const generateInviteCode = (teamName) => {
@@ -2719,6 +2749,66 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
 )}
 </main>
 
+
+{/* Bouton de suppression de compte */}
+
+{showDeleteAccountModal && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="bg-[#1e1e2d] border border-red-500/40 rounded-2xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
+          <Trash2 className="w-5 h-5 text-red-400" />
+        </div>
+        <div>
+          <h2 className="text-white font-black text-lg">Supprimer mon compte</h2>
+          <p className="text-xs text-zinc-400">Cette action est irréversible</p>
+        </div>
+      </div>
+
+      <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-xs text-red-300 space-y-1">
+        <p>⚠️ En supprimant votre compte, vous perdrez définitivement :</p>
+        <ul className="list-disc list-inside space-y-0.5 ml-2">
+          <li>Tous vos pronostics et points accumulés</li>
+          <li>Votre appartenance à l'écurie</li>
+          <li>Vos informations de connexion</li>
+        </ul>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs text-zinc-400">
+          Pour confirmer, tapez <strong className="text-white">SUPPRIMER</strong> ci-dessous :
+        </label>
+        <input
+          type="text"
+          value={deleteAccountConfirm}
+          onChange={(e) => setDeleteAccountConfirm(e.target.value)}
+          placeholder="SUPPRIMER"
+          className="w-full bg-[#15151e] border border-[#2b2b3d] text-white p-2.5 rounded-xl text-sm outline-none focus:border-red-500/50"
+        />
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => {
+            setShowDeleteAccountModal(false);
+            setDeleteAccountConfirm("");
+          }}
+          className="flex-1 bg-[#15151e] hover:bg-[#252538] text-zinc-300 text-xs font-bold py-2.5 rounded-xl border border-[#2b2b3d] transition"
+        >
+          Annuler
+        </button>
+        <button
+          onClick={handleDeleteAccount}
+          disabled={deleteAccountConfirm !== "SUPPRIMER" || deletingAccount}
+          className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2.5 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {deletingAccount ? "Suppression..." : "Supprimer définitivement"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 {showAuthModal && (
   <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
@@ -2774,6 +2864,13 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
             {authError}
           </div>
         )}
+
+<p className="text-[10px] text-zinc-500 text-center">
+  Vos données (email, username, pronostics) sont utilisées uniquement pour 
+  gérer votre participation au jeu de pronostics F1 Paddock Bets. 
+  Elles ne sont jamais partagées avec des tiers. 
+  Vous pouvez supprimer votre compte à tout moment depuis votre espace équipe.
+</p>
 
         <button
           type="submit"
@@ -2868,6 +2965,15 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
       >
         Quitter cette écurie
       </button>
+
+      <button
+  onClick={() => setShowDeleteAccountModal(true)}
+  className="w-full bg-red-950/20 hover:bg-red-950/40 text-red-500 text-xs font-bold py-2.5 rounded-xl border border-red-900/40 transition"
+>
+  <Trash2 className="w-3.5 h-3.5 inline mr-1.5" />
+  Supprimer mon compte
+</button>
+
       {userProfile?.is_super_admin && (
   <button
     onClick={handleSyncFullCalendar}
