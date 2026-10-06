@@ -1376,6 +1376,21 @@ const handleSaveOfficialResults = async () => {
 // Recharge les données pour rafraîchir l'affichage
     load2026DataFromDB();
     if (userTeam?.id) loadTeamMembers(userTeam.id);
+    // Notifier tous les joueurs que les résultats sont publiés
+await fetch(
+  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-push-notification`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify({
+      type: "results_published",
+      gpName: currentGP.name
+    })
+  }
+);
   } catch (err) {
     console.error("Erreur sauvegarde résultats:", err);
     setResultSaveFeedback({ visible: true, message: "❌ Erreur lors de l'enregistrement." });
@@ -1474,6 +1489,9 @@ console.warn("Échec chargement DB:", err);
 useEffect(() => {
 
 load2026DataFromDB();
+
+
+
 
   }, []);
 
