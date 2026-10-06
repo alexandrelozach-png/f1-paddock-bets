@@ -1944,7 +1944,7 @@ return (
 )}
 
 </div>
-<div className="flex items-center gap-1 sm:gap-3 shrink-0">
+<div className="flex items-center gap-1 sm:gap-3 shrink-0 relative z-10">
 
 <nav className="hidden md:flex items-center bg-[#1e1e2d] border border-[#2b2b3d] p-1 rounded-xl text-xs">
 
