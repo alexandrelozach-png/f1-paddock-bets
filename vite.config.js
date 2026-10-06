@@ -6,8 +6,13 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico'],
+      injectManifest: {
+        swDest: 'dist/sw.js'
+      },
       manifest: {
         name: 'F1 Paddock Bets',
         short_name: 'Paddock Bets',
