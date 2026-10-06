@@ -918,7 +918,7 @@ useEffect(() => {
         .from("push_subscriptions")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybesingle();
       if (data) {
         setNotifPrefs({
           notif_1h_before_quali: data.notif_1h_before_quali,
