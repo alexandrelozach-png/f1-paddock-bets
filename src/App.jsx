@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { supabase } from "./supabaseClient";
 import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } from "./f1ApiService";
+const VAPID_PUBLIC_KEY = "BGD9lvpXySGasSG9PUlYmy3ZFzQ3gapHJmQskL3jK3kW6Jgm5pV9pLU1mIdWI6EWwJEBaFn4VR6qOkA40kJqiI0"; // Ta vraie clé publique ici
 
 // --- VERSION DE L'APPLICATION ---
 const APP_VERSION = "ALPHA v3.20";
@@ -877,6 +878,121 @@ const handleLeaveTeam = async () => {
     alert("Erreur lors du départ de l'écurie : " + err.message);
   }
 };
+
+//gestion des notifications
+
+const [notifPermission, setNotifPermission] = useState("default");
+const [pushSubscription, setPushSubscription] = useState(null);
+const [notifPrefs, setNotifPrefs] = useState({
+  notif_1h_before_quali: true,
+  notif_15min_before_quali: true,
+  notif_15min_before_race: true,
+  notif_results_published: true
+});
+const [savingNotifPrefs, setSavingNotifPrefs] = useState(false);
+
+
+// Convertit la clé VAPID en format utilisable
+const urlBase64ToUint8Array = (base64String) => {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+};
+
+// Vérifie l'état des notifications au chargement
+useEffect(() => {
+  if (!user || !('Notification' in window)) return;
+  setNotifPermission(Notification.permission);
+
+  const checkExistingSubscription = async () => {
+    const registration = await navigator.serviceWorker.ready;
+    const sub = await registration.pushManager.getSubscription();
+    if (sub) {
+      setPushSubscription(sub);
+      const { data } = await supabase
+        .from("push_subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+      if (data) {
+        setNotifPrefs({
+          notif_1h_before_quali: data.notif_1h_before_quali,
+          notif_15min_before_quali: data.notif_15min_before_quali,
+          notif_15min_before_race: data.notif_15min_before_race,
+          notif_results_published: data.notif_results_published
+        });
+      }
+    }
+  };
+
+  checkExistingSubscription();
+}, [user]);
+
+// Active les notifications
+const handleEnableNotifications = async () => {
+  try {
+    const permission = await Notification.requestPermission();
+    setNotifPermission(permission);
+    if (permission !== "granted") return;
+
+    const registration = await navigator.serviceWorker.ready;
+    const sub = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+
+    setPushSubscription(sub);
+
+    const subJson = sub.toJSON();
+    await supabase.from("push_subscriptions").upsert({
+      user_id: user.id,
+      endpoint: subJson.endpoint,
+      p256dh: subJson.keys.p256dh,
+      auth: subJson.keys.auth,
+      ...notifPrefs
+    }, { onConflict: "user_id,endpoint" });
+
+  } catch (err) {
+    console.error("Erreur activation notifications:", err);
+  }
+};
+
+// Désactive les notifications
+const handleDisableNotifications = async () => {
+  try {
+    if (pushSubscription) {
+      await pushSubscription.unsubscribe();
+      setPushSubscription(null);
+      await supabase
+        .from("push_subscriptions")
+        .delete()
+        .eq("user_id", user.id);
+    }
+  } catch (err) {
+    console.error("Erreur désactivation notifications:", err);
+  }
+};
+
+// Met à jour les préférences de notifications
+const handleUpdateNotifPrefs = async (key, value) => {
+  const newPrefs = { ...notifPrefs, [key]: value };
+  setNotifPrefs(newPrefs);
+
+  if (pushSubscription) {
+    setSavingNotifPrefs(true);
+    await supabase
+      .from("push_subscriptions")
+      .update(newPrefs)
+      .eq("user_id", user.id);
+    setSavingNotifPrefs(false);
+  }
+};
+
 
 //Recupération auto via API
 
@@ -2802,15 +2918,71 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
       {/* ACTIONS */}
       <div className="space-y-2">
 
-        {/* FUTUR : Bouton Notifications (placeholder) */}
+        {/* NOTIFICATIONS */}
+{'Notification' in window ? (
+  <div className="bg-[#15151e] border border-[#2b2b3d] rounded-xl p-3 space-y-3">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <Bell className="w-3.5 h-3.5 text-blue-400" />
+        <span className="text-xs font-bold text-white">Notifications</span>
+      </div>
+      {pushSubscription ? (
         <button
-          disabled
-          className="w-full flex items-center gap-2 bg-[#15151e] text-zinc-500 text-xs font-bold py-2.5 px-4 rounded-xl border border-[#2b2b3d] cursor-not-allowed opacity-50"
+          onClick={handleDisableNotifications}
+          className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-1 rounded-lg font-bold"
         >
-          <Bell className="w-3.5 h-3.5" />
-          Notifications
-          <span className="ml-auto text-[10px] bg-zinc-700 px-1.5 py-0.5 rounded">Bientôt</span>
+          Désactiver
         </button>
+      ) : (
+        <button
+          onClick={handleEnableNotifications}
+          className="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-1 rounded-lg font-bold"
+        >
+          {notifPermission === "denied" ? "Bloquées ⚠️" : "Activer"}
+        </button>
+      )}
+    </div>
+
+    {/* Toggles des 4 types de notifications */}
+    {pushSubscription && (
+      <div className="space-y-2 pt-1 border-t border-[#2b2b3d]">
+        {[
+          { key: "notif_1h_before_quali", label: "⏰ 1h avant les qualifs" },
+          { key: "notif_15min_before_quali", label: "🚦 15min avant les qualifs" },
+          { key: "notif_15min_before_race", label: "🏎️ 15min avant la course" },
+          { key: "notif_results_published", label: "🏆 Résultats en ligne" }
+        ].map(({ key, label }) => (
+          <div key={key} className="flex items-center justify-between">
+            <span className="text-[11px] text-zinc-300">{label}</span>
+            <button
+              onClick={() => handleUpdateNotifPrefs(key, !notifPrefs[key])}
+              className={`w-9 h-5 rounded-full transition-colors relative ${
+                notifPrefs[key] ? "bg-blue-500" : "bg-zinc-600"
+              }`}
+            >
+              <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${
+                notifPrefs[key] ? "translate-x-4" : "translate-x-0.5"
+              }`} />
+            </button>
+          </div>
+        ))}
+        {savingNotifPrefs && (
+          <p className="text-[10px] text-zinc-500 text-center">Sauvegarde...</p>
+        )}
+      </div>
+    )}
+
+    {notifPermission === "denied" && (
+      <p className="text-[10px] text-red-400">
+        Notifications bloquées dans les paramètres de votre navigateur.
+      </p>
+    )}
+  </div>
+) : (
+  <div className="bg-[#15151e] border border-[#2b2b3d] rounded-xl p-3 text-[11px] text-zinc-500 text-center">
+    Notifications non supportées sur ce navigateur
+  </div>
+)}
 
         {/* DÉCONNEXION */}
         <button
