@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.20 ---
+// --- VERSION: ALPHA v3.21 ---
 import React, { useState, useEffect } from "react";
 import {
   Flag,
@@ -42,7 +42,7 @@ import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } fr
 const VAPID_PUBLIC_KEY = "BGD9lvpXySGasSG9PUlYmy3ZFzQ3gapHJmQskL3jK3kW6Jgm5pV9pLU1mIdWI6EWwJEBaFn4VR6qOkA40kJqiI0"; // Ta vraie clé publique ici
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.20";
+const APP_VERSION = "ALPHA v3.21";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -1378,7 +1378,7 @@ const handleSaveOfficialResults = async () => {
     if (userTeam?.id) loadTeamMembers(userTeam.id);
     // Notifier tous les joueurs que les résultats sont publiés
 await fetch(
-  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-push-notification`,
+  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/hyper-api`,
   {
     method: "POST",
     headers: {
