@@ -1,13 +1,23 @@
 import { precacheAndRoute } from 'workbox-precaching';
 
-// Précache automatique géré par vite-plugin-pwa
 precacheAndRoute(self.__WB_MANIFEST);
 
-// Réception des notifications push
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
+  console.log('🔔 Push reçu !', event.data?.text());
+  
+  if (!event.data) {
+    console.log('❌ Pas de data dans le push');
+    return;
+  }
 
-  const data = event.data.json();
+  let data;
+  try {
+    data = event.data.json();
+    console.log('📦 Data parsée:', data);
+  } catch(e) {
+    console.error('❌ Erreur parsing JSON:', e);
+    return;
+  }
 
   const options = {
     body: data.body,
@@ -21,30 +31,25 @@ self.addEventListener('push', (event) => {
     ]
   };
 
+  console.log('📤 Affichage notification avec options:', options);
+
   event.waitUntil(
     self.registration.showNotification(data.title, options)
+      .then(() => console.log('✅ Notification affichée !'))
+      .catch(err => console.error('❌ Erreur affichage notification:', err))
   );
 });
 
-// Clic sur la notification
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-
   if (event.action === 'close') return;
-
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        // Si l'appli est déjà ouverte, focus dessus
         for (const client of clientList) {
-          if (client.url === '/' && 'focus' in client) {
-            return client.focus();
-          }
+          if (client.url === '/' && 'focus' in client) return client.focus();
         }
-        // Sinon ouvre un nouvel onglet
-        if (clients.openWindow) {
-          return clients.openWindow(event.notification.data.url || '/');
-        }
+        if (clients.openWindow) return clients.openWindow('/');
       })
   );
 });
