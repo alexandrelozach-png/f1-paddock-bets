@@ -471,7 +471,12 @@ const [fetchingPractice, setFetchingPractice] = useState(false);
 const [resultSaveFeedback, setResultSaveFeedback] = useState({ visible: false, message: "" });
 const [syncingCalendar, setSyncingCalendar] = useState(false);
 const [calendarSyncFeedback, setCalendarSyncFeedback] = useState({ visible: false, message: "" });
-
+const [showForgotPassword, setShowForgotPassword] = useState(false);
+const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
+const [showResetPassword, setShowResetPassword] = useState(false);
+const [newPassword, setNewPassword] = useState("");
+const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false);
 
 // Sélecteur de saison & Archives
 
@@ -803,6 +808,53 @@ const handleCreateTeam = async () => {
     }
   } finally {
     setTeamActionLoading(false);
+  }
+};
+
+//Fonction MDP recovery
+
+useEffect(() => {
+  const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === "PASSWORD_RECOVERY") {
+      setShowResetPassword(true);
+    }
+  });
+  return () => authListener.subscription.unsubscribe();
+}, []);
+
+const handleForgotPassword = async (e) => {
+  e.preventDefault();
+  if (!forgotPasswordEmail) return;
+
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    forgotPasswordEmail,
+    { redirectTo: "https://f1-paddock-bets.vercel.app" }
+  );
+
+  if (!error) {
+    setForgotPasswordSent(true);
+  } else {
+    console.error("Erreur reset password:", error);
+  }
+};
+
+const handleResetPassword = async (e) => {
+  e.preventDefault();
+  if (!newPassword || newPassword.length < 6) return;
+
+  const { error } = await supabase.auth.updateUser({ 
+    password: newPassword 
+  });
+
+  if (!error) {
+    setResetPasswordSuccess(true);
+    setTimeout(() => {
+      setShowResetPassword(false);
+      setNewPassword("");
+      setResetPasswordSuccess(false);
+    }, 2000);
+  } else {
+    console.error("Erreur update password:", error);
   }
 };
 
@@ -3092,6 +3144,107 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
   </div>
 )}
 
+{showForgotPassword && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl">
+      
+      <div className="flex items-center justify-between">
+        <h2 className="text-white font-black text-lg">Mot de passe oublié</h2>
+        <button
+          onClick={() => {
+            setShowForgotPassword(false);
+            setForgotPasswordSent(false);
+            setForgotPasswordEmail("");
+          }}
+          className="text-zinc-400 hover:text-white transition"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {!forgotPasswordSent ? (
+        <form onSubmit={handleForgotPassword} className="space-y-3">
+          <p className="text-xs text-zinc-400">
+            Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+          </p>
+          <input
+            type="email"
+            value={forgotPasswordEmail}
+            onChange={(e) => setForgotPasswordEmail(e.target.value)}
+            placeholder="votre@email.com"
+            required
+            className="w-full bg-[#15151e] border border-[#2b2b3d] text-white p-2.5 rounded-xl text-sm outline-none focus:border-[#e10600]/50"
+          />
+          <button
+            type="submit"
+            className="w-full bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold py-2.5 rounded-xl transition"
+          >
+            Envoyer le lien de reset
+          </button>
+        </form>
+      ) : (
+        <div className="space-y-3 text-center py-4">
+          <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto" />
+          <p className="text-white font-bold text-sm">Email envoyé !</p>
+          <p className="text-xs text-zinc-400">
+            Vérifiez votre boîte mail et cliquez sur le lien pour réinitialiser votre mot de passe.
+          </p>
+          <button
+            onClick={() => {
+              setShowForgotPassword(false);
+              setForgotPasswordSent(false);
+              setForgotPasswordEmail("");
+            }}
+            className="text-xs text-zinc-400 hover:text-white underline transition"
+          >
+            Fermer
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+{showResetPassword && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl">
+      
+      <h2 className="text-white font-black text-lg">Nouveau mot de passe</h2>
+
+      {!resetPasswordSuccess ? (
+        <form onSubmit={handleResetPassword} className="space-y-3">
+          <p className="text-xs text-zinc-400">
+            Choisissez un nouveau mot de passe (minimum 6 caractères).
+          </p>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Nouveau mot de passe"
+            minLength={6}
+            required
+            className="w-full bg-[#15151e] border border-[#2b2b3d] text-white p-2.5 rounded-xl text-sm outline-none focus:border-emerald-500/50"
+          />
+          <button
+            type="submit"
+            disabled={newPassword.length < 6}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-xl transition disabled:opacity-40"
+          >
+            Mettre à jour le mot de passe
+          </button>
+        </form>
+      ) : (
+        <div className="text-center py-4 space-y-3">
+          <CheckCircle className="w-10 h-10 text-emerald-400 mx-auto" />
+          <p className="text-white font-bold text-sm">Mot de passe mis à jour !</p>
+          <p className="text-xs text-zinc-400">Vous êtes maintenant connecté.</p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+
 {showAuthModal && (
   <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
@@ -3147,6 +3300,22 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
             {authError}
           </div>
         )}
+
+{/* Lien mot de passe oublié - visible uniquement en mode connexion */}
+{!authMode || authMode === "login" ? (
+  <div className="text-right">
+    <button
+      type="button"
+      onClick={() => {
+        setShowAuthModal(false);
+        setShowForgotPassword(true);
+      }}
+      className="text-[11px] text-zinc-400 hover:text-zinc-200 transition underline"
+    >
+      Mot de passe oublié ?
+    </button>
+  </div>
+) : null}
 
 <p className="text-[10px] text-zinc-500 text-center">
   Vos données (email, username, pronostics) sont utilisées uniquement pour 
