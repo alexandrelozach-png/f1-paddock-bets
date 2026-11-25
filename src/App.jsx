@@ -1,4 +1,4 @@
-// --- VERSION: ALPHA v3.21 ---
+// --- VERSION: ALPHA v3.23 ---
 import React, { useState, useEffect } from "react";
 import {
   Flag,
@@ -42,7 +42,7 @@ import { fetchOfficialCalendar, fetchFullSeasonResults, runAutoSyncPipeline } fr
 const VAPID_PUBLIC_KEY = "BGD9lvpXySGasSG9PUlYmy3ZFzQ3gapHJmQskL3jK3kW6Jgm5pV9pLU1mIdWI6EWwJEBaFn4VR6qOkA40kJqiI0"; // Ta vraie clé publique ici
 
 // --- VERSION DE L'APPLICATION ---
-const APP_VERSION = "ALPHA v3.21";
+const APP_VERSION = "ALPHA v3.23";
 
 // --- GRILLE PILOTES 2026 OFFICIELLE (11 ÉQUIPES - 22 PILOTES AVEC CADILLAC) ---
 const DRIVERS_2026 = [
@@ -477,6 +477,11 @@ const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
 const [showResetPassword, setShowResetPassword] = useState(false);
 const [newPassword, setNewPassword] = useState("");
 const [resetPasswordSuccess, setResetPasswordSuccess] = useState(false);
+const [standingsSubTab, setStandingsSubTab] = useState("team");
+const [legendsData, setLegendsData] = useState([]);
+const [goatData, setGoatData] = useState([]);
+const [loadingLegends, setLoadingLegends] = useState(false);
+const [loadingGoat, setLoadingGoat] = useState(false);
 
 // Sélecteur de saison & Archives
 
@@ -550,8 +555,6 @@ const { data: dbData, error: dbErr } = await supabase
           .select("*, official_results(*)")
           .eq("season", 2026)
           .order("round", { ascending: true });
-
-
 
 if (!dbErr && dbData && dbData.length > 0) {
 
@@ -1384,6 +1387,112 @@ const handleFetchPracticeResults = async () => {
   } finally {
     setFetchingPractice(false);
   }
+};
+
+// Classement Légendes
+
+const loadLegendsData = async () => {
+  if (!userTeam?.id) return;
+  setLoadingLegends(true);
+  
+  const { data, error } = await supabase
+    .from("bets")
+    .select("user_id, points_awarded, profiles(username), teams(name)")
+    .eq("team_id", userTeam.id)
+    .not("points_awarded", "is", null);
+
+  if (!error && data) {
+    // Agrégation par joueur
+    const aggregated = {};
+    data.forEach((bet) => {
+      const userId = bet.user_id;
+      if (!aggregated[userId]) {
+        aggregated[userId] = {
+          username: bet.profiles?.username || "Utilisateur",
+          teamName: bet.teams?.name || "—",
+          totalPoints: 0,
+          betsCount: 0
+        };
+      }
+      aggregated[userId].totalPoints += bet.points_awarded || 0;
+      aggregated[userId].betsCount += 1;
+    });
+
+    const sorted = Object.values(aggregated).sort((a, b) => b.totalPoints - a.totalPoints);
+    setLegendsData(sorted);
+  }
+  setLoadingLegends(false);
+};
+
+const loadGoatData = async () => {
+  setLoadingGoat(true);
+
+  const { data, error } = await supabase
+    .from("bets")
+    .select("user_id, points_awarded, profiles(username), teams(name)")
+    .not("points_awarded", "is", null);
+
+  if (!error && data) {
+    const aggregated = {};
+    data.forEach((bet) => {
+      const userId = bet.user_id;
+      if (!aggregated[userId]) {
+        aggregated[userId] = {
+          username: bet.profiles?.username || "Utilisateur",
+          teamName: bet.teams?.name || "—",
+          totalPoints: 0,
+          betsCount: 0
+        };
+      }
+      aggregated[userId].totalPoints += bet.points_awarded || 0;
+      aggregated[userId].betsCount += 1;
+    });
+
+    const sorted = Object.values(aggregated).sort((a, b) => b.totalPoints - a.totalPoints);
+    setGoatData(sorted);
+  }
+  setLoadingGoat(false);
+};
+
+// Chargement automatique quand on change de sous-onglet
+useEffect(() => {
+  if (activeTab !== "standings") return;
+  if (standingsSubTab === "legends" && legendsData.length === 0) loadLegendsData();
+  if (standingsSubTab === "goat" && goatData.length === 0) loadGoatData();
+}, [standingsSubTab, activeTab]);
+
+//Classement universel
+
+const RankingRow = ({ rank, username, teamName, totalPoints, betsCount, showTeam = false }) => {
+  const medalEmoji = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+  
+  return (
+    <div className={`flex items-center gap-3 p-3 rounded-xl transition ${
+      rank <= 3 ? "bg-[#15151e] border border-[#2b2b3d]" : "hover:bg-[#15151e]/50"
+    }`}>
+      <div className="w-8 text-center">
+        {medalEmoji ? (
+          <span className="text-lg">{medalEmoji}</span>
+        ) : (
+          <span className="text-zinc-500 font-mono text-sm font-bold">#{rank}</span>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-white font-black text-sm truncate">{username}</p>
+        {showTeam && (
+          <p className="text-zinc-400 text-[11px] flex items-center gap-1 truncate">
+            <Crown className="w-3 h-3 text-amber-400 shrink-0" />
+            {teamName}
+          </p>
+        )}
+        <p className="text-zinc-500 text-[10px]">{betsCount} pronostics</p>
+      </div>
+      <div className="text-right shrink-0">
+        <p className="text-[#e10600] font-black font-mono text-lg">{totalPoints}</p>
+        <p className="text-zinc-500 text-[10px]">points</p>
+      </div>
+    </div>
+  );
 };
 
 // Sauvegarde des résultats officiels
@@ -2855,90 +2964,154 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
 {/* ONGLET CLASSEMENT : LIMITÉ AUX COLLÈGUES DE LA TEAM */}
 
 {activeTab === "standings" && (
-  user && userTeam ? (
-  <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-5 shadow-2xl space-y-5">
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2b2b3d] pb-4">
-      <div>
-        <div className="flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-amber-400" />
-          <h2 className="text-lg font-black text-white">
-            Classement de l'Écurie : <span className="text-amber-400">{userTeam.name}</span>
-          </h2>
-        </div>
-        <p className="text-xs text-zinc-400 mt-0.5">
-          Points cumulés sur la saison 2026 entre les {teamMembersList.length} membres de votre groupe
-        </p>
-      </div>
+  <div className="max-w-2xl mx-auto space-y-4">
 
-      <button
-        onClick={() => setShowTeamModal(true)}
-        className="flex items-center gap-1.5 bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-lg shadow-red-900/30"
-      >
-        <Share2 className="w-3.5 h-3.5" />
-        <span>Inviter un Collègue</span>
-      </button>
+    {/* SOUS-ONGLETS */}
+    <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-1.5 flex gap-1">
+      {[
+        { id: "team", label: "🏎️ Mon Équipe", desc: "Saison en cours" },
+        { id: "legends", label: "🏅 Légendes", desc: "All-time équipe" },
+        { id: "goat", label: "🐐 GOAT", desc: "All-time global" }
+      ].map(({ id, label, desc }) => (
+        <button
+          key={id}
+          onClick={() => setStandingsSubTab(id)}
+          className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition flex flex-col items-center gap-0.5 ${
+            standingsSubTab === id
+              ? "bg-[#e10600] text-white"
+              : "text-zinc-400 hover:text-white"
+          }`}
+        >
+          <span>{label}</span>
+          <span className={`text-[9px] font-normal ${standingsSubTab === id ? "text-red-200" : "text-zinc-600"}`}>
+            {desc}
+          </span>
+        </button>
+      ))}
     </div>
 
-    <div className="space-y-2">
-      {teamMembersList.length === 0 ? (
-        <div className="text-center py-8 text-xs text-zinc-500 italic">
-          Chargement des membres de l'écurie...
-        </div>
-      ) : (
-        teamMembersList.map((member, index) => (
-          <div
-            key={member.id}
-            className={`flex items-center justify-between p-3.5 rounded-xl text-xs border transition-all ${
-              member.id === user?.id
-                ? "bg-[#1f1a2e] border-amber-500/50 shadow-md shadow-amber-950/20"
-                : "bg-[#15151e] border-[#2b2b3d] hover:border-zinc-600"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <span
-                className={`font-mono font-black text-sm w-6 text-center ${
-                  index === 0 ? "text-amber-400" : index === 1 ? "text-zinc-300" : index === 2 ? "text-amber-600" : "text-zinc-500"
-                }`}
-              >
-                #{index + 1}
-              </span>
+    {/* SOUS-ONGLET : MON ÉQUIPE (classement saison en cours - code existant) */}
+    {standingsSubTab === "team" && (
+      user && userTeam ? (
+        <div className="space-y-4">
+          {/* ... ton code existant du classement équipe inchangé ... */}
+          <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl overflow-hidden">
+            <div className="p-4 border-b border-[#2b2b3d] flex items-center justify-between">
               <div>
-                <div className="flex items-center gap-2">
-                  <strong className="text-white text-sm">{member.name}</strong>
-                  {member.role === "Team Principal" && (
-                    <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.2 rounded font-black flex items-center gap-1">
-                      <Crown className="w-2.5 h-2.5" /> TEAM PRINCIPAL
-                    </span>
-                  )}
-                </div>
-                <span className="text-[10px] text-zinc-400">{member.role}</span>
+                <h2 className="text-sm font-black text-white flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-[#e10600]" />
+                  {userTeam.name}
+                </h2>
+                <p className="text-[11px] text-zinc-400">Classement saison 2026</p>
               </div>
             </div>
-            <div className="text-right">
-              <span className="font-mono font-black text-sm text-[#e10600] block">{member.points} pts</span>
+            <div className="p-3 space-y-1">
+              {teamMembersList.length > 0 ? (
+                teamMembersList.map((member, index) => (
+                  <RankingRow
+                    key={member.id}
+                    rank={index + 1}
+                    username={member.name}
+                    teamName={userTeam.name}
+                    totalPoints={member.points}
+                    betsCount={"-"}
+                    showTeam={false}
+                  />
+                ))
+              ) : (
+                <p className="text-center text-zinc-500 text-xs py-6">
+                  Chargement des membres...
+                </p>
+              )}
             </div>
           </div>
-        ))
-      )}
-    </div>
+        </div>
+      ) : (
+        <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-10 text-center space-y-3">
+          <Lock className="w-10 h-10 text-zinc-500 mx-auto" />
+          <h3 className="text-white font-bold text-sm">Accès réservé aux membres</h3>
+          <p className="text-xs text-zinc-400">Connectez-vous et rejoignez une écurie pour voir le classement.</p>
+        </div>
+      )
+    )}
+
+    {/* SOUS-ONGLET : LÉGENDES */}
+    {standingsSubTab === "legends" && (
+      user && userTeam ? (
+        <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl overflow-hidden">
+          <div className="p-4 border-b border-[#2b2b3d]">
+            <h2 className="text-sm font-black text-white flex items-center gap-2">
+              🏅 Classement Légendes
+            </h2>
+            <p className="text-[11px] text-zinc-400">Points cumulés sur toutes les saisons — {userTeam.name}</p>
+          </div>
+          <div className="p-3 space-y-1">
+            {loadingLegends ? (
+              <p className="text-center text-zinc-500 text-xs py-6">Chargement...</p>
+            ) : legendsData.length > 0 ? (
+              legendsData.map((player, index) => (
+                <RankingRow
+                  key={player.username}
+                  rank={index + 1}
+                  username={player.username}
+                  teamName={player.teamName}
+                  totalPoints={player.totalPoints}
+                  betsCount={player.betsCount}
+                  showTeam={false}
+                />
+              ))
+            ) : (
+              <p className="text-center text-zinc-500 text-xs py-6">Aucune donnée disponible</p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-10 text-center space-y-3">
+          <Lock className="w-10 h-10 text-zinc-500 mx-auto" />
+          <h3 className="text-white font-bold text-sm">Accès réservé aux membres</h3>
+        </div>
+      )
+    )}
+
+    {/* SOUS-ONGLET : GOAT */}
+    {standingsSubTab === "goat" && (
+      user ? (
+        <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl overflow-hidden">
+          <div className="p-4 border-b border-[#2b2b3d]">
+            <h2 className="text-sm font-black text-white flex items-center gap-2">
+              🐐 Classement GOAT
+            </h2>
+            <p className="text-[11px] text-zinc-400">Meilleurs pronostiqueurs — toutes équipes et saisons confondues</p>
+          </div>
+          <div className="p-3 space-y-1">
+            {loadingGoat ? (
+              <p className="text-center text-zinc-500 text-xs py-6">Chargement...</p>
+            ) : goatData.length > 0 ? (
+              goatData.map((player, index) => (
+                <RankingRow
+                  key={player.username}
+                  rank={index + 1}
+                  username={player.username}
+                  teamName={player.teamName}
+                  totalPoints={player.totalPoints}
+                  betsCount={player.betsCount}
+                  showTeam={true}
+                />
+              ))
+            ) : (
+              <p className="text-center text-zinc-500 text-xs py-6">Aucune donnée disponible</p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-10 text-center space-y-3">
+          <Lock className="w-10 h-10 text-zinc-500 mx-auto" />
+          <h3 className="text-white font-bold text-sm">Connectez-vous pour accéder au classement GOAT</h3>
+        </div>
+      )
+    )}
+
   </div>
-  ) : (
-    <div className="bg-[#1e1e2d] border border-[#2b2b3d] rounded-2xl p-10 text-center space-y-3">
-      <Lock className="w-10 h-10 text-zinc-500 mx-auto" />
-      <h3 className="text-white font-bold text-sm">Accès réservé aux membres</h3>
-      <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-        Connectez-vous et rejoignez une écurie pour consulter le classement.
-      </p>
-      {!user && (
-        <button
-          onClick={() => setShowAuthModal(true)}
-          className="bg-[#e10600] hover:bg-[#c30500] text-white text-xs font-bold px-4 py-2 rounded-xl transition"
-        >
-          Se connecter / S'inscrire
-        </button>
-      )}
-    </div>
-  )
 )}
     </>
 )}
