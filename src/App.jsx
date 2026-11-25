@@ -625,11 +625,8 @@ setSeasonArchiveResults(data || []);
     } catch (e) {
 
 console.warn("Erreur chargement archive:", e);
-
     } finally {
-
 setLoadingArchive(false);
-
     }
 
   };
