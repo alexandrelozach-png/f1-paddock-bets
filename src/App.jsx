@@ -70,6 +70,13 @@ const DRIVERS_2026 = [
   { id: "bottas", name: "Valtteri Bottas", number: 77, team: "Cadillac", teamColor: "#D4AF37" }
 ];
 
+// Grille 2027 : identique à 2026 sauf Ocon (Haas) → Rafael Camara
+const DRIVERS_2027 = DRIVERS_2026.map((d) =>
+  d.id === "ocon"
+    ? { id: "camara", name: "Rafael Camara", number: 50, team: "Haas" }
+    : d
+);
+
 // --- TRACÉS VECTORIELS SVG OFFICIELS ---
 
 const CIRCUIT_SVGS = {
@@ -274,6 +281,22 @@ const CIRCUIT_SVGS = {
     />
   ),
 
+  Portimao: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2027/track/2027trackportimaodetailed.webp" 
+      alt="Portimao Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
+  Istanbul: (
+    <img 
+      src="https://media.formula1.com/image/upload/c_fit,h_704/q_auto/v1740000001/common/f1/2027/track/2027trackistanbuldetailed.webp" 
+      alt="Istanbul Park Circuit" 
+      className="w-full h-36 object-contain filter invert opacity-90 brightness-125"
+    />
+  ),
+
 default: (
 
 <svg viewBox="0 0 400 180" className="w-full h-36 stroke-current">
@@ -295,7 +318,7 @@ fill="none" stroke="url(#defGrad)" strokeWidth="4" strokeLinecap="round" strokeL
   )
 
 };
-const CIRCUIT_ROUND_MAP = {
+const CIRCUIT_ROUND_MAP_2026 = {
   1: "melbourne",
   2: "shanghai",
   3: "suzuka",
@@ -321,6 +344,33 @@ const CIRCUIT_ROUND_MAP = {
   23: "lasvegas",
   24: "lusail",
   25: "abudabhi",
+};
+
+const CIRCUIT_ROUND_MAP_2027 = {
+  1: "sakhir",      // Bahreïn
+  2: "jeddah",      // Arabie Saoudite
+  3: "melbourne",   // Australie
+  4: "suzuka",      // Japon
+  5: "shanghai",    // Chine
+  6: "miami",       // Miami
+  7: "montreal",    // Canada
+  8: "monaco",      // Monaco
+  9: "portimao",    // Portugal 🆕
+  10: "silverstone", // Grande-Bretagne
+  11: "spielberg",  // Autriche
+  12: "spa",        // Belgique
+  13: "hungaroring",// Hongrie
+  14: "monza",      // Italie
+  15: "madrid",     // Espagne
+  16: "baku",       // Azerbaïdjan
+  17: "istanbul",   // Turquie 🆕
+  18: "singapore",  // Singapour
+  19: "austin",     // USA
+  20: "mexico",     // Mexique
+  21: "saopaulo",   // Brésil
+  22: "lasvegas",   // Las Vegas
+  23: "lusail",     // Qatar
+  24: "abudhabi"    // Abu Dhabi
 };
 
 // --- CALENDRIER 2026 STRICTEMENT CHRONOLOGIQUE ---
@@ -442,13 +492,40 @@ practice: []
 
 ];
 
+const INITIAL_CALENDAR_2027 = [
+  { round: 1,  name: "Bahrain Grand Prix",       length: "5.412 km", laps: 57, lapRecord: "1:31.447 (de la Rosa)" },
+  { round: 2,  name: "Saudi Arabian Grand Prix", length: "6.174 km", laps: 50, lapRecord: "1:30.734 (Hamilton)" },
+  { round: 3,  name: "Australian Grand Prix",    length: "5.278 km", laps: 58, lapRecord: "1:19.813 (Leclerc)" },
+  { round: 4,  name: "Japanese Grand Prix",      length: "5.807 km", laps: 53, lapRecord: "1:30.983 (Hamilton)" },
+  { round: 5,  name: "Chinese Grand Prix",       length: "5.451 km", laps: 56, lapRecord: "1:32.238 (Schumacher)" },
+  { round: 6,  name: "Miami Grand Prix",         length: "5.412 km", laps: 57, lapRecord: "1:29.708 (Verstappen)" },
+  { round: 7,  name: "Canadian Grand Prix",      length: "4.361 km", laps: 70, lapRecord: "1:13.078 (Bottas)" },
+  { round: 8,  name: "Monaco Grand Prix",        length: "3.337 km", laps: 78, lapRecord: "1:12.909 (Hamilton)" },
+  { round: 9,  name: "Portuguese Grand Prix",    length: "4.653 km", laps: 66, lapRecord: "1:18.750 (Bottas)" },
+  { round: 10, name: "British Grand Prix",       length: "5.891 km", laps: 52, lapRecord: "1:27.097 (Verstappen)" },
+  { round: 11, name: "Austrian Grand Prix",      length: "4.318 km", laps: 71, lapRecord: "1:05.619 (Sainz)" },
+  { round: 12, name: "Belgian Grand Prix",       length: "7.004 km", laps: 44, lapRecord: "1:44.701 (Perez)" },
+  { round: 13, name: "Hungarian Grand Prix",     length: "4.381 km", laps: 70, lapRecord: "1:16.627 (Hamilton)" },
+  { round: 14, name: "Italian Grand Prix",       length: "5.793 km", laps: 53, lapRecord: "1:21.046 (Barrichello)" },
+  { round: 15, name: "Spanish Grand Prix",       length: "5.474 km", laps: 55, lapRecord: "1:18.200 (Sainz)" },
+  { round: 16, name: "Azerbaijan Grand Prix",    length: "6.003 km", laps: 51, lapRecord: "1:43.009 (Leclerc)" },
+  { round: 17, name: "Turkish Grand Prix",       length: "5.338 km", laps: 58, lapRecord: "1:24.475 (Webber)" },
+  { round: 18, name: "Singapore Grand Prix",     length: "4.940 km", laps: 62, lapRecord: "1:34.486 (Ricciardo)" },
+  { round: 19, name: "United States Grand Prix", length: "5.513 km", laps: 56, lapRecord: "1:36.169 (Leclerc)" },
+  { round: 20, name: "Mexico City Grand Prix",   length: "4.304 km", laps: 71, lapRecord: "1:17.774 (Bottas)" },
+  { round: 21, name: "São Paulo Grand Prix",     length: "4.309 km", laps: 71, lapRecord: "1:10.540 (Bottas)" },
+  { round: 22, name: "Las Vegas Grand Prix",     length: "6.201 km", laps: 50, lapRecord: "1:35.490 (Piastri)" },
+  { round: 23, name: "Qatar Grand Prix",         length: "5.419 km", laps: 57, lapRecord: "1:24.319 (Verstappen)" },
+  { round: 24, name: "Abu Dhabi Grand Prix",     length: "5.281 km", laps: 58, lapRecord: "1:26.103 (Verstappen)" }
+];
+
 export default function App() {
 
 const [activeTab, setActiveTab] = useState("bet");
 const [selectedRound, setSelectedRound] = useState(17);
 const [hasInitializedRound, setHasInitializedRound] = useState(false);
 const [calendarLoadedFromDB, setCalendarLoadedFromDB] = useState(false);
-const [calendar, setCalendar] = useState(INITIAL_CALENDAR_2026);
+const [calendar, setCalendar] = useState(ACTIVE_CALENDAR);
 const [showPractice, setShowPractice] = useState(true);
 const [selectedPracticeSession, setSelectedPracticeSession] = useState("FP3");
 const [currentTime, setCurrentTime] = useState(Date.now());
@@ -482,6 +559,12 @@ const [legendsData, setLegendsData] = useState([]);
 const [goatData, setGoatData] = useState([]);
 const [loadingLegends, setLoadingLegends] = useState(false);
 const [loadingGoat, setLoadingGoat] = useState(false);
+const [activeSeason, setActiveSeason] = useState(2026);
+
+// Données dynamiques selon la saison active
+const ACTIVE_CALENDAR = activeSeason === 2027 ? INITIAL_CALENDAR_2027 : INITIAL_CALENDAR_2026;
+const ACTIVE_DRIVERS = activeSeason === 2027 ? DRIVERS_2027 : DRIVERS_2026;
+const ACTIVE_CIRCUIT_MAP = activeSeason === 2027 ? CIRCUIT_ROUND_MAP_2027 : CIRCUIT_ROUND_MAP_2026;
 
 // Sélecteur de saison & Archives
 
@@ -1054,6 +1137,22 @@ const handleUpdateNotifPrefs = async (key, value) => {
   }
 };
 
+//Charger la saison
+
+useEffect(() => {
+  const loadActiveSeason = async () => {
+    const { data, error } = await supabase
+      .from("app_config")
+      .select("value")
+      .eq("key", "active_season")
+      .single();
+
+    if (!error && data) {
+      setActiveSeason(parseInt(data.value));
+    }
+  };
+  loadActiveSeason();
+}, []);
 
 //Recupération auto via API
 
@@ -1062,7 +1161,7 @@ const handleAutoFetchResults = async () => {
   setResultSaveFeedback({ visible: false, message: "" });
 
   try {
-    const calendarRes = await fetch(`https://api.jolpi.ca/ergast/f1/2026.json?limit=100`);
+    const calendarRes = await fetch(`https://api.jolpi.ca/ergast/f1/${activeSeason}.json?limit=100`);
     const calendarData = await calendarRes.json();
     const races = calendarData?.MRData?.RaceTable?.Races || [];
 
@@ -1214,7 +1313,7 @@ const handleSyncFullCalendar = async () => {
       message: `✅ ${updatedCount} Grand(s) Prix synchronisé(s) avec les vraies dates officielles !`
     });
 
-    load2026DataFromDB();
+    loadSeasonData();
   } catch (err) {
     console.error("Erreur synchro calendrier:", err);
     setCalendarSyncFeedback({ visible: true, message: "❌ Erreur lors de la synchronisation." });
@@ -1228,7 +1327,7 @@ const handleFetchPracticeResults = async () => {
   setResultSaveFeedback({ visible: false, message: "" });
 
   try {
-    const allSessions = await fetchJsonWithRetry(`https://api.openf1.org/v1/sessions?year=2026`);
+    cconst allSessions = await fetchJsonWithRetry(`https://api.openf1.org/v1/sessions?year=${activeSeason}`);
 
     const normalizeDate = (d) => {
       const date = new Date(d);
@@ -1386,7 +1485,7 @@ const handleFetchPracticeResults = async () => {
         : "⚠️ Aucune donnée n'a pu être récupérée."
     });
 
-    load2026DataFromDB();
+    loadSeasonData();
   } catch (err) {
     console.error("Erreur récupération essais:", err);
     setResultSaveFeedback({ visible: true, message: "❌ Erreur lors de la récupération." });
@@ -1541,7 +1640,7 @@ const handleSaveOfficialResults = async () => {
     });
 
 // Recharge les données pour rafraîchir l'affichage
-    load2026DataFromDB();
+loadSeasonData();
     if (userTeam?.id) loadTeamMembers(userTeam.id);
     // Notifier tous les joueurs que les résultats sont publiés
 await fetch(
@@ -1566,9 +1665,8 @@ await fetch(
 
 // Synchronisation du calendrier 2026 et séances FP depuis Supabase
 
-const load2026DataFromDB = async () => {
-
-try {
+const loadSeasonData = async () => {
+  try {
 
 const { data: gpData, error: gpErr } = await supabase
 
@@ -1655,7 +1753,7 @@ console.warn("Échec chargement DB:", err);
 
 useEffect(() => {
 
-load2026DataFromDB();
+  loadSeasonData();
 
 
 
@@ -1676,7 +1774,7 @@ if (activeGP && typeof activeGP.id === "number") {
   runAutoSyncPipeline(activeGP, supabase).then((res) => {
 if (res?.status === "advanced" && res.nextRound) {
 setSelectedRound(res.nextRound);
-load2026DataFromDB();
+loadSeasonData();
 
           }
 
@@ -1912,7 +2010,7 @@ const getPredictionColor = (betDriverId, betType, officialResults) => {
 
   // fonction affichage récap des paris
   const [teamBetsSummary, setTeamBetsSummary] = useState([]);
-  const getDriverName = (driverId) => DRIVERS_2026.find((d) => d.id === driverId)?.name || driverId || "—";
+  const getDriverName = (driverId) => ACTIVE_DRIVERS.find((d) => d.id === driverId)?.name || driverId || "—";
   
   useEffect(() => {
     const loadTeamBetsSummary = async () => {
@@ -2394,7 +2492,7 @@ selectedRound === gp.round
 {/* TRACÉ DU CIRCUIT */}
 <div className="mt-4 pt-4 border-t border-[#2b2b3d] flex flex-col md:flex-row items-center gap-4">
   <div className="w-full md:w-2/3 bg-[#0e0e14] rounded-lg p-2 border border-[#2b2b3d]">
-  {CIRCUIT_SVGS[CIRCUIT_ROUND_MAP[currentGP.round]] || CIRCUIT_SVGS.default}
+  {CIRCUIT_SVGS[ACTIVE_CIRCUIT_MAP[currentGP.round]] || CIRCUIT_SVGS.default}
   </div>
 
 
@@ -3605,6 +3703,42 @@ className="bg-[#15151e] border border-[#2b2b3d] text-white text-xs font-bold rou
   >
     {syncingCalendar ? "Synchronisation..." : "🔄 Actualiser le Calendrier (Super Admin)"}
   </button>
+)}
+
+{userProfile?.is_super_admin && activeSeason === 2026 && (
+  <button
+    onClick={async () => {
+      const confirmed = window.confirm(
+        "⚠️ Basculer vers la saison 2027 ?\n\nCette action va changer la saison active pour TOUS les utilisateurs. Les données 2026 restent accessibles dans 'Résultats & Saisons'.\n\nConfirmer ?"
+      );
+      if (!confirmed) return;
+
+      const { error } = await supabase
+        .from("app_config")
+        .update({ value: "2027", updated_at: new Date().toISOString() })
+        .eq("key", "active_season");
+
+      if (!error) {
+        setActiveSeason(2027);
+        setCalendar(INITIAL_CALENDAR_2027);
+        setSelectedRound(1);
+        setHasInitializedRound(false);
+        setCalendarLoadedFromDB(false);
+        loadSeasonData();
+        alert("✅ Saison 2027 activée ! L'appli va se recharger.");
+        window.location.reload();
+      }
+    }}
+    className="w-full bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-400 text-xs font-bold py-2.5 rounded-xl border border-emerald-800/50 transition"
+  >
+    🚀 Basculer vers la saison 2027
+  </button>
+)}
+
+{userProfile?.is_super_admin && activeSeason === 2027 && (
+  <div className="w-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold py-2.5 px-4 rounded-xl text-center">
+    ✅ Saison 2027 active
+  </div>
 )}
 
 {calendarSyncFeedback.visible && (
