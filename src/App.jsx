@@ -525,7 +525,7 @@ const [activeTab, setActiveTab] = useState("bet");
 const [selectedRound, setSelectedRound] = useState(17);
 const [hasInitializedRound, setHasInitializedRound] = useState(false);
 const [calendarLoadedFromDB, setCalendarLoadedFromDB] = useState(false);
-const [calendar, setCalendar] = useState(ACTIVE_CALENDAR);
+const [calendar, setCalendar] = useState(INITIAL_CALENDAR_2026);
 const [showPractice, setShowPractice] = useState(true);
 const [selectedPracticeSession, setSelectedPracticeSession] = useState("FP3");
 const [currentTime, setCurrentTime] = useState(Date.now());
@@ -605,7 +605,7 @@ const isTeamPrincipal = !!user && userTeam?.team_principal_id === user?.id;
 
 const findDriverIdByFamilyName = (familyName) => {
   if (!familyName) return "";
-  const match = DRIVERS_2026.find((d) =>
+  const match = ACTIVE_DRIVERS.find((d) =>
     d.name.toLowerCase().includes(familyName.toLowerCase())
   );
   return match?.id || "";
@@ -657,11 +657,11 @@ circuitName: g.circuit_name,
 country: g.country,
 date: g.race_start_time?.split("T")[0] || "2026",
 isCancelled: g.is_cancelled,
-pole: res?.pole_id ? DRIVERS_2026.find((d) => d.id === res.pole_id)?.name || res.pole_id.toUpperCase() : "N/A",
-p1: res?.pos1_id ? { name: DRIVERS_2026.find((d) => d.id === res.pos1_id)?.name || res.pos1_id.toUpperCase(), team: DRIVERS_2026.find((d) => d.id === res.pos1_id)?.team || "" } : null,
-p2: res?.pos2_id ? { name: DRIVERS_2026.find((d) => d.id === res.pos2_id)?.name || res.pos2_id.toUpperCase(), team: DRIVERS_2026.find((d) => d.id === res.pos2_id)?.team || "" } : null,
-p3: res?.pos3_id ? { name: DRIVERS_2026.find((d) => d.id === res.pos3_id)?.name || res.pos3_id.toUpperCase(), team: DRIVERS_2026.find((d) => d.id === res.pos3_id)?.team || "" } : null,
-dotd: res?.dotd_id ? DRIVERS_2026.find((d) => d.id === res.dotd_id)?.name || res.dotd_id.toUpperCase() : null
+pole: res?.pole_id ? ACTIVE_DRIVERS.find((d) => d.id === res.pole_id)?.name || res.pole_id.toUpperCase() : "N/A",
+p1: res?.pos1_id ? { name: ACTIVE_DRIVERS.find((d) => d.id === res.pos1_id)?.name || res.pos1_id.toUpperCase(), team: ACTIVE_DRIVERS.find((d) => d.id === res.pos1_id)?.team || "" } : null,
+p2: res?.pos2_id ? { name: ACTIVE_DRIVERS.find.find((d) => d.id === res.pos2_id)?.name || res.pos2_id.toUpperCase(), team: ACTIVE_DRIVERS.find.find((d) => d.id === res.pos2_id)?.team || "" } : null,
+p3: res?.pos3_id ? { name: ACTIVE_DRIVERS.find.find((d) => d.id === res.pos3_id)?.name || res.pos3_id.toUpperCase(), team: ACTIVE_DRIVERS.find.find((d) => d.id === res.pos3_id)?.team || "" } : null,
+dotd: res?.dotd_id ? ACTIVE_DRIVERS.find.find((d) => d.id === res.dotd_id)?.name || res.dotd_id.toUpperCase() : null
               };
 
             });
@@ -1674,7 +1674,7 @@ const { data: gpData, error: gpErr } = await supabase
 
         .select("*, official_results(*)")
 
-        .eq("season", 2026)
+        .eq("season", activeSeason)
 
         .order("round", { ascending: true });
 
