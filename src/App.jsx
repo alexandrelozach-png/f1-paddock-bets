@@ -1327,7 +1327,7 @@ const handleFetchPracticeResults = async () => {
   setResultSaveFeedback({ visible: false, message: "" });
 
   try {
-    cconst allSessions = await fetchJsonWithRetry(`https://api.openf1.org/v1/sessions?year=${activeSeason}`);
+    const allSessions = await fetchJsonWithRetry(`https://api.openf1.org/v1/sessions?year=${activeSeason}`);
 
     const normalizeDate = (d) => {
       const date = new Date(d);
