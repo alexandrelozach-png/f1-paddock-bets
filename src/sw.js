@@ -1,4 +1,13 @@
-import { precacheAndRoute } from 'workbox-precaching';
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+
+// Nettoie les anciens caches automatiquement
+cleanupOutdatedCaches();
+
+// Force le nouveau SW à prendre le contrôle immédiatement
+self.skipWaiting();
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim());
+});
 
 precacheAndRoute(self.__WB_MANIFEST);
 

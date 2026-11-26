@@ -956,6 +956,15 @@ const urlBase64ToUint8Array = (base64String) => {
   return outputArray;
 };
 
+//Mise à jour PWA auto
+useEffect(() => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
+  }
+}, []);
+
 // Vérifie l'état des notifications au chargement
 useEffect(() => {
   if (!user || !('Notification' in window)) return;
